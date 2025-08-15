@@ -2,6 +2,7 @@ import "./index.css";
 
 import { zzfx, setVolume, initAudioContext } from "./vendor/zzfx";
 import { Vector } from "./core/vector";
+import { drawSvg } from "./core/draw-svg";
 
 initAudioContext();
 
@@ -108,6 +109,9 @@ class GameObject extends Observable {
 		pos = new Vector(),
 		opacity = 1,
 		scale = 1,
+		size = new Vector(),
+		origin = Vector.TOP_LEFT,
+		rotation = 0,
 		freezed = false,
 		children = [],
 		...unknownOptions
@@ -117,6 +121,9 @@ class GameObject extends Observable {
 		this.pos = pos;
 		this.opacity = opacity;
 		this.scale = scale;
+		this.rotation = rotation;
+		this.origin = origin;
+		this.size = size;
 		this.freezed = freezed;
 		this.children = [];
 
@@ -175,18 +182,39 @@ class GameObject extends Observable {
 	update(deltaT) {
 		this.children.forEach((child) => child.update(deltaT));
 	}
+	/**
+	 * @param {CanvasRenderingContext2D} ctx
+	 */
 	render(ctx) {
-		this.children.forEach((child) => {
-			ctx.save();
-			const { x, y } = child.pos.round();
-			ctx.translate(x, y);
-			ctx.scale(child.scale, child.scale);
-			ctx.globalAlpha = child.opacity * this.getGlobalOpacity();
-			// ctx.strokeStyle = 'red'
-			// child.size && ctx.strokeRect(0, 0, child.size.x, child.size.y)
-			child.render(ctx);
-			ctx.restore();
-		});
+		this.children.forEach(
+			/**
+			 * @param {GameObject} child
+			 */
+			(child) => {
+				ctx.save();
+				const pos = child.pos;
+				ctx.translate(pos.x, pos.y);
+
+				const A = child.size;
+				const S = child.size.mul(child.scale);
+				const scaleDiff = A.diff(S).mulv(child.origin);
+				ctx.translate(scaleDiff.x, scaleDiff.y);
+
+				const originPos = child.size.mul(child.scale).mulv(child.origin);
+				const originDiff = pos.diff(originPos);
+				const newPos = originDiff
+					.rotate(child.rotation)
+					.add(originDiff.mul(-1));
+				ctx.translate(newPos.x, newPos.y);
+				ctx.scale(child.scale, child.scale);
+				ctx.rotate(child.rotation);
+				ctx.globalAlpha = child.opacity * this.getGlobalOpacity();
+				// ctx.strokeStyle = "red";
+				// child.size && ctx.strokeRect(0, 0, child.size.x, child.size.y);
+				child.render(ctx);
+				ctx.restore();
+			}
+		);
 	}
 	isFreezed() {
 		const freezed = this.freezed;
@@ -208,6 +236,34 @@ class GameObject extends Observable {
 		} else {
 			return this.pos;
 		}
+	}
+}
+
+class Canvas extends GameObject {
+	constructor({ size = new Vector(), debug = false, ...rest }) {
+		super(rest);
+		this.size = size;
+		this.canvas = new OffscreenCanvas(this.size.x, this.size.y);
+		this.debug = debug;
+		this.ctx = this.canvas.getContext("2d");
+		this.ctx.imageSmoothingEnabled = false;
+	}
+	/**
+	 * @param {CanvasRenderingContext2D} ctx
+	 */
+	render(ctx) {
+		this.children.forEach((child) => {
+			child.render(this.ctx);
+		});
+		if (this.debug) {
+			ctx.drawImage(this.canvas, 0, 0);
+		}
+	}
+	getGlobalOpacity() {
+		return this.opacity;
+	}
+	getGlobalPosition() {
+		return this.pos;
 	}
 }
 
@@ -293,7 +349,7 @@ class GameSingleton extends Observable {
 
 const Game = new GameSingleton({
 	canvas: document.getElementById("game"),
-	viewRes: new Vector(64 * 1.5, 96 * 1.5),
+	viewRes: new Vector(64 * 4, 96 * 4),
 });
 
 class Trophy {
@@ -2803,23 +2859,134 @@ function shuffle(array) {
 	return array;
 }
 
+class Fish extends GameObject {
+	createChildren() {
+		this.texture = new Canvas({
+			size: this.size.mul(1 / 12),
+			children: [
+				new RoundedScales({
+					id: "texture",
+					size: this.size.mul(1 / 12),
+				}),
+			],
+		});
+		this.pattern = Game.ctx.createPattern(this.texture.canvas, "repeat");
+		return [this.texture];
+	}
+	update(delta) {
+		if (typeof this.ogScale == "undefined") {
+			this.ogScale = this.scale;
+		}
+		this.scale = this.ogScale + Math.abs(Math.sin(Game.oldT / 1000));
+		this.rotation += delta / 1000;
+	}
+	/**
+	 * @param {CanvasRenderingContext2D} ctx
+	 */
+	render(ctx) {
+		drawSvg(
+			ctx,
+			"M62.5 103C47.5 68.5 45.5 9 61 0.499999C85 22.5 84.5 77.5 67.5 104L75.5 123L65 115L54 127L62.5 103Z"
+		);
+		ctx.fillStyle = "red";
+		ctx.fill();
+		drawSvg(
+			ctx,
+			"M62.5 103C47.5 68.5 45.5 9 61 0.499999C85 22.5 84.5 77.5 67.5 104L62.5 103Z"
+		);
+		ctx.fillStyle = ctx.createPattern(this.texture.canvas, "repeat");
+		ctx.fill();
+		// ctx.lineWidth = 4;
+		// ctx.lineCap = "round";
+		// ctx.lineJoin = "bevel";
+		// ctx.strokeStyle = "white";
+		// ctx.stroke();
+		super.render(ctx);
+	}
+}
+
+class RoundedScales extends GameObject {
+	/**
+	 * @param {CanvasRenderingContext2D} ctx
+	 */
+	render(ctx) {
+		ctx.fillStyle = "red";
+		ctx.fillRect(0, 0, this.size.x, this.size.y);
+		ctx.moveTo(0, 0);
+		ctx.beginPath();
+		ctx.moveTo(0, this.size.y);
+		ctx.beginPath();
+		ctx.arc(0, this.size.y / 2, this.size.y / 2, (Math.PI / 2) * 3, 0, true);
+		ctx.arc(
+			this.size.x,
+			this.size.y / 2,
+			this.size.y / 2,
+			Math.PI,
+			(Math.PI / 2) * 3,
+			true
+		);
+		ctx.stroke();
+		ctx.closePath();
+		ctx.fillStyle = "white";
+		ctx.fill();
+		ctx.closePath();
+		ctx.beginPath();
+		ctx.arc(this.size.x / 2, 0, this.size.y / 2, 0, Math.PI, false);
+		ctx.fillStyle = "red";
+		ctx.fill();
+		ctx.stroke();
+	}
+}
+
+const debug = false;
+
+const canvases = [
+	new Canvas({
+		id: "texture1",
+		debug,
+		size: new Vector(48, 48),
+		children: [
+			new RoundedScales({
+				size: new Vector(48, 48),
+			}),
+		],
+	}),
+];
+
 (async function () {
 	// load assets
 	await Promise.all([gameFont.load(), assets.load()]);
 
 	Game.root.addChildren([
-		new GameObject({ id: "main" }),
+		new GameObject({
+			id: "main",
+			children: [
+				new Fish({
+					size: new Vector(128, 128),
+					origin: Vector.CENTER,
+					scale: 0.5,
+					// rotation: (-Math.PI / 4) * 3,
+				}),
+			],
+		}),
 		new GameObject({ id: "popup" }),
+		new Flexbox({
+			size: Game.viewRes,
+			align: "start",
+			justify: "start",
+			spaceBetween: 4,
+			children: canvases,
+		}),
 	]);
 
-	// append level
-	Game.root
-		.getChild("main")
-		.addChild(
-			+localStorage.getItem("logins") > 1
-				? new Menu({ animate: true })
-				: new OpeningScreen()
-		);
+	// // append level
+	// Game.root
+	// 	.getChild("main")
+	// 	.addChild(
+	// 		+localStorage.getItem("logins") > 1
+	// 			? new Menu({ animate: true })
+	// 			: new OpeningScreen()
+	// 	);
 
 	TrophyCase.updateTrophyStatus();
 

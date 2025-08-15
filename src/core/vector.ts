@@ -2,6 +2,10 @@ export class Vector {
 	x: number;
 	y: number;
 
+	static TOP_LEFT = new Vector(0, 0);
+	static BOTTOM_RIGHT = new Vector(1, 1);
+	static CENTER = new Vector(0.5, 0.5);
+
 	constructor(x = 0, y = 0) {
 		this.x = x;
 		this.y = y;
@@ -15,8 +19,19 @@ export class Vector {
 		return new Vector(this.x - v.x, this.y - v.y);
 	}
 
+	mulv(v: Vector) {
+		return new Vector(this.x * v.x, this.y * v.y);
+	}
+
 	mul(s: number) {
 		return new Vector(this.x * s, this.y * s);
+	}
+
+	rotate(a: number) {
+		return new Vector(
+			this.x * Math.cos(a) - this.y * Math.sin(a),
+			this.x * Math.sin(a) + this.y * Math.cos(a)
+		);
 	}
 
 	length() {
