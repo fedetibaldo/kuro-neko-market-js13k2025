@@ -246,7 +246,7 @@ class Canvas extends GameObject {
 		this.canvas = new OffscreenCanvas(this.size.x, this.size.y);
 		this.debug = debug;
 		this.ctx = this.canvas.getContext("2d");
-		this.ctx.imageSmoothingEnabled = false;
+		// this.ctx.imageSmoothingEnabled = false;
 	}
 	/**
 	 * @param {CanvasRenderingContext2D} ctx
@@ -321,7 +321,7 @@ class GameSingleton extends Observable {
 				const deltaT = newT - this.oldT;
 				this.trigger("tick", deltaT);
 
-				this.subCtx.fillStyle = "black";
+				this.subCtx.fillStyle = "green";
 				this.subCtx.fillRect(0, 0, this.viewRes.x, this.viewRes.y);
 
 				this.root.update(deltaT);
@@ -349,7 +349,7 @@ class GameSingleton extends Observable {
 
 const Game = new GameSingleton({
 	canvas: document.getElementById("game"),
-	viewRes: new Vector(64 * 4, 96 * 4),
+	viewRes: new Vector(360, 240),
 });
 
 class Trophy {
@@ -2859,43 +2859,70 @@ function shuffle(array) {
 	return array;
 }
 
+class FishEye extends GameObject {
+	/**
+	 * @param {CanvasRenderingContext2D} ctx
+	 */
+	render(ctx) {
+		ctx.beginPath();
+		ctx.arc(4, 4, 4, 0, Math.PI * 2, false);
+		ctx.closePath();
+		ctx.fillStyle = "black";
+		ctx.fill();
+		ctx.lineWidth = 2;
+		ctx.strokeStyle = "white";
+		ctx.stroke();
+	}
+}
+
 class Fish extends GameObject {
 	createChildren() {
 		this.texture = new Canvas({
-			size: this.size.mul(1 / 12),
+			size: new Vector(16, 16),
 			children: [
 				new RoundedScales({
 					id: "texture",
-					size: this.size.mul(1 / 12),
 				}),
 			],
 		});
 		this.pattern = Game.ctx.createPattern(this.texture.canvas, "repeat");
-		return [this.texture];
+		return [this.texture, new FishEye({ pos: new Vector(37, 7) })];
 	}
 	update(delta) {
 		if (typeof this.ogScale == "undefined") {
 			this.ogScale = this.scale;
 		}
-		this.scale = this.ogScale + Math.abs(Math.sin(Game.oldT / 1000));
+		this.scale = this.ogScale - 0.5 * Math.abs(Math.sin(Game.oldT / 1000));
 		this.rotation += delta / 1000;
 	}
 	/**
 	 * @param {CanvasRenderingContext2D} ctx
 	 */
 	render(ctx) {
-		drawSvg(
-			ctx,
-			"M62.5 103C47.5 68.5 45.5 9 61 0.499999C85 22.5 84.5 77.5 67.5 104L75.5 123L65 115L54 127L62.5 103Z"
-		);
-		ctx.fillStyle = "red";
+		drawSvg(ctx, {
+			path: "M33.75 79.375L39.0625 64.375L42.1875 65L47.1875 76.875L40.625 71.875L33.75 79.375Z",
+		});
+		ctx.fillStyle = "#4e7dacff";
 		ctx.fill();
-		drawSvg(
-			ctx,
-			"M62.5 103C47.5 68.5 45.5 9 61 0.499999C85 22.5 84.5 77.5 67.5 104L62.5 103Z"
-		);
-		ctx.fillStyle = ctx.createPattern(this.texture.canvas, "repeat");
+		drawSvg(ctx, {
+			path: "M39.0625 64.375C29.6875 42.8125 28.4375 5.625 38.125 0.3125C53.125 14.0625 52.8125 48.4375 42.1875 65L39.0625 64.375Z",
+		});
+		const gradient = ctx.createLinearGradient(0, 0, this.size.x, 0);
+		gradient.addColorStop(0.25, "#FFFFFF");
+		gradient.addColorStop(0.75, "#4a86f5");
+		ctx.fillStyle = gradient;
 		ctx.fill();
+		const pattern = ctx.createPattern(this.texture.canvas, "repeat");
+		const matrix = new DOMMatrix();
+		matrix.scale(2);
+		pattern.setTransform(matrix);
+		ctx.fillStyle = pattern;
+		ctx.fill();
+		drawSvg(ctx, {
+			path: "M39.0625 64.375L40.1557 64.5936M42.1875 65L41.1716 64.7968M40.1557 64.5936L38.75 71.5625M40.1557 64.5936L41.1716 64.7968M41.1716 64.7968L42.5 70.625",
+		});
+		ctx.lineCap = "round";
+		ctx.stroke();
 		// ctx.lineWidth = 4;
 		// ctx.lineCap = "round";
 		// ctx.lineJoin = "bevel";
@@ -2906,34 +2933,25 @@ class Fish extends GameObject {
 }
 
 class RoundedScales extends GameObject {
+	constructor(args) {
+		super(args);
+		this.size = new Vector(16, 16);
+	}
 	/**
 	 * @param {CanvasRenderingContext2D} ctx
 	 */
 	render(ctx) {
-		ctx.fillStyle = "red";
-		ctx.fillRect(0, 0, this.size.x, this.size.y);
-		ctx.moveTo(0, 0);
-		ctx.beginPath();
-		ctx.moveTo(0, this.size.y);
-		ctx.beginPath();
-		ctx.arc(0, this.size.y / 2, this.size.y / 2, (Math.PI / 2) * 3, 0, true);
-		ctx.arc(
-			this.size.x,
-			this.size.y / 2,
-			this.size.y / 2,
-			Math.PI,
-			(Math.PI / 2) * 3,
-			true
-		);
+		// ctx.fillStyle = "red";
+		// ctx.fillRect(0, 0, this.size.x, this.size.y);
+		ctx.strokeStyle = "black";
+		ctx.lineWidth = 1;
+		drawSvg(ctx, {
+			path: "M16 12C13 12 12 8 12 8C12 8 11 12 8 12C5 12 4 8 4 8C4 8 3 12 0 12",
+		});
 		ctx.stroke();
-		ctx.closePath();
-		ctx.fillStyle = "white";
-		ctx.fill();
-		ctx.closePath();
-		ctx.beginPath();
-		ctx.arc(this.size.x / 2, 0, this.size.y / 2, 0, Math.PI, false);
-		ctx.fillStyle = "red";
-		ctx.fill();
+		drawSvg(ctx, {
+			path: "M-4 4C-1 4 0 0 0 0C0 0 1 4 4 4C7 4 8 0 8 0C8 0 9 4 12 4C15 4 16 0 16 0C16 0 17 4 20 4",
+		});
 		ctx.stroke();
 	}
 }
@@ -2955,17 +2973,16 @@ const canvases = [
 
 (async function () {
 	// load assets
-	await Promise.all([gameFont.load(), assets.load()]);
+	// await Promise.all([gameFont.load(), assets.load()]);
 
 	Game.root.addChildren([
 		new GameObject({
 			id: "main",
 			children: [
 				new Fish({
-					size: new Vector(128, 128),
+					size: new Vector(80, 80),
 					origin: Vector.CENTER,
-					scale: 0.5,
-					// rotation: (-Math.PI / 4) * 3,
+					rotation: (-Math.PI / 4) * 3,
 				}),
 			],
 		}),

@@ -1,5 +1,15 @@
-export function drawSvg(ctx: CanvasRenderingContext2D, path: string) {
+import { Vector } from "./vector";
+
+export function drawSvg(
+	ctx: CanvasRenderingContext2D,
+	{
+		path,
+		viewBox,
+		flipH = false,
+	}: { path: string; viewBox?: Vector; flipH?: boolean }
+) {
 	let nextCommandIndex = path.search(/[A-Z]/);
+	let previousArgs: number[] = [];
 	if (nextCommandIndex >= 0) {
 		ctx.beginPath();
 	}
@@ -12,14 +22,23 @@ export function drawSvg(ctx: CanvasRenderingContext2D, path: string) {
 			args = path.slice(0, nextCommandIndex);
 			path = path.slice(nextCommandIndex);
 			nextCommandIndex = path.search(/[A-Z]/);
+		} else {
+			args = path;
+			path = "";
 		}
-		const parsedArgs = args
+		let parsedArgs = args
 			.split(/\s/)
 			.filter(Boolean)
 			.map((arg) => parseFloat(arg));
+		if (viewBox && flipH) {
+			parsedArgs = parsedArgs.map((value) => value - viewBox.x / 2);
+		}
 		switch (command) {
 			case "M":
 				ctx.moveTo(...(parsedArgs as [number, number]));
+				break;
+			case "V":
+				ctx.lineTo(previousArgs.at(-2) as number, ...(parsedArgs as [number]));
 				break;
 			case "C":
 				ctx.bezierCurveTo(
@@ -30,10 +49,11 @@ export function drawSvg(ctx: CanvasRenderingContext2D, path: string) {
 				ctx.lineTo(...(parsedArgs as [number, number]));
 				break;
 			case "Z":
-				ctx.closePath();
 				break;
 			default:
 				throw new Error(`Unknown command: ${command}`);
 		}
+		previousArgs = parsedArgs;
 	}
+	ctx.closePath();
 }
