@@ -208,21 +208,18 @@ export function drawSvg(
 			const nextNextDotIndex = path.slice(nextDotIndex + 1).search(/\./);
 			const nextNotNumberIndex = path.search(/[-\sA-Za-z]/);
 
-			const nextArgIndex =
+			let nextArgIndex =
 				nextNextDotIndex >= 0
 					? nextNotNumberIndex >= 0
 						? Math.min(nextDotIndex + nextNextDotIndex + 1, nextNotNumberIndex)
 						: nextDotIndex + nextNextDotIndex + 1
 					: nextNotNumberIndex;
 
-			let arg;
 			if (nextArgIndex < 0) {
-				arg = path;
-				path = "";
-			} else {
-				arg = path.slice(0, nextArgIndex);
-				path = path.slice(nextArgIndex).trim();
+				nextArgIndex = path.length;
 			}
+			let arg = path.slice(0, nextArgIndex);
+			path = path.slice(nextArgIndex).trim();
 
 			if (wasSliced) {
 				arg = `${firstChar}${arg}`;

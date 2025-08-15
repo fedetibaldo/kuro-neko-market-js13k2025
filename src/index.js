@@ -401,6 +401,9 @@ class InputSingleton extends Observable {
 		return e;
 	}
 	onCanvasMouseDown(e) {
+		if (document.pointerLockElement !== Game.canvas) {
+			Game.canvas.requestPointerLock();
+		}
 		this.isMouseDown = true;
 		this.lastDragPoint = this.initialDragPoint = this.normalizePosition(
 			this.eventToVector(e)
