@@ -2,7 +2,10 @@ export class Vector {
 	x: number;
 	y: number;
 
-	static TOP_LEFT = new Vector(0, 0);
+	static ZERO = new Vector();
+	static TOP_LEFT = new Vector();
+	static TOP = new Vector(0.5, 0);
+	static BOTTOM = new Vector(0.5, 1);
 	static BOTTOM_RIGHT = new Vector(1, 1);
 	static CENTER = new Vector(0.5, 0.5);
 

@@ -3,6 +3,7 @@ import "./index.css";
 import { zzfx, setVolume, initAudioContext } from "./vendor/zzfx";
 import { Vector } from "./core/vector";
 import { drawSvg } from "./core/draw-svg";
+import { createLinearGradient } from "./utils/create-linear-gradient";
 
 initAudioContext();
 
@@ -200,14 +201,16 @@ class GameObject extends Observable {
 				const scaleDiff = A.diff(S).mulv(child.origin);
 				ctx.translate(scaleDiff.x, scaleDiff.y);
 
-				const originPos = child.size.mul(child.scale).mulv(child.origin);
-				const originDiff = pos.diff(originPos);
-				const newPos = originDiff
-					.rotate(child.rotation)
-					.add(originDiff.mul(-1));
-				ctx.translate(newPos.x, newPos.y);
 				ctx.scale(child.scale, child.scale);
+
+				const O = child.size.mulv(child.origin);
+				const D = Vector.ZERO.diff(O);
+				const Dr = D.rotate(child.rotation);
+				const Oi = O.add(Dr);
+				ctx.translate(Oi.x, Oi.y);
+
 				ctx.rotate(child.rotation);
+
 				ctx.globalAlpha = child.opacity * this.getGlobalOpacity();
 				// ctx.strokeStyle = "red";
 				// child.size && ctx.strokeRect(0, 0, child.size.x, child.size.y);
@@ -321,7 +324,15 @@ class GameSingleton extends Observable {
 				const deltaT = newT - this.oldT;
 				this.trigger("tick", deltaT);
 
-				this.subCtx.fillStyle = "green";
+				this.subCtx.fillStyle = createLinearGradient(
+					this.subCtx,
+					Vector.BOTTOM.mulv(this.viewRes),
+					Vector.TOP.mulv(this.viewRes),
+					[
+						[0.5, "#B9F5FF"],
+						[1, "#898FFA"],
+					]
+				);
 				this.subCtx.fillRect(0, 0, this.viewRes.x, this.viewRes.y);
 
 				this.root.update(deltaT);
@@ -2885,27 +2896,31 @@ class Fish extends GameObject {
 				}),
 			],
 		});
-		this.pattern = Game.ctx.createPattern(this.texture.canvas, "repeat");
 		return [this.texture, new FishEye({ pos: new Vector(37, 7) })];
 	}
 	update(delta) {
-		if (typeof this.ogScale == "undefined") {
-			this.ogScale = this.scale;
-		}
-		this.scale = this.ogScale - 0.5 * Math.abs(Math.sin(Game.oldT / 1000));
-		this.rotation += delta / 1000;
+		// if (typeof this.ogScale == "undefined") {
+		// 	this.ogScale = this.scale;
+		// }
+		// this.scale = this.ogScale - 0.5 * Math.abs(Math.sin(Game.oldT / 1000));
+		// this.rotation += delta / 1000;
 	}
 	/**
 	 * @param {CanvasRenderingContext2D} ctx
 	 */
 	render(ctx) {
 		drawSvg(ctx, {
-			path: "M33.75 79.375L39.0625 64.375L42.1875 65L47.1875 76.875L40.625 71.875L33.75 79.375Z",
+			path: "M40.5 64.5 38.1.3C22-1.5 15.5 32 35.5 62L32 77.5l1.8 1.9L38 74l9.2 2.9-6.7-12.4Z",
 		});
-		ctx.fillStyle = "#4e7dacff";
+		ctx.fillStyle = "#00000044";
 		ctx.fill();
 		drawSvg(ctx, {
-			path: "M39.0625 64.375C29.6875 42.8125 28.4375 5.625 38.125 0.3125C53.125 14.0625 52.8125 48.4375 42.1875 65L39.0625 64.375Z",
+			path: "m33.8 79.4 5.3-15 3 .6 5 11.9-6.5-5-6.9 7.5Z",
+		});
+		ctx.fillStyle = "#4e7dac";
+		ctx.fill();
+		drawSvg(ctx, {
+			path: "M39 64.4c-9.3-21.6-10.6-58.8-.9-64 15 13.7 14.7 48 4 64.6l-3-.6Z",
 		});
 		const gradient = ctx.createLinearGradient(0, 0, this.size.x, 0);
 		gradient.addColorStop(0.25, "#FFFFFF");
@@ -2913,13 +2928,10 @@ class Fish extends GameObject {
 		ctx.fillStyle = gradient;
 		ctx.fill();
 		const pattern = ctx.createPattern(this.texture.canvas, "repeat");
-		const matrix = new DOMMatrix();
-		matrix.scale(2);
-		pattern.setTransform(matrix);
 		ctx.fillStyle = pattern;
 		ctx.fill();
 		drawSvg(ctx, {
-			path: "M39.0625 64.375L40.1557 64.5936M42.1875 65L41.1716 64.7968M40.1557 64.5936L38.75 71.5625M40.1557 64.5936L41.1716 64.7968M41.1716 64.7968L42.5 70.625",
+			path: "m39 64.4 1.2.2m2 .4-1-.2m-1-.2-1.5 7m1.5-7 1 .2m0 0 1.3 5.8",
 		});
 		ctx.lineCap = "round";
 		ctx.stroke();
@@ -2946,13 +2958,211 @@ class RoundedScales extends GameObject {
 		ctx.strokeStyle = "black";
 		ctx.lineWidth = 1;
 		drawSvg(ctx, {
-			path: "M16 12C13 12 12 8 12 8C12 8 11 12 8 12C5 12 4 8 4 8C4 8 3 12 0 12",
+			path: "M16 12c-3 0-4-4-4-4s-1 4-4 4-4-4-4-4-1 4-4 4M0 0s1 4 4 4 4-4 4-4 1 4 4 4 4-4 4-4",
 		});
 		ctx.stroke();
-		drawSvg(ctx, {
-			path: "M-4 4C-1 4 0 0 0 0C0 0 1 4 4 4C7 4 8 0 8 0C8 0 9 4 12 4C15 4 16 0 16 0C16 0 17 4 20 4",
-		});
-		ctx.stroke();
+	}
+}
+
+class Table extends GameObject {
+	createChildren() {
+		return [
+			new Canvas({
+				id: "texture",
+				size: new Vector(60, 60),
+				children: [new Wood()],
+			}),
+		];
+	}
+	/**
+	 * @param {CanvasRenderingContext2D} ctx
+	 */
+	render(ctx) {
+		const pattern = ctx.createPattern(
+			this.getChild("texture").canvas,
+			"repeat"
+		);
+		ctx.fillStyle = pattern;
+		ctx.fillRect(0, 0, this.size.x, this.size.y);
+		super.render(ctx);
+	}
+}
+
+class Wood extends GameObject {
+	shadeDarkViewBox = new Vector(9, 13);
+	shadeLightViewBox = new Vector(14, 11);
+	shadeDarkPath = "M0 13c3.9 0 9-3 9-6.5C9 2.9 3.9 0 0 0v13Z";
+	shadeLightPath = "M0 11c7.7 0 14-2.5 14-5.5S7.7 0 0 0v11Z";
+	/**
+	 * @param {CanvasRenderingContext2D} ctx
+	 */
+	shadeDarkGradient = (ctx, flipH = false) => {
+		const gradient = ctx.createLinearGradient(0, 0, this.shadeDarkViewBox.x, 0);
+		gradient.addColorStop(flipH ? 1 : 0, "#A3683C");
+		gradient.addColorStop(flipH ? 0 : 1, "#975C3A");
+		return gradient;
+	};
+	/**
+	 * @param {CanvasRenderingContext2D} ctx
+	 */
+	shadeLightGradient = (ctx, flipH = false) => {
+		const gradient = ctx.createLinearGradient(
+			0,
+			0,
+			this.shadeLightViewBox.x,
+			0
+		);
+		gradient.addColorStop(flipH ? 1 : 0, "#A3683C");
+		gradient.addColorStop(flipH ? 0 : 1, "#AD774B");
+		return gradient;
+	};
+	shadeDarkPos = [
+		{ pos: new Vector(21, -5), flipH: true },
+		{ pos: new Vector(34, 10), flipH: true },
+		{ pos: new Vector(10, 20) },
+		{ pos: new Vector(23, 36) },
+		{ pos: new Vector(7, 43), flipH: true },
+		{ pos: new Vector(21, 55), flipH: true },
+	];
+	shadeLightPos = [
+		{ pos: new Vector(1, 0) },
+		{ pos: new Vector(17, 10) },
+		{ pos: new Vector(45, 22) },
+		{ pos: new Vector(-10, 38) },
+		{ pos: new Vector(50, 38) },
+		{ pos: new Vector(35, 32) },
+	];
+
+	constructor(args) {
+		super(args);
+		this.size = new Vector(60, 60);
+	}
+	/**
+	 * @param {CanvasRenderingContext2D} ctx
+	 */
+	render(ctx) {
+		ctx.fillStyle = "#A3683C";
+		ctx.fillRect(0, 0, this.size.x, this.size.y);
+
+		const shades = [
+			{
+				gradient: this.shadeDarkGradient,
+				positions: this.shadeDarkPos,
+				viewBox: this.shadeDarkViewBox,
+				path: this.shadeDarkPath,
+			},
+			{
+				gradient: this.shadeLightGradient,
+				positions: this.shadeLightPos,
+				viewBox: this.shadeLightViewBox,
+				path: this.shadeLightPath,
+			},
+		];
+
+		for (const { gradient, positions, viewBox, path } of shades) {
+			for (const { pos, flipH } of positions) {
+				ctx.save();
+				ctx.fillStyle = gradient(ctx, flipH);
+				ctx.translate(pos.x, pos.y);
+				drawSvg(ctx, { path, viewBox, flipH });
+				ctx.fill();
+				ctx.restore();
+			}
+		}
+
+		const linePosY = [10.5, 32.5, 54.5];
+		ctx.strokeStyle = "#302523";
+		ctx.lineWidth = 2;
+		for (const y of linePosY) {
+			ctx.beginPath();
+			ctx.moveTo(0, y);
+			ctx.lineTo(this.size.x, y);
+			ctx.stroke();
+		}
+
+		const veins = [
+			{
+				gradient: createLinearGradient(
+					ctx,
+					new Vector(0, 0),
+					new Vector(14, 0),
+					[
+						[0, "#975B37"],
+						[1, "#A2663B"],
+					]
+				),
+				path: "M0 17c3 0 5 .5 7.5 0 2.6-.5 4-1.5 6.5-1.5",
+			},
+			{
+				gradient: createLinearGradient(
+					ctx,
+					new Vector(0, 0),
+					new Vector(60, 0),
+					[
+						[0, "#6C3D29"],
+						[1, "#975B37"],
+					]
+				),
+				path: "M0 21c4.5 0 7.3-1.6 12-1.5 3.1 0 4.9 1 8 1 3.5 0 5.5-.9 9-1 4.7-.1 7.3.9 12 1 7.4.2 11.5-3.5 19-3.5",
+			},
+			{
+				gradient: createLinearGradient(
+					ctx,
+					new Vector(19, 0),
+					new Vector(60, 0),
+					[
+						[0, "#985D3A"],
+						[0.5, "#5B3727"],
+						[1, "#6C3D29"],
+					]
+				),
+				path: "M60 21c-2 0-7 .6-8.5 1-4 1-15.5 1.7-19 2-6 .5-11 3-15 3",
+			},
+			{
+				gradient: createLinearGradient(
+					ctx,
+					new Vector(13, 0),
+					new Vector(48, 0),
+					[
+						[0, "#975B37"],
+						[0.5, "#76452A"],
+						[1, "#A3683C"],
+					]
+				),
+				path: "M13 47.5c4.5-.5 7-2 11.5-3 5.2-1 8.3-1 13.5-2 4-.8 6-2 10-2.5",
+			},
+			{
+				gradient: createLinearGradient(
+					ctx,
+					new Vector(0, 0),
+					new Vector(16, 0),
+					[
+						[0, "#6C3D29"],
+						[1, "#975B37"],
+					]
+				),
+				path: "M0 47c6.5 0 10.5-3 16.5-4",
+			},
+			{
+				gradient: createLinearGradient(
+					ctx,
+					new Vector(36, 0),
+					new Vector(60, 0),
+					[
+						[0, "#975C3A"],
+						[1, "#6C3D29"],
+					]
+				),
+				path: "M37.5 48c9-1 19-1 22.5-1",
+			},
+		];
+
+		for (const { gradient, path } of veins) {
+			ctx.strokeStyle = gradient;
+			ctx.lineWidth = 2;
+			drawSvg(ctx, { path });
+			ctx.stroke();
+		}
 	}
 }
 
@@ -2962,12 +3172,14 @@ const canvases = [
 	new Canvas({
 		id: "texture1",
 		debug,
-		size: new Vector(48, 48),
-		children: [
-			new RoundedScales({
-				size: new Vector(48, 48),
-			}),
-		],
+		size: new Vector(16, 16),
+		children: [new RoundedScales()],
+	}),
+	new Canvas({
+		id: "texture2",
+		debug,
+		size: new Vector(60, 60),
+		children: [new Wood()],
 	}),
 ];
 
@@ -2979,7 +3191,12 @@ const canvases = [
 		new GameObject({
 			id: "main",
 			children: [
+				new Table({
+					pos: new Vector(0, Game.viewRes.y - 90),
+					size: new Vector(Game.viewRes.x, 90),
+				}),
 				new Fish({
+					pos: new Vector(20, 155),
 					size: new Vector(80, 80),
 					origin: Vector.CENTER,
 					rotation: (-Math.PI / 4) * 3,
