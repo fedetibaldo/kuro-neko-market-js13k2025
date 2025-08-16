@@ -3,36 +3,179 @@ import { drawSvg } from "../core/draw-svg";
 import { Game } from "../core/game";
 import { GameObject } from "../core/game-object";
 import { Input } from "../core/input";
+import {
+	easeInOut,
+	easeOut,
+	IncrementalLerp,
+	makeFixedTimeIncrementalLerp,
+} from "../core/lerp";
 import { Vector } from "../core/vector";
+import { clamp } from "../utils/clamp";
+
+class Pointer extends GameObject {
+	size = new Vector(2);
+	override render(ctx: CanvasRenderingContext2D) {
+		ctx.beginPath();
+		ctx.arc(0, 0, this.size.x, 0, Math.PI * 2, true);
+		ctx.strokeStyle = "white";
+		ctx.stroke();
+		super.render(ctx);
+	}
+}
 
 export class CatPaw extends GameObject {
-	halfWidth = 22;
-	viewBox = new Vector(this.halfWidth, 71);
-	faceUp = false;
 	game = diContainer.get(Game);
 	input = diContainer.get(Input);
+
+	graphic: CatPawGraphic;
+	pointer: Pointer;
+
+	target = new Vector();
+	isAnimationLocked = false;
+	seekPos = new Vector();
+	pickupPos = new Vector();
+	seekLerp: IncrementalLerp<Vector> | undefined;
+	pickUpLerp: IncrementalLerp<Vector> | undefined;
+	scaleLerp: IncrementalLerp<number> | undefined;
 
 	constructor(args = {}) {
 		super(args);
 		this.input.on("mousedown", this.onMouseDown);
+		this.input.on("mousemove", this.onMouseMove);
+		this.graphic = new CatPawGraphic();
+		this.pointer = new Pointer({ pos: CatPawGraphic.center });
+		this.children = [this.graphic, this.pointer];
 	}
 
-	getCenter() {
-		return this.input.mousePos.diff(new Vector(this.halfWidth, 22));
+	getCurrentCenter() {
+		return this.getGlobalPosition().diff(CatPawGraphic.center);
+	}
+
+	getTargetCenter() {
+		return this.input.mousePos.diff(CatPawGraphic.center);
+	}
+
+	onMouseMove = () => {
+		this.target = this.input.mousePos.diff(CatPawGraphic.center);
+		this.seekToTarget();
+	};
+
+	seekToTarget() {
+		if (this.isAnimationLocked) return;
+		this.seekLerp = makeFixedTimeIncrementalLerp(
+			this.seekPos,
+			this.target,
+			200,
+			easeOut
+		);
 	}
 
 	onMouseDown = () => {
-		// if (!this.isAnimating) {
-		// this.isAnimating = true;
-		const target = this.getCenter().add(Vector.DOWN.mul(10));
-		this.faceUp = !this.faceUp;
-		// }
+		if (!this.isAnimationLocked) {
+			this.isAnimationLocked = true;
+			const pickUpDuration = 150;
+
+			if (this.graphic.isFaceUp) {
+				this.scaleLerp = makeFixedTimeIncrementalLerp(
+					this.graphic.scale,
+					0.75,
+					pickUpDuration,
+					easeInOut
+				);
+				setTimeout(() => {
+					this.pickUpLerp = makeFixedTimeIncrementalLerp(
+						Vector.ZERO,
+						Vector.DOWN.mul(40),
+						pickUpDuration
+					);
+					setTimeout(() => {
+						this.graphic.isFaceUp = !this.graphic.isFaceUp;
+						this.pickUpLerp = makeFixedTimeIncrementalLerp(
+							Vector.DOWN.mul(40),
+							Vector.ZERO,
+							pickUpDuration
+						);
+						this.scaleLerp = makeFixedTimeIncrementalLerp(
+							this.graphic.scale,
+							1,
+							pickUpDuration,
+							easeInOut
+						);
+						this.isAnimationLocked = false;
+						this.seekToTarget();
+					}, pickUpDuration);
+				}, pickUpDuration);
+			} else {
+				this.pickUpLerp = makeFixedTimeIncrementalLerp(
+					Vector.ZERO,
+					Vector.DOWN.mul(40),
+					pickUpDuration,
+					easeInOut
+				);
+				this.scaleLerp = makeFixedTimeIncrementalLerp(
+					this.graphic.scale,
+					0.75,
+					pickUpDuration,
+					easeInOut
+				);
+				setTimeout(() => {
+					this.graphic.isFaceUp = !this.graphic.isFaceUp;
+					this.pickUpLerp = makeFixedTimeIncrementalLerp(
+						Vector.DOWN.mul(40),
+						Vector.ZERO,
+						pickUpDuration
+					);
+					setTimeout(() => {
+						this.pickUpLerp = undefined;
+						this.scaleLerp = makeFixedTimeIncrementalLerp(
+							this.graphic.scale,
+							1,
+							pickUpDuration,
+							easeInOut
+						);
+						this.isAnimationLocked = false;
+						this.seekToTarget();
+					}, pickUpDuration);
+				}, pickUpDuration);
+			}
+		}
 	};
 
 	override update(deltaT: number) {
-		this.pos = this.getCenter();
+		if (this.seekLerp) {
+			this.seekPos = this.seekLerp(deltaT);
+		}
+		if (this.pickUpLerp) {
+			this.pickupPos = this.pickUpLerp(deltaT);
+		}
+
+		this.pointer.pos = this.target.add(CatPawGraphic.center);
+		this.graphic.pos = this.seekPos.add(this.pickupPos);
+
+		if (this.scaleLerp) {
+			this.graphic.scale = this.scaleLerp(deltaT);
+		}
+
+		this.pointer.opacity = clamp(
+			(Math.abs(this.graphic.pos.diff(this.target).length()) - 20) / 40,
+			0,
+			1
+		);
+
 		super.update(deltaT);
 	}
+}
+
+export class CatPawGraphic extends GameObject {
+	game = diContainer.get(Game);
+
+	static halfWidth = 22;
+	static viewBox = new Vector(this.halfWidth, 71);
+	static center = new Vector(this.halfWidth, 32);
+
+	isFaceUp = false;
+	origin = Vector.BOTTOM;
+	size = CatPawGraphic.viewBox;
 
 	override render(ctx: CanvasRenderingContext2D) {
 		const viewBox = new Vector(22, 71);
@@ -51,7 +194,7 @@ export class CatPaw extends GameObject {
 			ctx.fill();
 			ctx.restore();
 		}
-		if (this.faceUp) {
+		if (this.isFaceUp) {
 			for (const { offsetX, flipH } of drawCalls) {
 				ctx.save();
 				if (offsetX) {
@@ -76,11 +219,11 @@ export class CatPaw extends GameObject {
 					flipH,
 				});
 				ctx.fill();
+				ctx.restore();
 			}
-			ctx.restore();
 		}
 		ctx.fillStyle = "#19191A";
-		ctx.fillRect(4, viewBox.y - 1, viewBox.x * 2 - 9, this.game.viewRes.y);
+		ctx.fillRect(4, viewBox.y - 1, viewBox.x * 2 - 9, this.game.viewSize!.y);
 
 		super.render(ctx);
 	}
