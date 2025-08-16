@@ -3,16 +3,47 @@ import { Game } from "../core/game";
 import { GameObject } from "../core/game-object";
 import { Input } from "../core/input";
 import { Vector } from "../core/vector";
+import { clamp } from "../utils/clamp";
 import { immutableReverse } from "../utils/immutable-reverse";
+import { range } from "../utils/range";
 import { CatPaw } from "./cat-paw";
 import { Fish } from "./fish/fish";
 import { Table } from "./table";
+
+class ConveyorBelt extends GameObject {
+	render(ctx: CanvasRenderingContext2D) {
+		ctx.fillStyle = "grey";
+		ctx.fillRect(0, 0, this.size.x, this.size.y);
+		super.render(ctx);
+	}
+}
+
+class Roll extends GameObject {
+	radius: number;
+
+	constructor({ radius = 0, ...rest }) {
+		super(rest);
+		this.radius = radius;
+	}
+
+	render(ctx: CanvasRenderingContext2D) {
+		ctx.beginPath();
+		ctx.arc(this.radius, this.radius, this.radius, 0, Math.PI * 2, true);
+		ctx.fillStyle = "grey";
+		ctx.fill();
+		super.render(ctx);
+	}
+}
 
 export class Level extends GameObject {
 	game: Game;
 	input: Input;
 	paw: CatPaw;
 	fishes: GameObject;
+	fishStagingArea: GameObject;
+
+	table: GameObject;
+	belt: GameObject;
 
 	returnPosition = Vector.ZERO;
 
@@ -26,16 +57,36 @@ export class Level extends GameObject {
 		this.fishes = new GameObject();
 
 		this.input.on("mousedown", this.onMouseDown);
+		this.paw.on("preborrow", this.onPreBorrow);
 		this.paw.on("borrow", this.onBorrow);
+		this.paw.on("prereturn", this.onPreReturn);
 		this.paw.on("return", this.onReturn);
 
+		this.belt = new ConveyorBelt({
+			pos: new Vector(0, 120),
+			size: new Vector(this.game.viewRes.x, 30),
+		});
+
+		this.table = new Table({
+			pos: new Vector(0, this.game.viewRes.y - 80),
+			size: new Vector(this.game.viewRes.x, 80),
+		});
+
+		this.fishStagingArea = new GameObject();
+
 		this.addChildren([
-			new Table({
-				pos: new Vector(0, this.game.viewRes.y - 90),
-				size: new Vector(this.game.viewRes.x, 90),
-			}),
+			...range(8).map(
+				(index) =>
+					new Roll({
+						pos: new Vector((this.game.viewRes.x / 7) * index - 10, 150),
+						radius: 10,
+					})
+			),
+			this.belt,
+			this.table,
 			this.fishes,
 			this.paw,
+			this.fishStagingArea,
 		]);
 
 		this.addFish(
@@ -55,14 +106,33 @@ export class Level extends GameObject {
 		);
 	}
 
-	onBorrow = (fish: Fish) => {
+	onPreBorrow = (fish: Fish) => {
 		this.fishes.removeChild(fish);
+		this.fishStagingArea.addChild(fish);
 	};
 
-	onReturn = (fish: Fish) => {
-		fish.scale = 1;
+	onBorrow = (fish: Fish) => {
+		this.fishStagingArea.removeChild(fish);
+	};
+
+	tableDepth = 0.25;
+	beltDepth = 0.6;
+
+	onPreReturn = (fish: Fish) => {
+		const depth = this.table.isPointWithinObject(
+			this.returnPosition.add(fish.size.mul(1 / 2))
+		)
+			? this.tableDepth
+			: this.beltDepth;
+		fish.scale = (1 - depth) / 0.75;
 		fish.pos = this.returnPosition;
-		this.addFish(fish);
+		this.fishStagingArea.addChild(fish);
+	};
+
+	onReturn = () => {
+		const fish = this.fishStagingArea.children.at(0)!;
+		this.fishStagingArea.removeChild(fish);
+		this.addFish(fish as Fish);
 	};
 
 	addFish(fish: Fish) {
@@ -70,16 +140,49 @@ export class Level extends GameObject {
 	}
 
 	onMouseDown = () => {
+		const clickPos = this.input.mousePos;
+
+		const tableWasClicked = this.table.isPointWithinObject(clickPos);
+		const beltWasClicked = this.belt.isPointWithinObject(clickPos);
+
+		if (!tableWasClicked && !beltWasClicked) {
+			return;
+		}
+
+		const depth = tableWasClicked ? this.tableDepth : this.beltDepth;
+
 		if (this.paw.isHoldingFish) {
-			this.returnPosition = this.input.mousePos.diff(
-				this.paw.heldFish!.size.mul(1 / 2)
-			);
-			return this.paw.putDown(this.input.mousePos);
+			const fish = this.paw.heldFish!;
+			const halfFishSize = fish.size.mul(1 / 2);
+
+			const snappedPos = clickPos;
+			if (beltWasClicked) {
+				snappedPos.y =
+					this.belt.getGlobalPosition().y + this.belt.size.y / 2 - 2;
+			}
+			if (tableWasClicked) {
+				const tableYStart = this.table.getGlobalPosition().y;
+				const tableYEnd = tableYStart + this.table.size.y;
+				const fourthFishHeight = halfFishSize.y / 2;
+				const fourthFishWidth = halfFishSize.x / 2;
+				snappedPos.y = clamp(
+					snappedPos.y,
+					tableYStart + fourthFishHeight,
+					tableYEnd - fourthFishHeight
+				);
+				snappedPos.x = clamp(
+					snappedPos.x,
+					0 + fourthFishWidth,
+					this.game.viewRes.x - fourthFishWidth
+				);
+			}
+			this.returnPosition = snappedPos.diff(halfFishSize);
+			return this.paw.putDown(clickPos, depth);
 		}
 
 		for (const child of immutableReverse(this.fishes.children)) {
-			if (child.isPointWithinObject(this.input.mousePos)) {
-				return this.paw.pickUp(child as Fish);
+			if (child.isPointWithinObject(clickPos)) {
+				return this.paw.pickUp(child as Fish, depth, 1 / 0.75);
 			}
 		}
 
