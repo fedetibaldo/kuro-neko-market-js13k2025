@@ -1,21 +1,23 @@
 import { range } from "../utils/range";
 import { Vector } from "./vector";
 
-type NumberTuple<N> = N extends 0
+type Tuple<N, T> = N extends 0
 	? []
 	: N extends 1
-	? [number]
+	? [T]
 	: N extends 2
-	? [number, number]
+	? [T, T]
 	: N extends 3
-	? [number, number, number]
+	? [T, T, T]
 	: N extends 4
-	? [number, number, number, number]
+	? [T, T, T, T]
 	: N extends 5
-	? [number, number, number, number, number]
+	? [T, T, T, T, T]
 	: N extends 6
-	? [number, number, number, number, number, number]
-	: number[];
+	? [T, T, T, T, T, T]
+	: T[];
+
+type NumberTuple<N> = Tuple<N, number>;
 
 type Exectutor<N> = (
 	ctx: CanvasRenderingContext2D,
@@ -24,7 +26,7 @@ type Exectutor<N> = (
 
 type Command<N extends number = number, M = N> = {
 	isRelative?: boolean;
-	argCount: N;
+	args: Tuple<N, "x" | "y">;
 	prepareArgs?: (args: NumberTuple<N>, prevArgs: number[]) => NumberTuple<M>;
 	execute: Exectutor<M>;
 };
@@ -40,13 +42,13 @@ const bezierCurveTo: Exectutor<6> = (ctx, args) => {
 };
 
 const M: Command<2> = {
-	argCount: 2,
+	args: ["x", "y"],
 	execute: moveTo,
 };
 
 const m: Command<2> = {
 	isRelative: true,
-	argCount: 2,
+	args: ["x", "y"],
 	prepareArgs(args, prevArgs) {
 		return [(prevArgs.at(-2) || 0) + args[0], (prevArgs.at(-1) || 0) + args[1]];
 	},
@@ -54,21 +56,30 @@ const m: Command<2> = {
 };
 
 const L: Command<2> = {
-	argCount: 2,
+	args: ["x", "y"],
 	execute: lineTo,
 };
 
 const l: Command<2> = {
 	isRelative: true,
-	argCount: 2,
+	args: ["x", "y"],
 	prepareArgs(args, prevArgs) {
 		return [(prevArgs.at(-2) || 0) + args[0], (prevArgs.at(-1) || 0) + args[1]];
 	},
 	execute: lineTo,
 };
 
+const h: Command<1, 2> = {
+	isRelative: true,
+	args: ["x"],
+	prepareArgs(args, prevArgs) {
+		return [prevArgs.at(-2)! + args[0], prevArgs.at(-1)!];
+	},
+	execute: lineTo,
+};
+
 const V: Command<1, 2> = {
-	argCount: 1,
+	args: ["y"],
 	prepareArgs(args, prevArgs) {
 		return [prevArgs.at(-2)!, args[0]];
 	},
@@ -77,21 +88,21 @@ const V: Command<1, 2> = {
 
 const v: Command<1, 2> = {
 	isRelative: true,
-	argCount: 1,
+	args: ["y"],
 	prepareArgs(args, prevArgs) {
-		return [prevArgs.at(-2)!, prevArgs.at(-1)! - args[0]];
+		return [prevArgs.at(-2)!, prevArgs.at(-1)! + args[0]];
 	},
 	execute: lineTo,
 };
 
 const C: Command<6> = {
-	argCount: 6,
+	args: ["x", "y", "x", "y", "x", "y"],
 	execute: bezierCurveTo,
 };
 
 const c: Command<6> = {
 	isRelative: true,
-	argCount: 6,
+	args: ["x", "y", "x", "y", "x", "y"],
 	prepareArgs(args, prevArgs) {
 		return [
 			prevArgs.at(-2)! + args[0],
@@ -115,7 +126,7 @@ const getFirstControlPoint = (prevArgs: number[]): [number, number] => {
 };
 
 const S: Command<4, 6> = {
-	argCount: 4,
+	args: ["x", "y", "x", "y"],
 	prepareArgs(args, prevArgs) {
 		return [...getFirstControlPoint(prevArgs), ...args];
 	},
@@ -124,7 +135,7 @@ const S: Command<4, 6> = {
 
 const s: Command<4, 6> = {
 	isRelative: true,
-	argCount: 4,
+	args: ["x", "y", "x", "y"],
 	prepareArgs(args, prevArgs) {
 		return [
 			...getFirstControlPoint(prevArgs),
@@ -138,7 +149,7 @@ const s: Command<4, 6> = {
 };
 
 const Z: Command<0> = {
-	argCount: 0,
+	args: [],
 	execute(ctx) {
 		ctx.closePath();
 	},
@@ -151,6 +162,7 @@ const commands: Record<string, Command<number>> = {
 	m,
 	L,
 	l,
+	h,
 	V,
 	v,
 	C,
@@ -191,9 +203,9 @@ export function drawSvg(
 	}
 
 	while (command) {
-		const { isRelative, argCount, prepareArgs, execute } = command;
+		const { isRelative, args, prepareArgs, execute } = command;
 
-		let args = range(argCount).map(() => {
+		let parsedArgs = args.map((argType) => {
 			const firstChar = path[0];
 			const isNegative = firstChar == "-";
 			const isDecimalAbbr = firstChar == ".";
@@ -225,20 +237,22 @@ export function drawSvg(
 				arg = `${firstChar}${arg}`;
 			}
 
-			return parseFloat(arg);
+			let parsedArg = parseFloat(arg);
+
+			if (viewBox && flipH && argType == "x") {
+				if (isRelative) {
+					parsedArg = -parsedArg;
+				} else {
+					parsedArg = viewBox.x / 2 + (viewBox.x / 2 - parsedArg);
+				}
+			}
+
+			return parsedArg;
 		});
 
-		if (viewBox && flipH && isRelative) {
-			args = args.map((value) => -value);
-		}
-
-		let readyArgs = prepareArgs ? prepareArgs(args, prevArgs) : args;
-
-		if (viewBox && flipH && !isRelative) {
-			readyArgs = readyArgs.map(
-				(value) => viewBox.x / 2 + (viewBox.x / 2 - value)
-			);
-		}
+		let readyArgs = prepareArgs
+			? prepareArgs(parsedArgs, prevArgs)
+			: parsedArgs;
 
 		prevArgs = readyArgs;
 
