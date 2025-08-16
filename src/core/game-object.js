@@ -94,15 +94,46 @@ export class GameObject extends Observable {
 		this.trigger("childrenChange");
 	}
 
+	scaleAdjustment() {
+		const A = this.size;
+		const S = this.size.mul(this.scale);
+		return A.diff(S).mulv(this.origin);
+	}
+
+	rotationAdjustment(
+		vector,
+		offset = Vector.ZERO,
+		size = this.size,
+		angle = this.rotation
+	) {
+		const O = offset.add(size.mulv(this.origin));
+		const D = vector.diff(O);
+		const Dr = D.rotate(angle);
+		return O.add(Dr);
+	}
+
 	/**
 	 * @param {Vector} point
 	 * @returns {boolean}
 	 */
 	isPointWithinObject(point) {
-		const gPos = this.getGlobalPosition();
-		const { x, y } = gPos;
-		const { x: w, y: h } = gPos.add(this.size);
-		return point.x > x && point.x < w && point.y > y && point.y < h;
+		let pos = this.getGlobalPosition();
+		const adjustedPos = pos.add(this.scaleAdjustment());
+		const scaledSize = this.size.mul(this.scale);
+		const adjustedPoint = this.rotationAdjustment(
+			point,
+			adjustedPos,
+			scaledSize,
+			-this.rotation
+		);
+		const { x, y } = adjustedPos;
+		const { x: w, y: h } = scaledSize;
+		return (
+			adjustedPoint.x > x &&
+			adjustedPoint.x < x + w &&
+			adjustedPoint.y > y &&
+			adjustedPoint.y < y + h
+		);
 	}
 
 	/**
@@ -124,18 +155,13 @@ export class GameObject extends Observable {
 				const pos = child.pos;
 				ctx.translate(pos.x, pos.y);
 
-				const A = child.size;
-				const S = child.size.mul(child.scale);
-				const scaleDiff = A.diff(S).mulv(child.origin);
+				const scaleDiff = child.scaleAdjustment();
 				ctx.translate(scaleDiff.x, scaleDiff.y);
 
 				ctx.scale(child.scale, child.scale);
 
-				const O = child.size.mulv(child.origin);
-				const D = Vector.ZERO.diff(O);
-				const Dr = D.rotate(child.rotation);
-				const Oi = O.add(Dr);
-				ctx.translate(Oi.x, Oi.y);
+				const rotationDiff = child.rotationAdjustment(Vector.ZERO);
+				ctx.translate(rotationDiff.x, rotationDiff.y);
 
 				ctx.rotate(child.rotation);
 

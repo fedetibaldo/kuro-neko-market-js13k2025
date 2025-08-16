@@ -13,24 +13,21 @@ import { Table } from "./table";
 class ConveyorBelt extends GameObject {
 	render(ctx: CanvasRenderingContext2D) {
 		ctx.fillStyle = "grey";
-		ctx.fillRect(0, 0, this.size.x, this.size.y);
-		super.render(ctx);
-	}
-}
-
-class Roll extends GameObject {
-	radius: number;
-
-	constructor({ radius = 0, ...rest }) {
-		super(rest);
-		this.radius = radius;
-	}
-
-	render(ctx: CanvasRenderingContext2D) {
-		ctx.beginPath();
-		ctx.arc(this.radius, this.radius, this.radius, 0, Math.PI * 2, true);
-		ctx.fillStyle = "grey";
-		ctx.fill();
+		ctx.fillRect(0, 0, this.size.x, this.size.y - 10);
+		const radius = 10;
+		for (const index of range(8)) {
+			ctx.beginPath();
+			ctx.arc(
+				(this.size.x / 7) * index,
+				this.size.y,
+				radius,
+				0,
+				Math.PI * 2,
+				true
+			);
+			ctx.fillStyle = "grey";
+			ctx.fill();
+		}
 		super.render(ctx);
 	}
 }
@@ -59,12 +56,12 @@ export class Level extends GameObject {
 		this.input.on("mousedown", this.onMouseDown);
 		this.paw.on("preborrow", this.onPreBorrow);
 		this.paw.on("borrow", this.onBorrow);
-		this.paw.on("prereturn", this.onPreReturn);
-		this.paw.on("return", this.onReturn);
+		this.paw.on("predrop", this.onPreDrop);
+		this.paw.on("drop", this.onDrop);
 
 		this.belt = new ConveyorBelt({
 			pos: new Vector(0, 120),
-			size: new Vector(this.game.viewRes.x, 30),
+			size: new Vector(this.game.viewRes.x, 40),
 		});
 
 		this.table = new Table({
@@ -75,13 +72,6 @@ export class Level extends GameObject {
 		this.fishStagingArea = new GameObject();
 
 		this.addChildren([
-			...range(8).map(
-				(index) =>
-					new Roll({
-						pos: new Vector((this.game.viewRes.x / 7) * index - 10, 150),
-						radius: 10,
-					})
-			),
 			this.belt,
 			this.table,
 			this.fishes,
@@ -118,7 +108,7 @@ export class Level extends GameObject {
 	tableDepth = 0.25;
 	beltDepth = 0.6;
 
-	onPreReturn = (fish: Fish) => {
+	onPreDrop = (fish: Fish) => {
 		const depth = this.table.isPointWithinObject(
 			this.returnPosition.add(fish.size.mul(1 / 2))
 		)
@@ -129,7 +119,7 @@ export class Level extends GameObject {
 		this.fishStagingArea.addChild(fish);
 	};
 
-	onReturn = () => {
+	onDrop = () => {
 		const fish = this.fishStagingArea.children.at(0)!;
 		this.fishStagingArea.removeChild(fish);
 		this.addFish(fish as Fish);
@@ -158,7 +148,7 @@ export class Level extends GameObject {
 			const snappedPos = clickPos;
 			if (beltWasClicked) {
 				snappedPos.y =
-					this.belt.getGlobalPosition().y + this.belt.size.y / 2 - 2;
+					this.belt.getGlobalPosition().y + (this.belt.size.y - 10) / 2 - 2;
 			}
 			if (tableWasClicked) {
 				const tableYStart = this.table.getGlobalPosition().y;

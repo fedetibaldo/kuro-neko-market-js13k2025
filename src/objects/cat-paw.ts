@@ -100,6 +100,7 @@ export class CatPaw extends GameObject {
 	}
 
 	target = new Vector();
+	isInteractionLocked = false;
 	isAnimationLocked = false;
 	seekPos = new Vector();
 	pickupPos = new Vector();
@@ -149,32 +150,42 @@ export class CatPaw extends GameObject {
 		}, 150);
 	}
 
-	hold(fish: Fish, startingScale: number) {
+	preBorrow(fish: Fish) {
 		this.heldFish = fish;
+		this.trigger("preborrow", fish);
+	}
+
+	borrow(fish: Fish, startingScale: number) {
+		this.trigger("borrow", this.heldFish);
 		fish.scale = startingScale;
 		fish.pos = this.graphic.center.diff(fish.size.mul(1 / 2));
-		this.trigger("borrow", this.heldFish);
-		this.heldFish.isShadowHidden = true;
+		this.heldFish!.isShadowHidden = true;
 		this.graphic.addChild(fish);
 	}
 
-	drop() {
-		this.graphic.removeChild(this.heldFish);
-		this.heldFish!.isShadowHidden = false;
-		this.trigger("prereturn", this.heldFish);
+	preDrop() {
+		const heldFish = this.heldFish;
 		this.heldFish = undefined;
+		this.graphic.removeChild(heldFish);
+		heldFish!.isShadowHidden = false;
+		this.trigger("predrop", heldFish);
+	}
+
+	drop() {
+		this.trigger("drop");
 	}
 
 	async pickUp(fish: Fish, depth: number, ratio: number) {
-		if (this.isAnimationLocked) return;
+		if (this.isInteractionLocked) return;
 		const prevTarget = this.target;
 		this.target = fish.pos.add(fish.center);
 		this.seekToTarget();
 
+		this.isInteractionLocked = true;
 		this.isAnimationLocked = true;
 		this.target = prevTarget;
 
-		const pickUpDuration = 150;
+		let pickUpDuration = 100;
 
 		this.pickUpLerp = makeFixedTimeIncrementalLerp(
 			Vector.ZERO,
@@ -183,7 +194,7 @@ export class CatPaw extends GameObject {
 			easeInOut
 		);
 		this.scaleLerp = makeFixedTimeIncrementalLerp(
-			this.graphic.scale,
+			1,
 			1 - depth,
 			pickUpDuration,
 			easeInOut
@@ -191,9 +202,10 @@ export class CatPaw extends GameObject {
 
 		await new Promise((resolve) => setTimeout(resolve, pickUpDuration));
 
-		this.trigger("preborrow", fish);
+		this.graphic.isFaceUp = true;
+		this.isInteractionLocked = false;
+		this.preBorrow(fish);
 
-		this.graphic.isFaceUp = !this.graphic.isFaceUp;
 		this.pickUpLerp = makeFixedTimeIncrementalLerp(
 			Vector.DOWN.mul(40),
 			Vector.ZERO,
@@ -202,39 +214,45 @@ export class CatPaw extends GameObject {
 
 		await new Promise((resolve) => setTimeout(resolve, pickUpDuration));
 
-		this.hold(fish, 1 - depth + (ratio - (1 - depth)));
+		this.isAnimationLocked = false;
+		this.seekToTarget();
+		this.borrow(fish, 1 - depth + (ratio - (1 - depth)));
+
+		if (this.isInteractionLocked) {
+			pickUpDuration = 75;
+		}
 
 		this.pickUpLerp = undefined;
 		this.scaleLerp = makeFixedTimeIncrementalLerp(
-			this.graphic.scale,
+			1 - depth,
 			1,
 			pickUpDuration,
 			easeInOut
 		);
-		this.isAnimationLocked = false;
-		this.seekToTarget();
 	}
 
 	async putDown(position: Vector, depth: number) {
-		if (this.isAnimationLocked) return;
+		if (this.isInteractionLocked) return;
 		const prevTarget = this.target;
 		this.target = position;
 		this.seekToTarget();
 
+		this.isInteractionLocked = true;
 		this.isAnimationLocked = true;
 		this.target = prevTarget;
 
-		const putDownDuration = 150;
+		let putDownDuration = 100;
 
 		this.scaleLerp = makeFixedTimeIncrementalLerp(
-			this.graphic.scale,
+			1,
 			1 - depth,
 			putDownDuration,
 			easeInOut
 		);
 		await new Promise((resolve) => setTimeout(resolve, putDownDuration));
 
-		this.drop();
+		this.isInteractionLocked = false;
+		this.preDrop();
 
 		this.pickUpLerp = makeFixedTimeIncrementalLerp(
 			Vector.ZERO,
@@ -244,22 +262,26 @@ export class CatPaw extends GameObject {
 
 		await new Promise((resolve) => setTimeout(resolve, putDownDuration));
 
-		this.trigger("return");
+		this.graphic.isFaceUp = false;
+		this.isAnimationLocked = false;
+		this.seekToTarget();
+		this.drop();
 
-		this.graphic.isFaceUp = !this.graphic.isFaceUp;
+		if (this.isInteractionLocked) {
+			putDownDuration = 75;
+		}
+
 		this.pickUpLerp = makeFixedTimeIncrementalLerp(
 			Vector.DOWN.mul(40),
 			Vector.ZERO,
 			putDownDuration
 		);
 		this.scaleLerp = makeFixedTimeIncrementalLerp(
-			this.graphic.scale,
+			1 - depth,
 			1,
 			putDownDuration,
 			easeInOut
 		);
-		this.isAnimationLocked = false;
-		this.seekToTarget();
 	}
 
 	override update(deltaT: number) {
@@ -279,15 +301,15 @@ export class CatPaw extends GameObject {
 			this.graphic.scale = this.scaleLerp(deltaT);
 		}
 
-		this.pointer.opacity = clamp(
-			(Math.abs(
-				this.graphic.pos.add(this.graphic.center).diff(this.target).length()
-			) -
-				20) /
-				40,
-			0,
-			1
-		);
+		// this.pointer.opacity = clamp(
+		// 	(Math.abs(
+		// 		this.graphic.pos.add(this.graphic.center).diff(this.target).length()
+		// 	) -
+		// 		20) /
+		// 		40,
+		// 	0,
+		// 	1
+		// );
 
 		super.update(deltaT);
 	}
