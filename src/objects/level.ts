@@ -13,7 +13,7 @@ import { Table } from "./table";
 class ConveyorBelt extends GameObject {
 	render(ctx: CanvasRenderingContext2D) {
 		ctx.fillStyle = "grey";
-		ctx.fillRect(0, 0, this.size.x, this.size.y - 10);
+		ctx.fillRect(0, 10, this.size.x, this.size.y - 20);
 		const radius = 10;
 		for (const index of range(8)) {
 			ctx.beginPath();
@@ -60,8 +60,8 @@ export class Level extends GameObject {
 		this.paw.on("drop", this.onDrop);
 
 		this.belt = new ConveyorBelt({
-			pos: new Vector(0, 120),
-			size: new Vector(this.game.viewRes.x, 40),
+			pos: new Vector(0, 110),
+			size: new Vector(this.game.viewRes.x, 50),
 		});
 
 		this.table = new Table({
@@ -148,7 +148,7 @@ export class Level extends GameObject {
 			const snappedPos = clickPos;
 			if (beltWasClicked) {
 				snappedPos.y =
-					this.belt.getGlobalPosition().y + (this.belt.size.y - 10) / 2 - 2;
+					this.belt.getGlobalPosition().y + this.belt.size.y / 2 - 2;
 			}
 			if (tableWasClicked) {
 				const tableYStart = this.table.getGlobalPosition().y;
