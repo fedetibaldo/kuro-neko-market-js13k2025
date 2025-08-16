@@ -11,6 +11,7 @@ import {
 } from "../core/lerp";
 import { Vector } from "../core/vector";
 import { clamp } from "../utils/clamp";
+import { Fish } from "./fish/fish";
 
 class Pointer extends GameObject {
 	size = new Vector(2);
@@ -23,159 +24,16 @@ class Pointer extends GameObject {
 	}
 }
 
-export class CatPaw extends GameObject {
-	game = diContainer.get(Game);
-	input = diContainer.get(Input);
-
-	graphic: CatPawGraphic;
-	pointer: Pointer;
-
-	target = new Vector();
-	isAnimationLocked = false;
-	seekPos = new Vector();
-	pickupPos = new Vector();
-	seekLerp: IncrementalLerp<Vector> | undefined;
-	pickUpLerp: IncrementalLerp<Vector> | undefined;
-	scaleLerp: IncrementalLerp<number> | undefined;
-
-	constructor(args = {}) {
-		super(args);
-		this.input.on("mousedown", this.onMouseDown);
-		this.input.on("mousemove", this.onMouseMove);
-		this.graphic = new CatPawGraphic();
-		this.pointer = new Pointer({ pos: CatPawGraphic.center });
-		this.children = [this.graphic, this.pointer];
-	}
-
-	getCurrentCenter() {
-		return this.getGlobalPosition().diff(CatPawGraphic.center);
-	}
-
-	getTargetCenter() {
-		return this.input.mousePos.diff(CatPawGraphic.center);
-	}
-
-	onMouseMove = () => {
-		this.target = this.input.mousePos.diff(CatPawGraphic.center);
-		this.seekToTarget();
-	};
-
-	seekToTarget() {
-		if (this.isAnimationLocked) return;
-		this.seekLerp = makeFixedTimeIncrementalLerp(
-			this.seekPos,
-			this.target,
-			200,
-			easeOut
-		);
-	}
-
-	onMouseDown = () => {
-		if (!this.isAnimationLocked) {
-			this.isAnimationLocked = true;
-			const pickUpDuration = 150;
-
-			if (this.graphic.isFaceUp) {
-				this.scaleLerp = makeFixedTimeIncrementalLerp(
-					this.graphic.scale,
-					0.75,
-					pickUpDuration,
-					easeInOut
-				);
-				setTimeout(() => {
-					this.pickUpLerp = makeFixedTimeIncrementalLerp(
-						Vector.ZERO,
-						Vector.DOWN.mul(40),
-						pickUpDuration
-					);
-					setTimeout(() => {
-						this.graphic.isFaceUp = !this.graphic.isFaceUp;
-						this.pickUpLerp = makeFixedTimeIncrementalLerp(
-							Vector.DOWN.mul(40),
-							Vector.ZERO,
-							pickUpDuration
-						);
-						this.scaleLerp = makeFixedTimeIncrementalLerp(
-							this.graphic.scale,
-							1,
-							pickUpDuration,
-							easeInOut
-						);
-						this.isAnimationLocked = false;
-						this.seekToTarget();
-					}, pickUpDuration);
-				}, pickUpDuration);
-			} else {
-				this.pickUpLerp = makeFixedTimeIncrementalLerp(
-					Vector.ZERO,
-					Vector.DOWN.mul(40),
-					pickUpDuration,
-					easeInOut
-				);
-				this.scaleLerp = makeFixedTimeIncrementalLerp(
-					this.graphic.scale,
-					0.75,
-					pickUpDuration,
-					easeInOut
-				);
-				setTimeout(() => {
-					this.graphic.isFaceUp = !this.graphic.isFaceUp;
-					this.pickUpLerp = makeFixedTimeIncrementalLerp(
-						Vector.DOWN.mul(40),
-						Vector.ZERO,
-						pickUpDuration
-					);
-					setTimeout(() => {
-						this.pickUpLerp = undefined;
-						this.scaleLerp = makeFixedTimeIncrementalLerp(
-							this.graphic.scale,
-							1,
-							pickUpDuration,
-							easeInOut
-						);
-						this.isAnimationLocked = false;
-						this.seekToTarget();
-					}, pickUpDuration);
-				}, pickUpDuration);
-			}
-		}
-	};
-
-	override update(deltaT: number) {
-		if (this.seekLerp) {
-			this.seekPos = this.seekLerp(deltaT);
-		}
-		if (this.pickUpLerp) {
-			this.pickupPos = this.pickUpLerp(deltaT);
-		}
-
-		this.pointer.pos = this.target.add(CatPawGraphic.center);
-		this.graphic.pos = this.seekPos.add(this.pickupPos);
-
-		if (this.scaleLerp) {
-			this.graphic.scale = this.scaleLerp(deltaT);
-		}
-
-		this.pointer.opacity = clamp(
-			(Math.abs(this.graphic.pos.diff(this.target).length()) - 20) / 40,
-			0,
-			1
-		);
-
-		super.update(deltaT);
-	}
-}
-
 export class CatPawGraphic extends GameObject {
 	game = diContainer.get(Game);
 
-	static halfWidth = 22;
-	static viewBox = new Vector(this.halfWidth, 71);
-	static center = new Vector(this.halfWidth, 32);
+	halfWidth = 22;
+	viewBox = new Vector(this.halfWidth, 71);
+	center = new Vector(this.halfWidth, 22);
+	origin = this.center.mulv(this.viewBox.oneOver());
 
 	isFaceUp = false;
-	origin = Vector.BOTTOM;
-	size = CatPawGraphic.viewBox;
+	size = this.viewBox;
 
 	override render(ctx: CanvasRenderingContext2D) {
 		const viewBox = new Vector(22, 71);
@@ -226,5 +84,206 @@ export class CatPawGraphic extends GameObject {
 		ctx.fillRect(4, viewBox.y - 1, viewBox.x * 2 - 9, this.game.viewSize!.y);
 
 		super.render(ctx);
+	}
+}
+
+export class CatPaw extends GameObject {
+	game = diContainer.get(Game);
+	input = diContainer.get(Input);
+
+	graphic: CatPawGraphic;
+	pointer: Pointer;
+
+	heldFish: Fish | undefined;
+	get isHoldingFish() {
+		return !!this.heldFish;
+	}
+
+	target = new Vector();
+	isAnimationLocked = false;
+	seekPos = new Vector();
+	pickupPos = new Vector();
+	seekLerp: IncrementalLerp<Vector> | undefined;
+	pickUpLerp: IncrementalLerp<Vector> | undefined;
+	scaleLerp: IncrementalLerp<number> | undefined;
+
+	constructor(args = {}) {
+		super(args);
+		this.input.on("mousemove", this.onMouseMove);
+		this.graphic = new CatPawGraphic();
+		this.graphic.pos = this.graphic.center;
+		this.pointer = new Pointer();
+		this.addChildren([this.graphic, this.pointer]);
+	}
+
+	onMouseMove = () => {
+		this.target = this.input.mousePos;
+		this.seekToTarget();
+	};
+
+	seekToTarget() {
+		if (this.isAnimationLocked) return;
+		this.seekLerp = makeFixedTimeIncrementalLerp(
+			this.seekPos,
+			this.target,
+			200,
+			easeOut
+		);
+	}
+
+	tapGround() {
+		const tapDuration = 150;
+		this.scaleLerp = makeFixedTimeIncrementalLerp(
+			this.graphic.scale,
+			0.75,
+			tapDuration,
+			easeInOut
+		);
+		setTimeout(() => {
+			this.scaleLerp = makeFixedTimeIncrementalLerp(
+				this.graphic.scale,
+				1,
+				tapDuration,
+				easeInOut
+			);
+		}, 150);
+	}
+
+	hold(fish: Fish) {
+		this.heldFish = fish;
+		fish.scale = 1 / 0.75;
+		fish.pos = this.graphic.center.diff(fish.size.mul(1 / 2));
+		this.trigger("borrow", this.heldFish);
+		this.heldFish.isShadowHidden = true;
+		this.graphic.addChild(fish);
+	}
+
+	drop() {
+		this.graphic.removeChild(this.heldFish);
+		this.heldFish!.isShadowHidden = false;
+		this.trigger("return", this.heldFish);
+		this.heldFish = undefined;
+	}
+
+	async pickUp(fish: Fish) {
+		if (this.isAnimationLocked) return;
+		const prevTarget = this.target;
+		this.target = fish.pos.add(fish.center);
+		this.seekToTarget();
+
+		this.isAnimationLocked = true;
+		this.target = prevTarget;
+
+		const pickUpDuration = 150;
+
+		this.pickUpLerp = makeFixedTimeIncrementalLerp(
+			Vector.ZERO,
+			Vector.DOWN.mul(40),
+			pickUpDuration,
+			easeInOut
+		);
+		this.scaleLerp = makeFixedTimeIncrementalLerp(
+			this.graphic.scale,
+			0.75,
+			pickUpDuration,
+			easeInOut
+		);
+
+		await new Promise((resolve) => setTimeout(resolve, pickUpDuration));
+
+		this.graphic.isFaceUp = !this.graphic.isFaceUp;
+		this.pickUpLerp = makeFixedTimeIncrementalLerp(
+			Vector.DOWN.mul(40),
+			Vector.ZERO,
+			pickUpDuration
+		);
+
+		await new Promise((resolve) => setTimeout(resolve, pickUpDuration));
+
+		this.hold(fish);
+		this.pickUpLerp = undefined;
+		this.scaleLerp = makeFixedTimeIncrementalLerp(
+			this.graphic.scale,
+			1,
+			pickUpDuration,
+			easeInOut
+		);
+		this.isAnimationLocked = false;
+		this.seekToTarget();
+	}
+
+	async putDown(position: Vector) {
+		if (this.isAnimationLocked) return;
+		const prevTarget = this.target;
+		this.target = position;
+		this.seekToTarget();
+
+		this.isAnimationLocked = true;
+		this.target = prevTarget;
+
+		const putDownDuration = 150;
+
+		this.scaleLerp = makeFixedTimeIncrementalLerp(
+			this.graphic.scale,
+			0.75,
+			putDownDuration,
+			easeInOut
+		);
+		await new Promise((resolve) => setTimeout(resolve, putDownDuration));
+
+		this.drop();
+
+		this.pickUpLerp = makeFixedTimeIncrementalLerp(
+			Vector.ZERO,
+			Vector.DOWN.mul(40),
+			putDownDuration
+		);
+
+		await new Promise((resolve) => setTimeout(resolve, putDownDuration));
+
+		this.graphic.isFaceUp = !this.graphic.isFaceUp;
+		this.pickUpLerp = makeFixedTimeIncrementalLerp(
+			Vector.DOWN.mul(40),
+			Vector.ZERO,
+			putDownDuration
+		);
+		this.scaleLerp = makeFixedTimeIncrementalLerp(
+			this.graphic.scale,
+			1,
+			putDownDuration,
+			easeInOut
+		);
+		this.isAnimationLocked = false;
+		this.seekToTarget();
+	}
+
+	override update(deltaT: number) {
+		if (this.seekLerp) {
+			this.seekPos = this.seekLerp(deltaT);
+		}
+		if (this.pickUpLerp) {
+			this.pickupPos = this.pickUpLerp(deltaT);
+		}
+
+		this.pointer.pos = this.target;
+		this.graphic.pos = this.seekPos
+			.add(this.graphic.center.mul(-1))
+			.add(this.pickupPos);
+
+		if (this.scaleLerp) {
+			this.graphic.scale = this.scaleLerp(deltaT);
+		}
+
+		this.pointer.opacity = clamp(
+			(Math.abs(
+				this.graphic.pos.add(this.graphic.center).diff(this.target).length()
+			) -
+				20) /
+				40,
+			0,
+			1
+		);
+
+		super.update(deltaT);
 	}
 }

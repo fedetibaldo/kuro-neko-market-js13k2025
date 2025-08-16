@@ -2,11 +2,8 @@ import "./index.css";
 import { Vector } from "./core/vector";
 import { Game } from "./core/game";
 import { Input } from "./core/input";
-import { GameObject } from "./core/game-object";
 import { diContainer } from "./core/di-container";
-import { CatPaw } from "./objects/cat-paw";
-import { Table } from "./objects/table";
-import { Fish } from "./objects/fish/fish";
+import { Level } from "./objects/level";
 
 const game = diContainer.set(
 	Game,
@@ -18,24 +15,7 @@ const game = diContainer.set(
 
 diContainer.set(Input, new Input());
 
-game.root.addChildren([
-	new GameObject({
-		id: "main",
-		children: [
-			new Table({
-				pos: new Vector(0, game.viewRes.y - 90),
-				size: new Vector(game.viewRes.x, 90),
-			}),
-			new Fish({
-				pos: new Vector(20, 155),
-				size: new Vector(80, 80),
-				origin: Vector.CENTER,
-				rotation: (-Math.PI / 4) * 3,
-			}),
-			new CatPaw(),
-		],
-	}),
-]);
+game.root.addChildren([new Level()]);
 
 // start game
 game.play();

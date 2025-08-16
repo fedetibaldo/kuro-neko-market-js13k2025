@@ -54,6 +54,10 @@ const m: Command<2> = {
 	execute: moveTo,
 };
 
+const mFirst: Command<2> = {
+	...M,
+};
+
 const L: Command<2> = {
 	args: ["x", "y"],
 	execute: lineTo,
@@ -201,6 +205,10 @@ export function drawSvg(
 		ctx.beginPath();
 	}
 
+	if (command === m) {
+		command = mFirst;
+	}
+
 	while (command) {
 		const { isRelative, args, prepareArgs, execute } = command;
 
@@ -260,7 +268,7 @@ export function drawSvg(
 		if (path.search(/[-\.\d]/) != 0) {
 			command = getNextCommand();
 		} else {
-			if (command === m) {
+			if (command === m || command === mFirst) {
 				command = l;
 			}
 		}

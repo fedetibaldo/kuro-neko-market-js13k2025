@@ -27,6 +27,10 @@ export class Vector {
 		return new Vector(this.x * v.x, this.y * v.y);
 	}
 
+	oneOver() {
+		return new Vector(1 / this.x, 1 / this.y);
+	}
+
 	mul(s: number) {
 		return new Vector(this.x * s, this.y * s);
 	}

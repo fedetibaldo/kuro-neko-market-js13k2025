@@ -4,11 +4,12 @@ export function createLinearGradient(
 	ctx: CanvasRenderingContext2D,
 	from: Vector,
 	to: Vector,
-	stops: [number, string][]
+	stops: [number, string][],
+	options?: { flipH?: boolean }
 ) {
 	const gradient = ctx.createLinearGradient(from.x, from.y, to.x, to.y);
 	for (const [offset, color] of stops) {
-		gradient.addColorStop(offset, color);
+		gradient.addColorStop(options?.flipH ? 1 - offset : offset, color);
 	}
 	return gradient;
 }

@@ -1,6 +1,9 @@
 import { Observable } from "./observable";
 import { Vector } from "./vector";
 
+/**
+ * @member {GameObject[]} children
+ */
 export class GameObject extends Observable {
 	/**
 	 * @param {Object} args
@@ -29,6 +32,10 @@ export class GameObject extends Observable {
 		this.origin = origin;
 		this.size = size;
 		this.freezed = freezed;
+
+		/**
+		 * @type {GameObject[]}
+		 */
 		this.children = [];
 
 		for (let key in unknownOptions) {
@@ -86,6 +93,18 @@ export class GameObject extends Observable {
 		this.children.splice(index, 1);
 		this.trigger("childrenChange");
 	}
+
+	/**
+	 * @param {Vector} point
+	 * @returns {boolean}
+	 */
+	isPointWithinObject(point) {
+		const gPos = this.getGlobalPosition();
+		const { x, y } = gPos;
+		const { x: w, y: h } = gPos.add(this.size);
+		return point.x > x && point.x < w && point.y > y && point.y < h;
+	}
+
 	/**
 	 * @param {number} deltaT
 	 */
