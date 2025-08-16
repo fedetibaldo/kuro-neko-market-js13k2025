@@ -10,7 +10,6 @@ import {
 	makeFixedTimeIncrementalLerp,
 } from "../core/lerp";
 import { Vector } from "../core/vector";
-import { clamp } from "../utils/clamp";
 import { Fish } from "./fish/fish";
 
 class Pointer extends GameObject {
@@ -157,9 +156,9 @@ export class CatPaw extends GameObject {
 
 	borrow(fish: Fish, startingScale: number) {
 		this.trigger("borrow", this.heldFish);
-		fish.scale = startingScale;
+		fish.graphic.scale = startingScale;
 		fish.pos = this.graphic.center.diff(fish.size.mul(1 / 2));
-		this.heldFish!.isShadowHidden = true;
+		this.heldFish!.graphic.isShadowHidden = true;
 		this.graphic.addChild(fish);
 	}
 
@@ -167,7 +166,7 @@ export class CatPaw extends GameObject {
 		const heldFish = this.heldFish;
 		this.heldFish = undefined;
 		this.graphic.removeChild(heldFish);
-		heldFish!.isShadowHidden = false;
+		heldFish!.graphic.isShadowHidden = false;
 		this.trigger("predrop", heldFish);
 	}
 
@@ -178,7 +177,7 @@ export class CatPaw extends GameObject {
 	async pickUp(fish: Fish, depth: number, ratio: number) {
 		if (this.isInteractionLocked) return;
 		const prevTarget = this.target;
-		this.target = fish.pos.add(fish.center);
+		this.target = fish.pos.add(fish.graphic.center);
 		this.seekToTarget();
 
 		this.isInteractionLocked = true;

@@ -7,8 +7,20 @@ import { FishEye } from "./fish-eye";
 import { RoundedScales } from "./rounded-scales";
 
 export class Fish extends GameObject {
+	graphic: FishGraphic;
+	size = new Vector(40, 80);
+
+	constructor({ flipH = false, ...rest }) {
+		super(rest);
+		this.graphic = new FishGraphic({ flipH });
+		this.addChildren([this.graphic]);
+	}
+}
+
+class FishGraphic extends GameObject {
 	texture: Canvas;
 	size = new Vector(40, 80);
+	origin = Vector.CENTER;
 	center = this.size.mul(1 / 2);
 
 	isShadowHidden = false;

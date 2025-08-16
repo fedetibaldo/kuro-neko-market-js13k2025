@@ -114,7 +114,7 @@ export class Level extends GameObject {
 		)
 			? this.tableDepth
 			: this.beltDepth;
-		fish.scale = (1 - depth) / 0.75;
+		fish.graphic.scale = (1 - depth) / 0.75;
 		fish.pos = this.returnPosition;
 		this.fishStagingArea.addChild(fish);
 	};
