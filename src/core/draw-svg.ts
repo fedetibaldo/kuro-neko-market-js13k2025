@@ -1,4 +1,3 @@
-import { range } from "../utils/range";
 import { Vector } from "./vector";
 
 type Tuple<N, T> = N extends 0
@@ -158,19 +157,19 @@ const Z: Command<0> = {
 const z = Z;
 
 const commands: Record<string, Command<number>> = {
-	M,
-	m,
-	L,
-	l,
-	h,
-	V,
-	v,
-	C,
-	c,
-	S,
-	s,
-	Z,
-	z,
+	["M"]: M,
+	["m"]: m,
+	["L"]: L,
+	["l"]: l,
+	["h"]: h,
+	["V"]: V,
+	["v"]: v,
+	["C"]: C,
+	["c"]: c,
+	["S"]: S,
+	["s"]: s,
+	["Z"]: Z,
+	["z"]: z,
 };
 
 export function drawSvg(
