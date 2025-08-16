@@ -2,8 +2,10 @@
 	"compilerOptions": {
 		"target": "es2022",
 		"strict": true,
+		"noEmit": true,
 		"isolatedModules": true,
-		"noUncheckedIndexedAccess": true
+		"noUncheckedIndexedAccess": true,
+		"allowJs": true,
 	},
 	"include": ["src"]
 }

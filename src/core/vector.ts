@@ -8,6 +8,7 @@ export class Vector {
 	static BOTTOM = new Vector(0.5, 1);
 	static BOTTOM_RIGHT = new Vector(1, 1);
 	static CENTER = new Vector(0.5, 0.5);
+	static DOWN = new Vector(0, -1);
 
 	constructor(x = 0, y = 0) {
 		this.x = x;
