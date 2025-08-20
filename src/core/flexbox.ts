@@ -22,11 +22,7 @@ export class Flexbox extends GameObject {
 		justify = "center",
 		...rest
 	}: Args) {
-		super({ ...rest });
-		this.direction = direction;
-		this.spaceBetween = spaceBetween;
-		this.align = align;
-		this.justify = justify;
+		super({ direction, spaceBetween, align, justify, ...rest });
 	}
 	onChildrenChange() {
 		const mainAxis = this.direction == "row" ? "x" : "y";

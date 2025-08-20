@@ -72,6 +72,14 @@ const l: Command<2> = {
 	execute: lineTo,
 };
 
+const H: Command<1, 2> = {
+	args: ["x"],
+	prepareArgs(args, prevArgs) {
+		return [args[0], prevArgs.at(-1)!];
+	},
+	execute: lineTo,
+};
+
 const h: Command<1, 2> = {
 	isRelative: true,
 	args: ["x"],
@@ -165,6 +173,7 @@ const commands: Record<string, Command<number>> = {
 	["m"]: m,
 	["L"]: L,
 	["l"]: l,
+	["H"]: H,
 	["h"]: h,
 	["V"]: V,
 	["v"]: v,
@@ -212,37 +221,28 @@ export function drawSvg(
 	while (command) {
 		const { isRelative, args, prepareArgs, execute } = command;
 
-		let parsedArgs = args.map((argType) => {
-			const firstChar = path[0];
-			const isNegative = firstChar == "-";
-			const isDecimalAbbr = firstChar == ".";
+		function popArg(path: string) {
+			let arg = "";
 
-			let wasSliced;
-			if (isNegative || isDecimalAbbr) {
-				wasSliced = true;
+			const isValidNextChar = (char: string) => {
+				return (
+					(arg.length == 0 && char == "-") ||
+					(char == "." && !arg.includes(".")) ||
+					/\d/.test(char)
+				);
+			};
+
+			while (typeof path[0] != "undefined" && isValidNextChar(path[0])) {
+				arg += path[0];
 				path = path.slice(1);
 			}
 
-			const nextDotIndex = path.search(/\./);
-			const nextNextDotIndex = path.slice(nextDotIndex + 1).search(/\./);
-			const nextNotNumberIndex = path.search(/[-\sA-Za-z]/);
+			return [arg, path] as const;
+		}
 
-			let nextArgIndex =
-				nextNextDotIndex >= 0
-					? nextNotNumberIndex >= 0
-						? Math.min(nextDotIndex + nextNextDotIndex + 1, nextNotNumberIndex)
-						: nextDotIndex + nextNextDotIndex + 1
-					: nextNotNumberIndex;
-
-			if (nextArgIndex < 0) {
-				nextArgIndex = path.length;
-			}
-			let arg = path.slice(0, nextArgIndex);
-			path = path.slice(nextArgIndex).trim();
-
-			if (wasSliced) {
-				arg = `${firstChar}${arg}`;
-			}
+		let parsedArgs = args.map((argType) => {
+			const [arg, slicedPath] = popArg(path);
+			path = slicedPath.trim();
 
 			let parsedArg = parseFloat(arg);
 
@@ -261,7 +261,9 @@ export function drawSvg(
 			? prepareArgs(parsedArgs, prevArgs)
 			: parsedArgs;
 
-		prevArgs = readyArgs;
+		if (readyArgs.length) {
+			prevArgs = readyArgs;
+		}
 
 		execute(ctx, readyArgs);
 

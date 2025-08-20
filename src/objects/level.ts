@@ -8,6 +8,7 @@ import { immutableReverse } from "../utils/immutable-reverse";
 import { range } from "../utils/range";
 import { CatPaw } from "./cat-paw";
 import { Fish } from "./fish/fish";
+import { Printer } from "./printer";
 import { Table } from "./table";
 
 class ConveyorBelt extends GameObject {
@@ -65,8 +66,8 @@ export class Level extends GameObject {
 		});
 
 		this.table = new Table({
-			pos: new Vector(0, this.game.viewRes.y - 80),
-			size: new Vector(this.game.viewRes.x, 80),
+			pos: new Vector(0, this.game.viewRes.y - 90),
+			size: new Vector(this.game.viewRes.x, 90),
 		});
 
 		this.fishStagingArea = new GameObject();
@@ -74,6 +75,7 @@ export class Level extends GameObject {
 		this.addChildren([
 			this.belt,
 			this.table,
+			new Printer({ pos: new Vector(270, 163) }),
 			this.fishes,
 			this.paw,
 			this.fishStagingArea,
@@ -154,7 +156,7 @@ export class Level extends GameObject {
 				const tableYStart = this.table.getGlobalPosition().y;
 				const tableYEnd = tableYStart + this.table.size.y;
 				const fourthFishHeight = halfFishSize.y / 2;
-				const fourthFishWidth = halfFishSize.x / 2;
+				const halfFishWidth = halfFishSize.x;
 				snappedPos.y = clamp(
 					snappedPos.y,
 					tableYStart + fourthFishHeight,
@@ -162,8 +164,8 @@ export class Level extends GameObject {
 				);
 				snappedPos.x = clamp(
 					snappedPos.x,
-					0 + fourthFishWidth,
-					this.game.viewRes.x - fourthFishWidth
+					0 + halfFishWidth,
+					this.game.viewRes.x - halfFishWidth
 				);
 			}
 			this.returnPosition = snappedPos.diff(halfFishSize);

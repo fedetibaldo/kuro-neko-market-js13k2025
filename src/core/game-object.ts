@@ -1,17 +1,32 @@
 import { Observable } from "./observable";
 import { Vector } from "./vector";
 
-/**
- * @member {GameObject[]} children
- */
+export type GameObjectArgs = {
+	pos?: Vector;
+	opacity?: number;
+	scale?: number;
+	rotation?: number;
+	origin?: Vector;
+	size?: Vector;
+	frozen?: boolean;
+	children?: GameObject[];
+	[k: string]: unknown;
+};
+
 export class GameObject extends Observable {
-	/**
-	 * @param {Object} args
-	 * @param {GameObject[]} [args.children]
-	 * @param {string} [args.id]
-	 * @param {Vector} [args.pos]
-	 * @param {Vector} [args.size]
-	 */
+	[k: string]: unknown;
+
+	parent: GameObject | undefined;
+
+	pos: Vector;
+	opacity: number;
+	scale: number;
+	rotation: number;
+	origin: Vector;
+	size: Vector;
+	frozen: boolean;
+	children: GameObject[];
+
 	constructor({
 		pos = new Vector(),
 		opacity = 1,
@@ -19,10 +34,10 @@ export class GameObject extends Observable {
 		size = new Vector(),
 		origin = Vector.TOP_LEFT,
 		rotation = 0,
-		freezed = false,
+		frozen = false,
 		children = [],
 		...unknownOptions
-	} = {}) {
+	}: GameObjectArgs = {}) {
 		super();
 
 		this.pos = pos;
@@ -31,7 +46,7 @@ export class GameObject extends Observable {
 		this.rotation = rotation;
 		this.origin = origin;
 		this.size = size;
-		this.freezed = freezed;
+		this.frozen = frozen;
 
 		/**
 		 * @type {GameObject[]}
@@ -54,41 +69,44 @@ export class GameObject extends Observable {
 		this.children = [];
 		children.forEach((child) => child.destroy());
 	}
-	/**
-	 * @returns {GameObject[]}
-	 */
-	createChildren() {
+
+	createChildren(): GameObject[] {
 		return [];
 	}
-	addChildren(children) {
+
+	addChildren(children: GameObject[]) {
 		children.forEach((child) => this.addChild(child));
 	}
-	addChild(child, index = this.children.length) {
+
+	addChild(child: GameObject, index = this.children.length) {
 		child.parent = this;
 		this.children[index] = child;
 		child.trigger("mount");
 		this.trigger("childrenChange");
 	}
-	getChild(id) {
+
+	getChild(id: string): GameObject | undefined {
 		if (id === this.id) {
 			return this;
 		} else {
 			for (let i = 0; i < this.children.length; i++) {
-				let needle = this.children[i].getChild(id);
+				let needle = this.children[i]?.getChild(id);
 				if (needle) {
 					return needle;
 				}
 			}
 		}
 	}
-	get(prop) {
+
+	get(prop: string): unknown {
 		if (typeof this[prop] == "function") {
 			return this[prop]();
 		} else {
 			return this[prop];
 		}
 	}
-	removeChild(toRemove) {
+
+	removeChild(toRemove: GameObject) {
 		const index = this.children.findIndex((child) => child === toRemove);
 		this.children.splice(index, 1);
 		this.trigger("childrenChange");
@@ -101,7 +119,7 @@ export class GameObject extends Observable {
 	}
 
 	rotationAdjustment(
-		vector,
+		vector: Vector,
 		offset = Vector.ZERO,
 		size = this.size,
 		angle = this.rotation
@@ -112,11 +130,7 @@ export class GameObject extends Observable {
 		return O.add(Dr);
 	}
 
-	/**
-	 * @param {Vector} point
-	 * @returns {boolean}
-	 */
-	isPointWithinObject(point) {
+	isPointWithinObject(point: Vector) {
 		let pos = this.getGlobalPosition();
 		const adjustedPos = pos.add(this.scaleAdjustment());
 		const scaledSize = this.size.mul(this.scale);
@@ -136,16 +150,11 @@ export class GameObject extends Observable {
 		);
 	}
 
-	/**
-	 * @param {number} deltaT
-	 */
-	update(deltaT) {
+	update(deltaT: number) {
 		this.children.forEach((child) => child.update(deltaT));
 	}
-	/**
-	 * @param {CanvasRenderingContext2D} ctx
-	 */
-	render(ctx) {
+
+	render(ctx: CanvasRenderingContext2D) {
 		this.children.forEach(
 			/**
 			 * @param {GameObject} child
@@ -173,21 +182,24 @@ export class GameObject extends Observable {
 			}
 		);
 	}
-	isFreezed() {
-		const freezed = this.freezed;
-		if (this.parent && !freezed) {
-			return this.parent.isFreezed();
+
+	isFrozen(): boolean {
+		const frozen = this.frozen;
+		if (this.parent && !frozen) {
+			return this.parent.isFrozen();
 		}
-		return freezed;
+		return frozen;
 	}
-	getGlobalOpacity() {
+
+	getGlobalOpacity(): number {
 		if (this.parent) {
 			return this.opacity * this.parent.getGlobalOpacity();
 		} else {
 			return this.opacity;
 		}
 	}
-	getGlobalPosition() {
+
+	getGlobalPosition(): Vector {
 		if (this.parent) {
 			return this.pos.add(this.parent.getGlobalPosition());
 		} else {
