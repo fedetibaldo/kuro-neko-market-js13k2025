@@ -1,4 +1,12 @@
+import {
+	getConcreteOrigin,
+	rotateAroundOrigin,
+	scaleFromOrigin,
+} from "../utils/origin-helper";
+import { GameObjectData } from "./game-object-data";
 import { Observable } from "./observable";
+import { RenderableInterface } from "./render.types";
+import { UpdatableInterface } from "./update.types";
 import { Vector } from "./vector";
 
 export type GameObjectArgs = {
@@ -13,7 +21,10 @@ export type GameObjectArgs = {
 	[k: string]: unknown;
 };
 
-export class GameObject extends Observable {
+export class GameObject
+	extends Observable
+	implements GameObjectData, RenderableInterface, UpdatableInterface
+{
 	[k: string]: unknown;
 
 	parent: GameObject | undefined;
@@ -79,6 +90,9 @@ export class GameObject extends Observable {
 	}
 
 	addChild(child: GameObject, index = this.children.length) {
+		if (child.parent) {
+			child.parent.removeChild(child);
+		}
 		child.parent = this;
 		this.children[index] = child;
 		child.trigger("mount");
@@ -86,14 +100,13 @@ export class GameObject extends Observable {
 	}
 
 	getChild(id: string): GameObject | undefined {
-		if (id === this.id) {
-			return this;
-		} else {
-			for (let i = 0; i < this.children.length; i++) {
-				let needle = this.children[i]?.getChild(id);
-				if (needle) {
-					return needle;
-				}
+		for (const child of this.children) {
+			if (child.id === id) {
+				return child;
+			}
+			const needle = child.getChild(id);
+			if (needle) {
+				return needle;
 			}
 		}
 	}
@@ -112,76 +125,9 @@ export class GameObject extends Observable {
 		this.trigger("childrenChange");
 	}
 
-	scaleAdjustment() {
-		const A = this.size;
-		const S = this.size.mul(this.scale);
-		return A.diff(S).mulv(this.origin);
-	}
+	update(deltaT: number) {}
 
-	rotationAdjustment(
-		vector: Vector,
-		offset = Vector.ZERO,
-		size = this.size,
-		angle = this.rotation
-	) {
-		const O = offset.add(size.mulv(this.origin));
-		const D = vector.diff(O);
-		const Dr = D.rotate(angle);
-		return O.add(Dr);
-	}
-
-	isPointWithinObject(point: Vector) {
-		let pos = this.getGlobalPosition();
-		const adjustedPos = pos.add(this.scaleAdjustment());
-		const scaledSize = this.size.mul(this.scale);
-		const adjustedPoint = this.rotationAdjustment(
-			point,
-			adjustedPos,
-			scaledSize,
-			-this.rotation
-		);
-		const { x, y } = adjustedPos;
-		const { x: w, y: h } = scaledSize;
-		return (
-			adjustedPoint.x > x &&
-			adjustedPoint.x < x + w &&
-			adjustedPoint.y > y &&
-			adjustedPoint.y < y + h
-		);
-	}
-
-	update(deltaT: number) {
-		this.children.forEach((child) => child.update(deltaT));
-	}
-
-	render(ctx: CanvasRenderingContext2D) {
-		this.children.forEach(
-			/**
-			 * @param {GameObject} child
-			 */
-			(child) => {
-				ctx.save();
-				const pos = child.pos;
-				ctx.translate(pos.x, pos.y);
-
-				const scaleDiff = child.scaleAdjustment();
-				ctx.translate(scaleDiff.x, scaleDiff.y);
-
-				ctx.scale(child.scale, child.scale);
-
-				const rotationDiff = child.rotationAdjustment(Vector.ZERO);
-				ctx.translate(rotationDiff.x, rotationDiff.y);
-
-				ctx.rotate(child.rotation);
-
-				ctx.globalAlpha = child.opacity * this.getGlobalOpacity();
-				// ctx.strokeStyle = "red";
-				// child.size && ctx.strokeRect(0, 0, child.size.x, child.size.y);
-				child.render(ctx);
-				ctx.restore();
-			}
-		);
-	}
+	render(ctx: OffscreenCanvasRenderingContext2D) {}
 
 	isFrozen(): boolean {
 		const frozen = this.frozen;
@@ -191,19 +137,80 @@ export class GameObject extends Observable {
 		return frozen;
 	}
 
-	getGlobalOpacity(): number {
+	getGlobalRotation(): number {
 		if (this.parent) {
-			return this.opacity * this.parent.getGlobalOpacity();
+			return this.rotation + this.parent.getGlobalRotation();
 		} else {
-			return this.opacity;
+			return this.rotation;
 		}
 	}
 
-	getGlobalPosition(): Vector {
+	getGlobalScale(): number {
 		if (this.parent) {
-			return this.pos.add(this.parent.getGlobalPosition());
+			return this.scale * this.parent.getGlobalScale();
 		} else {
-			return this.pos;
+			return this.scale;
 		}
+	}
+
+	getLocalPosition(): Vector {
+		const origin = getConcreteOrigin(Vector.ZERO, this.size, this.origin);
+		const positionInSelf = rotateAroundOrigin(
+			scaleFromOrigin(Vector.ZERO, this.scale, origin),
+			this.rotation,
+			origin
+		);
+		return positionInSelf;
+	}
+
+	getGlobalPosition(): Vector {
+		const positionInSelf = this.getLocalPosition();
+
+		const transformedPosition = this.pos.add(positionInSelf);
+
+		if (!this.parent) {
+			return transformedPosition;
+		}
+
+		const positionInParent = rotateAroundOrigin(
+			scaleFromOrigin(
+				transformedPosition,
+				this.parent.getGlobalScale(),
+				Vector.ZERO
+			),
+			this.parent.getGlobalRotation(),
+			Vector.ZERO
+		);
+
+		return positionInParent.add(this.parent.getGlobalPosition());
+	}
+
+	toGlobal(localPoint: Vector) {
+		return localPoint.add(this.getGlobalPosition());
+	}
+
+	fromGlobal(globalPoint: Vector) {
+		return globalPoint.diff(this.getGlobalPosition());
+	}
+
+	isPointWithinObject(point: Vector) {
+		const pos = this.getGlobalPosition();
+		const scale = this.getGlobalScale();
+		const rotation = this.getGlobalRotation();
+
+		const localPoint = rotateAroundOrigin(
+			scaleFromOrigin(point, 1 / scale, pos),
+			-rotation,
+			pos
+		);
+
+		const { x, y } = pos;
+		const { x: w, y: h } = this.size;
+		return (
+			localPoint.x > x &&
+			localPoint.x < x + w &&
+			localPoint.y > y &&
+			localPoint.y < y + h
+		);
 	}
 }

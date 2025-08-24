@@ -49,7 +49,7 @@ export class Wood extends GameObject {
 		this.size = new Vector(60, 60);
 	}
 
-	render(ctx: CanvasRenderingContext2D) {
+	render(ctx: OffscreenCanvasRenderingContext2D) {
 		ctx.fillStyle = "#A3683C";
 		ctx.fillRect(0, 0, this.size.x, this.size.y);
 

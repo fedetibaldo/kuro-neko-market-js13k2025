@@ -1,7 +1,7 @@
 import { Vector } from "../core/vector";
 
 export function createLinearGradient(
-	ctx: CanvasRenderingContext2D,
+	ctx: OffscreenCanvasRenderingContext2D,
 	from: Vector,
 	to: Vector,
 	stops: [number, string][],

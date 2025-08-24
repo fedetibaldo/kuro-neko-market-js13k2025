@@ -19,7 +19,7 @@ type Tuple<N, T> = N extends 0
 type NumberTuple<N> = Tuple<N, number>;
 
 type Exectutor<N> = (
-	ctx: CanvasRenderingContext2D,
+	ctx: OffscreenCanvasRenderingContext2D,
 	args: NumberTuple<N>
 ) => void;
 
@@ -186,7 +186,7 @@ const commands: Record<string, Command<number>> = {
 };
 
 export function drawSvg(
-	ctx: CanvasRenderingContext2D,
+	ctx: OffscreenCanvasRenderingContext2D,
 	{
 		path,
 		viewBox,

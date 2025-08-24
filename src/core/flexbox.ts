@@ -1,11 +1,11 @@
 import { GameObject } from "./game-object";
 import { Vector } from "./vector";
 
-type Args = {
-	direction: "row" | "col";
-	spaceBetween: number;
-	align: "start" | "center" | "end";
-	justify: "start" | "center" | "end";
+export type FlexboxArgs = {
+	direction?: "row" | "col";
+	spaceBetween?: number;
+	align?: "start" | "center" | "end";
+	justify?: "start" | "center" | "end";
 	[x: string]: any;
 };
 
@@ -21,7 +21,7 @@ export class Flexbox extends GameObject {
 		align = "center",
 		justify = "center",
 		...rest
-	}: Args) {
+	}: FlexboxArgs) {
 		super({ direction, spaceBetween, align, justify, ...rest });
 	}
 	onChildrenChange() {

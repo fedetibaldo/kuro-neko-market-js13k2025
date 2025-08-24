@@ -1,12 +1,13 @@
-import { Canvas } from "../../core/canvas";
+import { Viewport } from "../../core/viewport";
 import { drawSvg } from "../../core/draw-svg";
 import { GameObject } from "../../core/game-object";
 import { Vector } from "../../core/vector";
 import { createLinearGradient } from "../../utils/create-linear-gradient";
 import { FishEye } from "./fish-eye";
 import { RoundedScales } from "./rounded-scales";
+import { PickupableInterface } from "../../systems/interactable/interactable.types";
 
-export class Fish extends GameObject {
+export class Fish extends GameObject implements PickupableInterface {
 	graphic: FishGraphic;
 	size = new Vector(40, 80);
 
@@ -15,10 +16,14 @@ export class Fish extends GameObject {
 		this.graphic = new FishGraphic({ flipH });
 		this.addChildren([this.graphic]);
 	}
+	baseLayer = 0.75;
+	readonly canBePickedUp = true;
+	origin = Vector.CENTER;
+	center = this.size.mul(1 / 2);
 }
 
 class FishGraphic extends GameObject {
-	texture: Canvas;
+	texture: Viewport;
 	size = new Vector(40, 80);
 	origin = Vector.CENTER;
 	center = this.size.mul(1 / 2);
@@ -29,7 +34,7 @@ class FishGraphic extends GameObject {
 	constructor({ flipH = false, ...rest }) {
 		super(rest);
 		this.flipH = flipH;
-		this.texture = new Canvas({
+		this.texture = new Viewport({
 			size: new Vector(16, 16),
 			children: [
 				new RoundedScales({
@@ -49,7 +54,7 @@ class FishGraphic extends GameObject {
 		// this.rotation += delta / 1000;
 	}
 
-	render(ctx: CanvasRenderingContext2D) {
+	render(ctx: OffscreenCanvasRenderingContext2D) {
 		if (!this.isShadowHidden) {
 			drawSvg(ctx, {
 				path: "M20.5 64.5 18.1.3C2-1.5-4.5 32 15.5 62L12 77.5l1.8 1.9L18 74l9.2 2.9-6.7-12.4Z",
@@ -98,6 +103,5 @@ class FishGraphic extends GameObject {
 		// ctx.lineJoin = "bevel";
 		// ctx.strokeStyle = "white";
 		// ctx.stroke();
-		super.render(ctx);
 	}
 }

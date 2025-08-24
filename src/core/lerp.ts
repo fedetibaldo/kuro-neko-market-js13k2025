@@ -3,7 +3,7 @@ import { Vector } from "./vector";
 
 export type EasingFunction = (val: number) => number;
 
-export type IncrementalLerp<T> = (val: number) => T;
+export type IncrementalLerp<T> = (val?: number) => T;
 
 export const easeLinear: EasingFunction = (val) => val;
 
@@ -55,7 +55,7 @@ export function makeFixedTimeIncrementalLerp<T extends LerpValue>(
 	ease: EasingFunction = easeLinear
 ): IncrementalLerp<T> {
 	let progress = 0;
-	return (absIncrement: number) => {
+	return (absIncrement: number = 0) => {
 		const relIncrement = absIncrement / duration;
 		progress = clamp(progress + relIncrement, 0, 1);
 		return lerp(from, to, ease(progress));

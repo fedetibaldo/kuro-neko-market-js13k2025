@@ -1,16 +1,21 @@
-import { drawSvg } from "../core/draw-svg";
-import { Flexbox } from "../core/flexbox";
-import { GameObject } from "../core/game-object";
-import { Vector } from "../core/vector";
-import { createLinearGradient } from "../utils/create-linear-gradient";
-import { range } from "../utils/range";
-import { Digit, DigitValue } from "./digit";
-import { Glyph } from "./glyph";
+import { Area } from "../../core/area";
+import { drawSvg } from "../../core/draw-svg";
+import { Flexbox } from "../../core/flexbox";
+import { GameObject } from "../../core/game-object";
+import { Vector } from "../../core/vector";
+import { PickupableInterface } from "../../systems/interactable/interactable.types";
+import { createLinearGradient } from "../../utils/create-linear-gradient";
+import { Digit, DigitValue } from "../digit";
+import { ButtonGroup } from "./button-group";
+import { activeColor, inactiveColor } from "./colors";
 
-const activeColor = "#3A1141";
-const inactiveColor = "#B674C2";
+export class Printer extends GameObject implements PickupableInterface {
+	baseLayer = 0.75;
+	readonly canBePickedUp = true;
+	size = new Vector(74, 66);
+	center = this.size.mul(1 / 2);
+	origin = Vector.CENTER;
 
-export class Printer extends GameObject {
 	value = 0;
 	leftDigit = this.getChild("left-digit") as Digit;
 	rightDigit = this.getChild("right-digit") as Digit;
@@ -65,92 +70,14 @@ export class Printer extends GameObject {
 			],
 		});
 
-		const buttonSize = new Vector(12, 12);
-		const spaceBetween = 2;
-
-		const buttonGroup = new Flexbox({
-			pos: new Vector(28, 6),
-			align: "start",
-			direction: "col",
-			justify: "start",
-			spaceBetween: 2,
-			children: [
-				...range(3).map(
-					(row) =>
-						new Flexbox({
-							size: buttonSize,
-							align: "start",
-							direction: "row",
-							justify: "start",
-							spaceBetween,
-							children: range(3).map(
-								(col) =>
-									new GameObject({
-										size: buttonSize,
-										children: [
-											new Digit({
-												color: activeColor,
-												fontSize,
-												value: (row * 3 + col + 1) as DigitValue,
-												pos: new Vector(2, 1.5),
-												origin: Vector.CENTER,
-											}),
-										],
-									})
-							),
-						})
-				),
-				new Flexbox({
-					size: buttonSize,
-					align: "start",
-					direction: "row",
-					justify: "start",
-					spaceBetween,
-					children: [
-						new GameObject({
-							size: buttonSize,
-							children: [
-								new Glyph({
-									color: "#8B2325",
-									path: "m1.5 8 5-7m-5 0 5 7",
-									fontSize,
-									pos: new Vector(2, 1.5),
-									origin: Vector.CENTER,
-								}),
-							],
-						}),
-						new GameObject({
-							size: buttonSize,
-							children: [
-								new Digit({
-									color: activeColor,
-									fontSize,
-									value: 0,
-									pos: new Vector(2, 1.5),
-									origin: Vector.CENTER,
-								}),
-							],
-						}),
-						new GameObject({
-							size: buttonSize,
-							children: [
-								new Glyph({
-									color: "#10A11A",
-									path: "m1 4.7 2 3.1c.1.2.4.2.5 0L6.9 1",
-									fontSize,
-									pos: new Vector(2, 1.5),
-									origin: Vector.CENTER,
-								}),
-							],
-						}),
-					],
-				}),
-			],
+		const buttonGroup = new ButtonGroup({
+			pos: new Vector(22, 0),
 		});
 
 		return [display, buttonGroup];
 	}
-	render(ctx: CanvasRenderingContext2D): void {
+
+	render(ctx: OffscreenCanvasRenderingContext2D): void {
 		ctx.beginPath();
 		ctx.roundRect(0, 0, 74, 66 + 7, 12);
 		ctx.fillStyle = "#00000066";
@@ -196,7 +123,5 @@ export class Printer extends GameObject {
 			]
 		);
 		ctx.fill();
-
-		super.render(ctx);
 	}
 }

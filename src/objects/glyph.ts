@@ -20,13 +20,11 @@ export class Glyph extends GameObject {
 		this.scale = fontSize / 12;
 	}
 
-	render(ctx: CanvasRenderingContext2D): void {
+	render(ctx: OffscreenCanvasRenderingContext2D): void {
 		drawSvg(ctx, { path: this.path });
 		ctx.lineWidth = 2;
 		ctx.lineCap = "round";
 		ctx.strokeStyle = this.color;
 		ctx.stroke();
-
-		super.render(ctx);
 	}
 }

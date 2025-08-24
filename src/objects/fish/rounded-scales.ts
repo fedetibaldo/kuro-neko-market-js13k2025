@@ -8,7 +8,7 @@ export class RoundedScales extends GameObject {
 		this.size = new Vector(16, 16);
 	}
 
-	render(ctx: CanvasRenderingContext2D) {
+	render(ctx: OffscreenCanvasRenderingContext2D) {
 		// ctx.fillStyle = "red";
 		// ctx.fillRect(0, 0, this.size.x, this.size.y);
 		ctx.strokeStyle = "black";

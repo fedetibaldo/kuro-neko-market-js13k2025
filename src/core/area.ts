@@ -1,34 +1,26 @@
 import { diContainer } from "./di-container";
 import { GameObject } from "./game-object";
-import { Input } from "./input";
-import { Vector } from "./vector";
+import { InputServer } from "./input.server";
 
 export class Area extends GameObject {
-	isInside: boolean;
-	isPressed: boolean;
-	listeners: Function[];
-	input = diContainer.get(Input);
+	input = diContainer.get(InputServer);
 
-	constructor({ size = new Vector(), ...options }) {
-		super({ size, ...options });
+	isInside = false;
+	isPressed = false;
+	listeners = [
+		this.input.on("mouseup", (e: any) => this.onMouseEvent("mouseup", e)),
+		this.input.on("mousedown", (e: any) => this.onMouseEvent("mousedown", e)),
+		this.input.on("mousemove", (e: any) => this.onMouseEvent("mousemove", e)),
+	];
 
-		this.isInside = false;
-		this.isPressed = false;
-
-		// event listeners
-		this.listeners = [
-			this.input.on("mouseup", (e: any) => this.onMouseEvent("mouseup", e)),
-			this.input.on("mousedown", (e: any) => this.onMouseEvent("mousedown", e)),
-			this.input.on("mousemove", (e: any) => this.onMouseEvent("mousemove", e)),
-		];
-	}
 	destroy() {
 		super.destroy();
 		this.listeners.forEach((sub) => sub());
 		this.listeners = [];
 	}
+
 	onMouseEvent(name: string, event: any) {
-		if (!this.isFreezed() && this.isPointWithinObject(event.pos)) {
+		if (!this.isFrozen() && this.isPointWithinObject(event.pos)) {
 			if (!this.isInside) {
 				this.trigger("mouseenter", event);
 				this.isInside = true;
@@ -50,11 +42,5 @@ export class Area extends GameObject {
 			}
 			this.isInside = false;
 		}
-	}
-	isPointWithinObject(point: Vector) {
-		const gPos = this.getGlobalPosition();
-		const { x, y } = gPos;
-		const { x: w, y: h } = gPos.add(this.size);
-		return point.x > x && point.x < w && point.y > y && point.y < h;
 	}
 }
