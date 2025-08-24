@@ -215,6 +215,8 @@ export class Paw extends GameObject {
 
 		await new Promise((resolve) => setTimeout(resolve, pressDuration));
 
+		item.press();
+
 		this.scaleLerp = makeFixedTimeIncrementalLerp(
 			item.baseLayer / this.baseLayer,
 			1,

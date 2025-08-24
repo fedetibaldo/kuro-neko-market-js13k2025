@@ -20,6 +20,14 @@ export class ButtonGroupButton
 	getPressPoint(): Vector {
 		return this.toGlobal(buttonSize.mul(1 / 2));
 	}
+
+	press() {
+		const [child] = this.children;
+		if (child instanceof Digit) {
+			this.trigger("value", child.value);
+		}
+		this.trigger("press");
+	}
 }
 
 export class ButtonGroup extends GameObject {
@@ -45,6 +53,7 @@ export class ButtonGroup extends GameObject {
 									(col) =>
 										new ButtonGroupButton({
 											size: buttonSize,
+											onValue: (e: DigitValue) => this.trigger("value", e),
 											children: [
 												new Digit({
 													color: activeColor,
@@ -67,6 +76,7 @@ export class ButtonGroup extends GameObject {
 						children: [
 							new ButtonGroupButton({
 								size: buttonSize,
+								onPress: () => this.trigger("clear"),
 								children: [
 									new Glyph({
 										color: "#8B2325",
@@ -79,6 +89,7 @@ export class ButtonGroup extends GameObject {
 							}),
 							new ButtonGroupButton({
 								size: buttonSize,
+								onValue: (e: DigitValue) => this.trigger("value", e),
 								children: [
 									new Digit({
 										color: activeColor,
@@ -91,6 +102,7 @@ export class ButtonGroup extends GameObject {
 							}),
 							new ButtonGroupButton({
 								size: buttonSize,
+								onPress: () => this.trigger("submit"),
 								children: [
 									new Glyph({
 										color: "#10A11A",

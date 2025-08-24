@@ -1,4 +1,3 @@
-import { Area } from "../../core/area";
 import { drawSvg } from "../../core/draw-svg";
 import { Flexbox } from "../../core/flexbox";
 import { GameObject } from "../../core/game-object";
@@ -19,6 +18,26 @@ export class Printer extends GameObject implements PickupableInterface {
 	value = 0;
 	leftDigit = this.getChild("left-digit") as Digit;
 	rightDigit = this.getChild("right-digit") as Digit;
+	buttons = this.getChild("buttons") as ButtonGroup;
+
+	listeners = [
+		this.buttons.on("value", (e: DigitValue) => this.onValue(e)),
+		this.buttons.on("clear", () => this.setValue(0)),
+		this.buttons.on("submit", () => this.onSubmit()),
+	];
+
+	onDestroy() {
+		this.listeners.forEach((off) => off());
+	}
+
+	onValue(value: DigitValue) {
+		const nextValue = `${this.value.toString().at(-1)}${value}`;
+		this.setValue(parseInt(nextValue));
+	}
+
+	onSubmit() {
+		this.setValue(0);
+	}
 
 	setValue(value: number) {
 		this.value = value;
@@ -35,46 +54,36 @@ export class Printer extends GameObject implements PickupableInterface {
 	}
 
 	createChildren(): GameObject[] {
-		const fontSize = 10;
-
-		const setRandomValue = () => {
-			const isTeen = Math.random() > 0.75;
-			let value = Math.random() * 10 + 1 + (isTeen ? 10 : 0);
-			this.setValue(Math.floor(value));
-			setTimeout(setRandomValue, 1_000);
-		};
-		setTimeout(setRandomValue, 1_000);
-
-		const display = new Flexbox({
-			pos: new Vector(6, 7.5),
-			size: new Vector(20, 12),
-			direction: "row",
-			align: "start",
-			justify: "center",
-			spaceBetween: -2,
-			children: [
-				new Digit({
-					id: "left-digit",
-					color: inactiveColor,
-					fontSize,
-					value: 0,
-					origin: Vector.CENTER,
-				}),
-				new Digit({
-					id: "right-digit",
-					color: inactiveColor,
-					fontSize,
-					value: 0,
-					origin: Vector.CENTER,
-				}),
-			],
-		});
-
-		const buttonGroup = new ButtonGroup({
-			pos: new Vector(22, 0),
-		});
-
-		return [display, buttonGroup];
+		return [
+			new Flexbox({
+				pos: new Vector(6, 7.5),
+				size: new Vector(20, 12),
+				direction: "row",
+				align: "start",
+				justify: "center",
+				spaceBetween: -2,
+				children: [
+					new Digit({
+						id: "left-digit",
+						color: inactiveColor,
+						fontSize: 10,
+						value: 0,
+						origin: Vector.CENTER,
+					}),
+					new Digit({
+						id: "right-digit",
+						color: inactiveColor,
+						fontSize: 10,
+						value: 0,
+						origin: Vector.CENTER,
+					}),
+				],
+			}),
+			new ButtonGroup({
+				id: "buttons",
+				pos: new Vector(22, 0),
+			}),
+		];
 	}
 
 	render(ctx: OffscreenCanvasRenderingContext2D): void {

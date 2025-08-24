@@ -13,6 +13,7 @@ export type PickupableInterface = TouchableInterface & {
 export type PressableInterface = TouchableInterface & {
 	canBePressed: true;
 	getPressPoint(point: Vector): Vector;
+	press: () => void;
 };
 
 export type DropTargetInterface = TouchableInterface & {
