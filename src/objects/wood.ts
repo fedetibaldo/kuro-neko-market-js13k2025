@@ -9,14 +9,20 @@ export class Wood extends GameObject {
 	shadeDarkPath = "M0 13c3.9 0 9-3 9-6.5C9 2.9 3.9 0 0 0v13Z";
 	shadeLightPath = "M0 11c7.7 0 14-2.5 14-5.5S7.7 0 0 0v11Z";
 
-	shadeDarkGradient = (ctx: CanvasRenderingContext2D, flipH = false) => {
+	shadeDarkGradient = (
+		ctx: OffscreenCanvasRenderingContext2D,
+		flipH = false
+	) => {
 		const gradient = ctx.createLinearGradient(0, 0, this.shadeDarkViewBox.x, 0);
 		gradient.addColorStop(flipH ? 1 : 0, "#A3683C");
-		gradient.addColorStop(flipH ? 0 : 1, "#975C3A");
+		gradient.addColorStop(flipH ? 0 : 1, "#956037");
 		return gradient;
 	};
 
-	shadeLightGradient = (ctx: CanvasRenderingContext2D, flipH = false) => {
+	shadeLightGradient = (
+		ctx: OffscreenCanvasRenderingContext2D,
+		flipH = false
+	) => {
 		const gradient = ctx.createLinearGradient(
 			0,
 			0,
@@ -24,7 +30,7 @@ export class Wood extends GameObject {
 			0
 		);
 		gradient.addColorStop(flipH ? 1 : 0, "#A3683C");
-		gradient.addColorStop(flipH ? 0 : 1, "#AD774B");
+		gradient.addColorStop(flipH ? 0 : 1, "#B37342");
 		return gradient;
 	};
 	shadeDarkPos: { pos: Vector; flipH?: boolean }[] = [
@@ -80,7 +86,7 @@ export class Wood extends GameObject {
 		}
 
 		const linePosY = [10.5, 32.5, 54.5];
-		ctx.strokeStyle = "#302523";
+		ctx.strokeStyle = "#3B2616";
 		ctx.lineWidth = 2;
 		for (const y of linePosY) {
 			ctx.beginPath();
@@ -96,8 +102,8 @@ export class Wood extends GameObject {
 					new Vector(0, 0),
 					new Vector(14, 0),
 					[
-						[0, "#975B37"],
-						[1, "#A2663B"],
+						[0, "#956037"],
+						[1, "#A3683C"],
 					]
 				),
 				path: "M0 17c3 0 5 .5 7.5 0 2.6-.5 4-1.5 6.5-1.5",
@@ -108,8 +114,8 @@ export class Wood extends GameObject {
 					new Vector(0, 0),
 					new Vector(60, 0),
 					[
-						[0, "#6C3D29"],
-						[1, "#975B37"],
+						[0, "#684327"],
+						[1, "#956037"],
 					]
 				),
 				path: "M0 21c4.5 0 7.3-1.6 12-1.5 3.1 0 4.9 1 8 1 3.5 0 5.5-.9 9-1 4.7-.1 7.3.9 12 1 7.4.2 11.5-3.5 19-3.5",
@@ -120,9 +126,9 @@ export class Wood extends GameObject {
 					new Vector(19, 0),
 					new Vector(60, 0),
 					[
-						[0, "#985D3A"],
+						[0, "#956037"],
 						[0.5, "#5B3727"],
-						[1, "#6C3D29"],
+						[1, "#684327"],
 					]
 				),
 				path: "M60 21c-2 0-7 .6-8.5 1-4 1-15.5 1.7-19 2-6 .5-11 3-15 3",
@@ -133,8 +139,8 @@ export class Wood extends GameObject {
 					new Vector(13, 0),
 					new Vector(48, 0),
 					[
-						[0, "#975B37"],
-						[0.5, "#76452A"],
+						[0, "#956037"],
+						[0.5, "#764D2D"],
 						[1, "#A3683C"],
 					]
 				),
@@ -146,8 +152,8 @@ export class Wood extends GameObject {
 					new Vector(0, 0),
 					new Vector(16, 0),
 					[
-						[0, "#6C3D29"],
-						[1, "#975B37"],
+						[0, "#684327"],
+						[1, "#956037"],
 					]
 				),
 				path: "M0 47c6.5 0 10.5-3 16.5-4",
@@ -158,8 +164,8 @@ export class Wood extends GameObject {
 					new Vector(36, 0),
 					new Vector(60, 0),
 					[
-						[0, "#975C3A"],
-						[1, "#6C3D29"],
+						[0, "#956037"],
+						[1, "#684327"],
 					]
 				),
 				path: "M37.5 48c9-1 19-1 22.5-1",

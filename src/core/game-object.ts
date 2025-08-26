@@ -68,8 +68,8 @@ export class GameObject
 			this[key] = unknownOptions[key];
 		}
 
-		this.addChildren(children || []);
 		this.addChildren(this.createChildren());
+		this.addChildren(children || []);
 	}
 	destroy() {
 		super.destroy();

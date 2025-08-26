@@ -8,9 +8,7 @@ import { Digit, DigitValue } from "../digit";
 import { ButtonGroup } from "./button-group";
 import { activeColor, inactiveColor } from "./colors";
 
-export class Printer extends GameObject implements PickupableInterface {
-	baseLayer = 0.75;
-	readonly canBePickedUp = true;
+export class Printer extends GameObject {
 	size = new Vector(74, 66);
 	center = this.size.mul(1 / 2);
 	origin = Vector.CENTER;

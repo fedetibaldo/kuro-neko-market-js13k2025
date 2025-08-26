@@ -3,40 +3,13 @@ import { Game } from "../core/game";
 import { GameObject } from "../core/game-object";
 import { InputServer } from "../core/input.server";
 import { Vector } from "../core/vector";
-import { DropTargetInterface } from "../systems/interactable/interactable.types";
-import { range } from "../utils/range";
+import { Belt, BeltShadow } from "./belt";
 import { Fish } from "./fish/fish";
 import { Paw } from "./paw/paw";
 import { Printer } from "./printer/printer";
+import { Sea } from "./sea";
+import { Sky } from "./sky";
 import { Table } from "./table";
-
-class ConveyorBelt extends GameObject implements DropTargetInterface {
-	readonly canHost = true;
-	baseLayer = 0.4;
-
-	getDropPoint(point: Vector): Vector {
-		return point;
-	}
-
-	render(ctx: OffscreenCanvasRenderingContext2D) {
-		ctx.fillStyle = "grey";
-		ctx.fillRect(0, 10, this.size.x, this.size.y - 20);
-		const radius = 10;
-		for (const index of range(8)) {
-			ctx.beginPath();
-			ctx.arc(
-				(this.size.x / 7) * index,
-				this.size.y,
-				radius,
-				0,
-				Math.PI * 2,
-				true
-			);
-			ctx.fillStyle = "grey";
-			ctx.fill();
-		}
-	}
-}
 
 export class Level extends GameObject {
 	input = diContainer.get(InputServer);
@@ -50,31 +23,73 @@ export class Level extends GameObject {
 
 	createChildren() {
 		const game = diContainer.get(Game);
+
+		const beltSize = new Vector(game.root.size.x, 40);
+		const beltPosition = new Vector(0, 110);
+
+		const tableSize = new Vector(game.root.size.x, 90);
+
+		const seaSize = new Vector(game.root.size.x, 30);
+		const seaPosition = new Vector(0, beltPosition.y - seaSize.y);
+
 		return [
-			new ConveyorBelt({
+			new Belt({
 				id: "belt",
 				pos: new Vector(0, 110),
-				size: new Vector(game.root.size.x, 50),
+				size: beltSize,
+			}),
+			new Sky({
+				size: new Vector(game.root.size.x, seaPosition.y),
+			}),
+			new Sea({
+				pos: seaPosition,
+				size: seaSize,
 			}),
 			new Table({
 				id: "table",
 				pos: new Vector(0, game.root.size.y - 90),
-				size: new Vector(game.root.size.x, 90),
+				size: tableSize,
 				children: [
-					new Fish({
-						pos: new Vector(20, 10),
-						origin: Vector.CENTER,
-						rotation: (-Math.PI / 4) * 3,
+					new Printer({
+						id: "printer",
+						pos: new Vector(game.root.size.x - 90, 15),
 					}),
-					new Fish({
-						pos: new Vector(60, 15),
-						origin: Vector.CENTER,
-						rotation: (Math.PI / 4) * 3,
-						flipH: true,
+					new GameObject({
+						baseLayer: 0.75,
+						canHost: true,
+						size: tableSize,
+						getDropPoint(point: Vector): Vector {
+							return point;
+						},
+						children: [
+							new Fish({
+								pos: new Vector(20, 10),
+								origin: Vector.CENTER,
+								rotation: (-Math.PI / 4) * 3,
+							}),
+							new Fish({
+								pos: new Vector(60, 15),
+								origin: Vector.CENTER,
+								rotation: (Math.PI / 4) * 3,
+								flipH: true,
+							}),
+						],
 					}),
 				],
 			}),
-			new Printer({ id: "printer", pos: new Vector(270, 163) }),
+
+			new GameObject({
+				baseLayer: 0.4,
+				canHost: true,
+				pos: beltPosition,
+				size: beltSize,
+				getDropPoint(point: Vector): Vector {
+					return point;
+				},
+			}),
+
+			new BeltShadow({ pos: beltPosition, size: beltSize }),
+
 			new Paw({ id: "paw" }),
 		];
 	}

@@ -5,13 +5,6 @@ import { Wood } from "./wood";
 import { DropTargetInterface } from "../systems/interactable/interactable.types";
 
 export class Table extends GameObject implements DropTargetInterface {
-	readonly canHost = true;
-	baseLayer = 0.75;
-
-	getDropPoint(point: Vector): Vector {
-		return point;
-	}
-
 	override createChildren() {
 		return [
 			new Viewport({
