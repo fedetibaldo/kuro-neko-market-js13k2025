@@ -4,8 +4,9 @@ import { createLinearGradient } from "../utils/create-linear-gradient";
 import { rotateAroundOrigin } from "../utils/origin-helper";
 
 export class Sky extends GameObject {
-	sunAngle = Math.PI * 2;
-	sunVelocity = 0.05;
+	sunAngle = Math.PI;
+	dayDuration = 90;
+	sunVelocity = Math.PI / this.dayDuration;
 
 	update(deltaT: number): void {
 		this.sunAngle =
