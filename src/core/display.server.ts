@@ -36,7 +36,7 @@ export class DisplayServer {
 	fitScreen() {
 		const computedStyle = window.getComputedStyle(this.canvas);
 
-		this.canvasSize = new Vector(
+		this.canvasSize = Vector(
 			parseInt(computedStyle.width),
 			parseInt(computedStyle.height)
 		);
@@ -54,7 +54,7 @@ export class DisplayServer {
 			this.canvasSize.y / this.viewRes.y
 		);
 
-		this.viewSize = new Vector(
+		this.viewSize = Vector(
 			this.viewRes.x * upscaleFactor,
 			this.viewRes.y * upscaleFactor
 		);

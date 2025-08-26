@@ -1,15 +1,15 @@
 import { Viewport } from "../../core/viewport";
 import { drawSvg } from "../../core/draw-svg";
 import { GameObject } from "../../core/game-object";
-import { Vector } from "../../core/vector";
-import { createLinearGradient } from "../../utils/create-linear-gradient";
+import { CENTER, Vector, ZERO } from "../../core/vector";
+import { gradient } from "../../utils/gradient";
 import { FishEye } from "./fish-eye";
 import { RoundedScales } from "./rounded-scales";
 import { PickupableInterface } from "../../systems/interactable/interactable.types";
 
 export class Fish extends GameObject implements PickupableInterface {
 	graphic: FishGraphic;
-	size = new Vector(40, 80);
+	size = Vector(40, 80);
 
 	constructor({ flipH = false, ...rest }) {
 		super(rest);
@@ -18,7 +18,7 @@ export class Fish extends GameObject implements PickupableInterface {
 	}
 	baseLayer = 0.75;
 	readonly canBePickedUp = true;
-	origin = Vector.CENTER;
+	origin = CENTER;
 	center = this.size.mul(1 / 2);
 
 	pickup(): void {
@@ -31,8 +31,8 @@ export class Fish extends GameObject implements PickupableInterface {
 
 class FishGraphic extends GameObject {
 	texture: Viewport;
-	size = new Vector(40, 80);
-	origin = Vector.CENTER;
+	size = Vector(40, 80);
+	origin = CENTER;
 	center = this.size.mul(1 / 2);
 
 	isShadowHidden = false;
@@ -42,14 +42,14 @@ class FishGraphic extends GameObject {
 		super(rest);
 		this.flipH = flipH;
 		this.texture = new Viewport({
-			size: new Vector(16, 16),
+			size: Vector(16, 16),
 			children: [
 				new RoundedScales({
 					id: "texture",
 				}),
 			],
 		});
-		let eyePos = this.flipH ? new Vector(23 - 8, 7) : new Vector(17, 7);
+		let eyePos = this.flipH ? Vector(23 - 8, 7) : Vector(17, 7);
 		this.addChildren([this.texture, new FishEye({ pos: eyePos })]);
 	}
 
@@ -83,17 +83,16 @@ class FishGraphic extends GameObject {
 			viewBox: this.size,
 			flipH: this.flipH,
 		});
-		const gradient = createLinearGradient(
+		ctx.fillStyle = gradient(
 			ctx,
-			Vector.ZERO,
-			new Vector(this.size.x, 0),
+			ZERO,
+			Vector(this.size.x, 0),
 			[
 				[0, "#FFFFFF"],
 				[1, "#4a86f5"],
 			],
 			{ flipH: this.flipH }
 		);
-		ctx.fillStyle = gradient;
 		ctx.fill();
 		const pattern = ctx.createPattern(this.texture.canvas, "repeat");
 		ctx.fillStyle = pattern!;

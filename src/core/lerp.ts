@@ -1,5 +1,5 @@
 import { clamp } from "../utils/clamp";
-import { Vector } from "./vector";
+import { Vector, VectorLike } from "./vector";
 
 export type EasingFunction = (val: number) => number;
 
@@ -24,10 +24,10 @@ const numberLerpStrategy: LerpStrategy<number> = {
 	lerp: (from, to, progress) => from + (to - from) * progress,
 };
 
-const vectorLerpStrategy: LerpStrategy<Vector> = {
-	matches: (item) => item instanceof Vector,
+const vectorLerpStrategy: LerpStrategy<VectorLike> = {
+	matches: (item: object): item is VectorLike => "x" in item && "y" in item,
 	lerp: (from, to, progress) =>
-		new Vector(
+		Vector(
 			from.x + (to.x - from.x) * progress,
 			from.y + (to.y - from.y) * progress
 		),
@@ -45,7 +45,7 @@ export function lerp<T extends LerpValue>(from: T, to: T, progress: number): T {
 			return strategy.lerp(from, to, progress);
 		}
 	}
-	throw new Error("Lerp value did not match any strategy");
+	throw new Error(/* "Lerp value did not match any strategy" */);
 }
 
 export function makeFixedTimeIncrementalLerp<T extends LerpValue>(

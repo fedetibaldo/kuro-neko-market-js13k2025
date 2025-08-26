@@ -1,64 +1,56 @@
-export class Vector {
-	x: number;
-	y: number;
+export type VectorLike = { x: number; y: number };
 
-	static ZERO = new Vector();
-	static TOP_LEFT = new Vector();
-	static TOP = new Vector(0.5, 0);
-	static BOTTOM = new Vector(0.5, 1);
-	static BOTTOM_RIGHT = new Vector(1, 1);
-	static CENTER = new Vector(0.5, 0.5);
-	static DOWN = new Vector(0, 1);
+export const Vector = (x: number = 0, y: number = 0) => {
+	return {
+		x,
+		y,
+		add(v: VectorLike) {
+			return Vector(x + v.x, y + v.y);
+		},
+		diff(v: VectorLike) {
+			return Vector(x - v.x, y - v.y);
+		},
+		mulv(v: VectorLike) {
+			return Vector(x * v.x, y * v.y);
+		},
+		oneOver() {
+			return Vector(1 / x, 1 / y);
+		},
+		mul(s: number) {
+			return Vector(x * s, y * s);
+		},
+		rotate(a: number) {
+			return Vector(
+				x * Math.cos(a) - y * Math.sin(a),
+				x * Math.sin(a) + y * Math.cos(a)
+			);
+		},
+		length() {
+			return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+		},
+		equals(v: VectorLike) {
+			return x == v.x && y == v.y;
+		},
+		round() {
+			return Vector(Math.round(x), Math.round(y));
+		},
 
-	constructor(x = 0, y = 0) {
-		this.x = x;
-		this.y = y;
-	}
+		floor() {
+			return Vector(Math.floor(x), Math.floor(y));
+		},
 
-	add(v: Vector) {
-		return new Vector(this.x + v.x, this.y + v.y);
-	}
+		clone() {
+			return Vector(x, y);
+		},
+	};
+};
 
-	diff(v: Vector) {
-		return new Vector(this.x - v.x, this.y - v.y);
-	}
+export type Vector = ReturnType<typeof Vector>;
 
-	mulv(v: Vector) {
-		return new Vector(this.x * v.x, this.y * v.y);
-	}
-
-	oneOver() {
-		return new Vector(1 / this.x, 1 / this.y);
-	}
-
-	mul(s: number) {
-		return new Vector(this.x * s, this.y * s);
-	}
-
-	rotate(a: number) {
-		return new Vector(
-			this.x * Math.cos(a) - this.y * Math.sin(a),
-			this.x * Math.sin(a) + this.y * Math.cos(a)
-		);
-	}
-
-	length() {
-		return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
-	}
-
-	equals(v: Vector) {
-		return this.x == v.x && this.y == v.y;
-	}
-
-	round() {
-		return new Vector(Math.round(this.x), Math.round(this.y));
-	}
-
-	floor() {
-		return new Vector(Math.floor(this.x), Math.floor(this.y));
-	}
-
-	clone() {
-		return new Vector(this.x, this.y);
-	}
-}
+export const ZERO = Vector();
+export const TOP_LEFT = Vector();
+export const TOP = Vector(0.5, 0);
+export const BOTTOM = Vector(0.5, 1);
+export const BOTTOM_RIGHT = Vector(1, 1);
+export const CENTER = Vector(0.5, 0.5);
+export const DOWN = Vector(0, 1);

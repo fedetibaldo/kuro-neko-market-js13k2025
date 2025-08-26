@@ -28,29 +28,29 @@ export class Flexbox extends GameObject {
 		const mainAxis = this.direction == "row" ? "x" : "y";
 		const secondaryAxis = this.direction == "row" ? "y" : "x";
 
-		const direction = new Vector();
-		direction[mainAxis] = 1;
+		const direction = Vector(mainAxis == "x" ? 1 : 0, mainAxis == "y" ? 1 : 0);
 
 		const childrenCumulativeSize = this.children.reduce(
 			(size, child) => size.add(child.size),
-			new Vector()
+			Vector()
 		);
 		const spaceBetweenVector = direction.mul(this.spaceBetween);
 		const childrenTotalSize = childrenCumulativeSize.add(
 			spaceBetweenVector.mul(this.children.length - 1)
 		);
 
-		const offset = new Vector();
+		let mainOffset = 0;
+		let secondaryOffset = 0;
 
 		/* The main axis offset is global and increments child after child */
 
 		// justify == 'start' -> offset[mainAxis] = 0 (already is)
 		if (this.justify == "center") {
-			offset[mainAxis] = this.size
-				.mul(1 / 2)
-				.diff(childrenTotalSize.mul(1 / 2))[mainAxis];
+			mainOffset = this.size.mul(1 / 2).diff(childrenTotalSize.mul(1 / 2))[
+				mainAxis
+			];
 		} else if (this.justify == "end") {
-			offset[mainAxis] = this.size.diff(childrenTotalSize)[mainAxis];
+			mainOffset = this.size.diff(childrenTotalSize)[mainAxis];
 		}
 
 		this.children.forEach((child) => {
@@ -58,15 +58,18 @@ export class Flexbox extends GameObject {
 
 			// align == 'start' -> offset[secondaryAxis] = 0 (already is)
 			if (this.align == "center") {
-				offset[secondaryAxis] = this.size
-					.mul(1 / 2)
-					.diff(child.size.mul(1 / 2))[secondaryAxis];
+				secondaryOffset = this.size.mul(1 / 2).diff(child.size.mul(1 / 2))[
+					secondaryAxis
+				];
 			} else if (this.align == "end") {
-				offset[secondaryAxis] = this.size.diff(child.size)[secondaryAxis];
+				secondaryOffset = this.size.diff(child.size)[secondaryAxis];
 			}
 
-			child.pos = offset.floor();
-			offset[mainAxis] += child.size[mainAxis] + spaceBetweenVector[mainAxis];
+			child.pos = Vector(
+				mainAxis == "x" ? mainOffset : secondaryOffset,
+				mainAxis == "y" ? mainOffset : secondaryOffset
+			); /* .floor(); */
+			mainOffset += child.size[mainAxis] + spaceBetweenVector[mainAxis];
 		});
 	}
 }

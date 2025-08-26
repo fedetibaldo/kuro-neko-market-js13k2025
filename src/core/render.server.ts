@@ -8,7 +8,7 @@ import { diContainer } from "./di-container";
 import { Game } from "./game";
 import { Observable } from "./observable";
 import { RenderableInterface, RendererInterface } from "./render.types";
-import { Vector } from "./vector";
+import { ZERO } from "./vector";
 
 export class RenderServer extends Observable {
 	game: Game;
@@ -46,13 +46,13 @@ export class RenderServer extends Observable {
 		ctx.save();
 		ctx.translate(pos.x, pos.y);
 
-		const origin = getConcreteOrigin(Vector.ZERO, obj.size, obj.origin);
+		const origin = getConcreteOrigin(ZERO, obj.size, obj.origin);
 
-		const scaleDiff = scaleFromOrigin(Vector.ZERO, scale, origin);
+		const scaleDiff = scaleFromOrigin(ZERO, scale, origin);
 		ctx.translate(scaleDiff.x, scaleDiff.y);
 		ctx.scale(scale, scale);
 
-		const rotationDiff = rotateAroundOrigin(Vector.ZERO, rotation, origin);
+		const rotationDiff = rotateAroundOrigin(ZERO, rotation, origin);
 		ctx.translate(rotationDiff.x, rotationDiff.y);
 		ctx.rotate(rotation);
 

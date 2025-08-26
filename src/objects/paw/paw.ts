@@ -11,7 +11,7 @@ import {
 	makeFixedTimeIncrementalLerp,
 } from "../../core/lerp";
 import { StateMachine } from "../../core/state-machine";
-import { Vector } from "../../core/vector";
+import { Vector, ZERO } from "../../core/vector";
 import {
 	ClickEvent,
 	MoveEvent,
@@ -40,15 +40,15 @@ export class CatPawGraphic extends GameObject {
 	game = diContainer.get(Game);
 
 	halfWidth = 22;
-	viewBox = new Vector(this.halfWidth, 71);
-	center = new Vector(this.halfWidth, 22);
+	viewBox = Vector(this.halfWidth, 71);
+	center = Vector(this.halfWidth, 22);
 	origin = this.center.mulv(this.viewBox.oneOver());
 
 	isFaceUp = false;
 	size = this.viewBox;
 
 	override render(ctx: OffscreenCanvasRenderingContext2D) {
-		const viewBox = new Vector(22, 71);
+		const viewBox = Vector(22, 71);
 		const drawCalls = [{}, { offsetX: viewBox.x - 1, flipH: true }];
 		for (const { offsetX, flipH } of drawCalls) {
 			ctx.save();
@@ -180,7 +180,7 @@ export class Paw extends GameObject {
 		if (!this.state.hasTag("moving")) return;
 		const moveDuration = 200 * this.debugMult;
 		this.moveLerp = makeFixedTimeIncrementalLerp(
-			this.moveLerp ? this.moveLerp() : Vector.ZERO,
+			this.moveLerp ? this.moveLerp() : ZERO,
 			point,
 			moveDuration,
 			easeOut
@@ -201,8 +201,8 @@ export class Paw extends GameObject {
 			easeIn
 		);
 		this.offsetLerp = makeFixedTimeIncrementalLerp(
-			this.offsetLerp ? this.offsetLerp() : new Vector(6, 30),
-			new Vector(4, 22),
+			this.offsetLerp ? this.offsetLerp() : Vector(6, 30),
+			Vector(4, 22),
 			pressDuration,
 			easeIn
 		);
@@ -224,8 +224,8 @@ export class Paw extends GameObject {
 			easeOut
 		);
 		this.offsetLerp = makeFixedTimeIncrementalLerp(
-			new Vector(4, 22),
-			new Vector(6, 30),
+			Vector(4, 22),
+			Vector(6, 30),
 			pressDuration,
 			easeOut
 		);
@@ -254,14 +254,14 @@ export class Paw extends GameObject {
 		if (this.offsetLerp) {
 			this.offsetLerp = makeFixedTimeIncrementalLerp(
 				this.offsetLerp(),
-				Vector.ZERO,
+				ZERO,
 				resetDuration,
 				easeInOut
 			);
 		}
 		this.nailLerp = makeFixedTimeIncrementalLerp(
-			new Vector(0, -7.5),
-			Vector.ZERO,
+			Vector(0, -7.5),
+			ZERO,
 			resetDuration,
 			easeIn
 		);
@@ -282,8 +282,8 @@ export class Paw extends GameObject {
 		const nailDuration = 150;
 
 		this.offsetLerp = makeFixedTimeIncrementalLerp(
-			this.offsetLerp ? this.offsetLerp() : Vector.ZERO,
-			new Vector(6, 30),
+			this.offsetLerp ? this.offsetLerp() : ZERO,
+			Vector(6, 30),
 			pointDuration,
 			easeInOut
 		);
@@ -292,8 +292,8 @@ export class Paw extends GameObject {
 
 		if (this.state.hasTag("pointing")) {
 			this.nailLerp = makeFixedTimeIncrementalLerp(
-				this.nailLerp ? this.nailLerp() : Vector.ZERO,
-				new Vector(0, -7.5),
+				this.nailLerp ? this.nailLerp() : ZERO,
+				Vector(0, -7.5),
 				nailDuration,
 				easeOut
 			);
@@ -312,7 +312,7 @@ export class Paw extends GameObject {
 		const dropStage3Duration = 200 * this.debugMult;
 
 		const target = dropTarget.getDropPoint(point);
-		const anticipationOffset = new Vector(0, 40);
+		const anticipationOffset = Vector(0, 40);
 
 		this.moveLerp = makeFixedTimeIncrementalLerp(
 			this.paw.pos,
@@ -336,7 +336,7 @@ export class Paw extends GameObject {
 		this.stagingArea.addChild(item);
 
 		this.offsetLerp = makeFixedTimeIncrementalLerp(
-			Vector.ZERO,
+			ZERO,
 			anticipationOffset,
 			dropStage2Duration,
 			easeInOut
@@ -356,7 +356,7 @@ export class Paw extends GameObject {
 
 		this.offsetLerp = makeFixedTimeIncrementalLerp(
 			anticipationOffset,
-			Vector.ZERO,
+			ZERO,
 			dropStage3Duration,
 			easeInOut
 		);
@@ -383,7 +383,7 @@ export class Paw extends GameObject {
 			.getGlobalPosition()
 			.add(item.center)
 			.diff(item.getLocalPosition());
-		const anticipationOffset = new Vector(0, 40);
+		const anticipationOffset = Vector(0, 40);
 
 		this.moveLerp = makeFixedTimeIncrementalLerp(
 			this.paw.pos,
@@ -393,7 +393,7 @@ export class Paw extends GameObject {
 		);
 
 		this.offsetLerp = makeFixedTimeIncrementalLerp(
-			Vector.ZERO,
+			ZERO,
 			anticipationOffset,
 			pickupStage1Duration,
 			easeInOut
@@ -418,7 +418,7 @@ export class Paw extends GameObject {
 
 		this.offsetLerp = makeFixedTimeIncrementalLerp(
 			anticipationOffset,
-			Vector.ZERO,
+			ZERO,
 			pickupStage2Duration,
 			easeInOut
 		);

@@ -2,14 +2,13 @@ import { Viewport } from "../core/viewport";
 import { GameObject } from "../core/game-object";
 import { Vector } from "../core/vector";
 import { Wood } from "./wood";
-import { DropTargetInterface } from "../systems/interactable/interactable.types";
 
-export class Table extends GameObject implements DropTargetInterface {
+export class Table extends GameObject {
 	override createChildren() {
 		return [
 			new Viewport({
 				id: "wood",
-				size: new Vector(60, 60),
+				size: Vector(60, 60),
 				children: [new Wood()],
 			}),
 		];

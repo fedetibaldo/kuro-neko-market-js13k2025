@@ -11,7 +11,7 @@ import { InteractableServer } from "./systems/interactable/interactable.server";
 import { Pointer } from "./objects/pointer";
 
 const canvas = document.getElementById("game") as HTMLCanvasElement;
-const viewRes = new Vector(360, 240);
+const viewRes = Vector(360, 240);
 
 const game = diContainer.set(Game, new Game({ viewRes }));
 

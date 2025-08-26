@@ -2,7 +2,7 @@ import { diContainer } from "./di-container";
 import { DisplayServer } from "./display.server";
 import { Game } from "./game";
 import { Observable } from "./observable";
-import { Vector } from "./vector";
+import { Vector, ZERO } from "./vector";
 
 export type NormalizedTouchEvent = TouchEvent & {
 	clientX: number;
@@ -14,7 +14,7 @@ export class InputServer extends Observable {
 	displayServer: DisplayServer;
 	game: Game;
 
-	mousePos = Vector.ZERO;
+	mousePos = ZERO;
 	isScrolling = false;
 	isMouseDown = false;
 	isTouchDevice = false;
@@ -113,9 +113,7 @@ export class InputServer extends Observable {
 	}
 
 	onCanvasWheel(e: WheelEvent) {
-		const delta = (
-			e.shiftKey ? new Vector(e.deltaY, 0) : new Vector(0, e.deltaY)
-		)
+		const delta = (e.shiftKey ? Vector(e.deltaY, 0) : Vector(0, e.deltaY))
 			.mul(this.scrollVelocity)
 			.mul(-1);
 		// const delta = dir.mul(this.scrollVelocity)
@@ -132,14 +130,13 @@ export class InputServer extends Observable {
 	}
 
 	eventToVector(e: { clientX: number; clientY: number }) {
-		return new Vector(e.clientX, e.clientY);
+		return Vector(e.clientX, e.clientY);
 	}
 
 	projectPosition(pos: Vector) {
 		const { viewPos, viewRes, viewSize } = this.displayServer;
-		const clickPos = pos.diff(viewPos);
-		clickPos.x = (clickPos.x * viewRes.x) / viewSize.x;
-		clickPos.y = (clickPos.y * viewRes.y) / viewSize.y;
+		let clickPos = pos.diff(viewPos);
+		clickPos = clickPos.mulv(viewRes).mulv(viewSize.oneOver());
 		return clickPos;
 	}
 }

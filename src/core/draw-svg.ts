@@ -201,7 +201,7 @@ export function drawSvg(
 		path = path.slice(nextCommandIndex + 1).trim();
 
 		if (!(name in commands)) {
-			throw new Error(`Unknown command: ${name}`);
+			throw new Error(/* `Unknown command: ${name}` */);
 		}
 
 		return commands[name]!;

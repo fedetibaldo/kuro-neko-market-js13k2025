@@ -1,6 +1,6 @@
 import { Vector } from "../core/vector";
 
-export function createLinearGradient(
+export function gradient(
 	ctx: OffscreenCanvasRenderingContext2D,
 	from: Vector,
 	to: Vector,

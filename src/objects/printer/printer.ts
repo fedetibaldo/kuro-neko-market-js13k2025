@@ -1,17 +1,17 @@
 import { drawSvg } from "../../core/draw-svg";
 import { Flexbox } from "../../core/flexbox";
 import { GameObject } from "../../core/game-object";
-import { Vector } from "../../core/vector";
+import { CENTER, Vector, ZERO } from "../../core/vector";
 import { PickupableInterface } from "../../systems/interactable/interactable.types";
-import { createLinearGradient } from "../../utils/create-linear-gradient";
+import { gradient } from "../../utils/gradient";
 import { Digit, DigitValue } from "../digit";
 import { ButtonGroup } from "./button-group";
 import { activeColor, inactiveColor } from "./colors";
 
 export class Printer extends GameObject {
-	size = new Vector(74, 66);
+	size = Vector(74, 66);
 	center = this.size.mul(1 / 2);
-	origin = Vector.CENTER;
+	origin = CENTER;
 
 	value = 0;
 	leftDigit = this.getChild("left-digit") as Digit;
@@ -54,8 +54,8 @@ export class Printer extends GameObject {
 	createChildren(): GameObject[] {
 		return [
 			new Flexbox({
-				pos: new Vector(6, 7.5),
-				size: new Vector(20, 12),
+				pos: Vector(6, 7.5),
+				size: Vector(20, 12),
 				direction: "row",
 				align: "start",
 				justify: "center",
@@ -66,20 +66,20 @@ export class Printer extends GameObject {
 						color: inactiveColor,
 						fontSize: 10,
 						value: 0,
-						origin: Vector.CENTER,
+						origin: CENTER,
 					}),
 					new Digit({
 						id: "right-digit",
 						color: inactiveColor,
 						fontSize: 10,
 						value: 0,
-						origin: Vector.CENTER,
+						origin: CENTER,
 					}),
 				],
 			}),
 			new ButtonGroup({
 				id: "buttons",
-				pos: new Vector(22, 0),
+				pos: Vector(22, 0),
 			}),
 		];
 	}
@@ -92,7 +92,7 @@ export class Printer extends GameObject {
 
 		ctx.beginPath();
 		ctx.roundRect(0, 0, 74, 66, 12);
-		ctx.fillStyle = createLinearGradient(ctx, Vector.ZERO, new Vector(0, 2), [
+		ctx.fillStyle = gradient(ctx, ZERO, Vector(0, 2), [
 			[0, "#FFFFFF"],
 			[1, "#F3DEF7"],
 		]);
@@ -120,15 +120,10 @@ export class Printer extends GameObject {
 
 		ctx.beginPath();
 		ctx.roundRect(6, 6, 20, 12, 6);
-		ctx.fillStyle = createLinearGradient(
-			ctx,
-			new Vector(6, 6),
-			new Vector(6, 7),
-			[
-				[0, "#732182"],
-				[1, "#D58DE2"],
-			]
-		);
+		ctx.fillStyle = gradient(ctx, Vector(6, 6), Vector(6, 7), [
+			[0, "#732182"],
+			[1, "#D58DE2"],
+		]);
 		ctx.fill();
 	}
 }

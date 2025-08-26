@@ -7,7 +7,7 @@ import { GameObjectData } from "./game-object-data";
 import { Observable } from "./observable";
 import { RenderableInterface } from "./render.types";
 import { UpdatableInterface } from "./update.types";
-import { Vector } from "./vector";
+import { TOP_LEFT, Vector, ZERO } from "./vector";
 
 export type GameObjectArgs = {
 	pos?: Vector;
@@ -39,11 +39,11 @@ export class GameObject
 	children: GameObject[];
 
 	constructor({
-		pos = new Vector(),
+		pos = Vector(),
 		opacity = 1,
 		scale = 1,
-		size = new Vector(),
-		origin = Vector.TOP_LEFT,
+		size = Vector(),
+		origin = TOP_LEFT,
 		rotation = 0,
 		frozen = false,
 		children = [],
@@ -154,9 +154,9 @@ export class GameObject
 	}
 
 	getLocalPosition(): Vector {
-		const origin = getConcreteOrigin(Vector.ZERO, this.size, this.origin);
+		const origin = getConcreteOrigin(ZERO, this.size, this.origin);
 		const positionInSelf = rotateAroundOrigin(
-			scaleFromOrigin(Vector.ZERO, this.scale, origin),
+			scaleFromOrigin(ZERO, this.scale, origin),
 			this.rotation,
 			origin
 		);
@@ -173,13 +173,9 @@ export class GameObject
 		}
 
 		const positionInParent = rotateAroundOrigin(
-			scaleFromOrigin(
-				transformedPosition,
-				this.parent.getGlobalScale(),
-				Vector.ZERO
-			),
+			scaleFromOrigin(transformedPosition, this.parent.getGlobalScale(), ZERO),
 			this.parent.getGlobalRotation(),
-			Vector.ZERO
+			ZERO
 		);
 
 		return positionInParent.add(this.parent.getGlobalPosition());

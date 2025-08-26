@@ -1,20 +1,15 @@
 import { drawSvg } from "../core/draw-svg";
 import { GameObject } from "../core/game-object";
 import { Vector } from "../core/vector";
-import { createLinearGradient } from "../utils/create-linear-gradient";
+import { gradient } from "../utils/gradient";
 import { range } from "../utils/range";
 
 class BeltBackground extends GameObject {
 	render(ctx: OffscreenCanvasRenderingContext2D) {
-		ctx.fillStyle = createLinearGradient(
-			ctx,
-			new Vector(0, 0),
-			new Vector(0, this.size.y / 2),
-			[
-				[0, "#282828"],
-				[1, "#5B5B5B"],
-			]
-		);
+		ctx.fillStyle = gradient(ctx, Vector(0, 0), Vector(0, this.size.y / 2), [
+			[0, "#282828"],
+			[1, "#5B5B5B"],
+		]);
 		ctx.fillRect(0, 0, this.size.x, this.size.y);
 		const radius = this.size.y / 2;
 		for (const index of range(5)) {
@@ -73,11 +68,11 @@ export class Belt extends GameObject {
 	createChildren(): GameObject[] {
 		return [
 			new BeltBackground({
-				size: new Vector(this.size.x, 25),
-				pos: new Vector(0, this.size.y - 10),
+				size: Vector(this.size.x, 25),
+				pos: Vector(0, this.size.y - 10),
 			}),
 			new BeltMiddleLayer({
-				size: new Vector(this.size.x, this.size.y - 10),
+				size: Vector(this.size.x, this.size.y - 10),
 			}),
 		];
 	}

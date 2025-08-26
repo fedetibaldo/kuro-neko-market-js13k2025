@@ -5,7 +5,7 @@ import { Vector } from "../../core/vector";
 export class RoundedScales extends GameObject {
 	constructor(args = {}) {
 		super(args);
-		this.size = new Vector(16, 16);
+		this.size = Vector(16, 16);
 	}
 
 	render(ctx: OffscreenCanvasRenderingContext2D) {
