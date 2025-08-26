@@ -332,6 +332,7 @@ export class Paw extends GameObject {
 
 		item.pos = target.diff(item.center);
 		item.scale = dropTarget.baseLayer / item.baseLayer;
+		item.drop?.();
 		this.stagingArea.addChild(item);
 
 		this.offsetLerp = makeFixedTimeIncrementalLerp(
@@ -427,6 +428,7 @@ export class Paw extends GameObject {
 		const ratioWithItem = this.baseLayer / item.baseLayer;
 		item.scale = ratioWithItem;
 		item.pos = item.center.mul(-1);
+		item.pickup?.();
 		this.paw.addChild(item);
 
 		this.state.action("carry");

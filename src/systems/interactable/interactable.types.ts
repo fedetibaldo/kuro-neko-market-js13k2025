@@ -8,6 +8,8 @@ export type TouchableInterface = GameObject & {
 export type PickupableInterface = TouchableInterface & {
 	canBePickedUp: true;
 	center: Vector;
+	pickup?(): void;
+	drop?(): void;
 };
 
 export type PressableInterface = TouchableInterface & {

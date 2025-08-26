@@ -20,6 +20,13 @@ export class Fish extends GameObject implements PickupableInterface {
 	readonly canBePickedUp = true;
 	origin = Vector.CENTER;
 	center = this.size.mul(1 / 2);
+
+	pickup(): void {
+		this.graphic.isShadowHidden = true;
+	}
+	drop(): void {
+		this.graphic.isShadowHidden = false;
+	}
 }
 
 class FishGraphic extends GameObject {
