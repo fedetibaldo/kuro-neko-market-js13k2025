@@ -41,7 +41,7 @@ export class InteractableServer extends Observable {
 		super();
 		this.game = diContainer.get(Game);
 		this.input = diContainer.get(InputServer);
-		this.input.on("mousemove", () => this.move());
+		this.game.on("tick", () => this.move());
 		this.input.on("mousedown", () => this.click());
 	}
 

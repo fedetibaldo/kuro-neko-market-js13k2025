@@ -29,7 +29,11 @@ export class Fish
 	center = this.size.mul(1 / 2);
 
 	canHost(obj: GameObject) {
-		return obj.id == "ticket" && !this.getChild("ticket");
+		return obj.id == "ticket";
+	}
+	host(obj: PickupableInterface) {
+		this.getChild("ticket")?.destroy();
+		obj.canBePickedUp = false;
 	}
 	getDropPoint(point: Vector): Vector {
 		return this.toGlobal(this.size.mul(1 / 2));

@@ -351,6 +351,7 @@ export class Paw extends GameObject {
 
 		item.rotation -= dropTarget.getGlobalRotation();
 		item.scale = item.scale / dropTarget.scale;
+		dropTarget.host?.(item);
 		dropTarget.addChild(item);
 		item.pos = dropTarget
 			.toLocal(item.pos.add(item.center.mul(item.getGlobalScale())))

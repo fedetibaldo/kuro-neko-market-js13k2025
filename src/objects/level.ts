@@ -3,6 +3,7 @@ import { Game } from "../core/game";
 import { GameObject } from "../core/game-object";
 import { InputServer } from "../core/input.server";
 import { CENTER, Vector, ZERO } from "../core/vector";
+import { clamp } from "../utils/clamp";
 import { Belt, BeltShadow } from "./belt";
 import { Fish } from "./fish/fish";
 import { Paw } from "./paw/paw";
@@ -58,8 +59,14 @@ export class Level extends GameObject {
 						layer: 0.75,
 						canHost: true,
 						size: tableSize,
-						getDropPoint(point: Vector): Vector {
-							return point;
+						getDropPoint(this: GameObject, point: Vector): Vector {
+							const local = this.toLocal(point);
+							const padding = 30;
+							const clamped = Vector(
+								clamp(local.x, padding, this.size.x - padding),
+								clamp(local.y, padding, this.size.y - padding)
+							);
+							return this.toGlobal(clamped);
 						},
 						children: [
 							new Fish({
@@ -83,8 +90,16 @@ export class Level extends GameObject {
 				canHost: true,
 				pos: beltPosition,
 				size: beltSize,
-				getDropPoint(point: Vector): Vector {
-					return point;
+				getDropPoint(this: GameObject, point: Vector): Vector {
+					return this.toGlobal(Vector(point.x, (this.size.y - 10) / 2));
+				},
+				update(deltaT: number) {
+					for (const child of this.children!) {
+						child.pos = child.pos.add(Vector((deltaT / 1000) * 25, 0));
+						if (child.pos.x > game.root.size.x) {
+							child.destroy();
+						}
+					}
 				},
 			}),
 

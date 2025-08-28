@@ -8,6 +8,7 @@ import { Glyph } from "../glyph";
 import { activeColor } from "./colors";
 
 const buttonSize = Vector(14, 14);
+const lastRowButtonSize = Vector(14, 32);
 const fontSize = 10;
 
 export class ButtonGroupButton
@@ -68,14 +69,14 @@ export class ButtonGroup extends GameObject {
 							})
 					),
 					new Flexbox({
-						size: buttonSize,
+						size: lastRowButtonSize,
 						align: "start",
 						direction: "row",
 						justify: "start",
 						spaceBetween,
 						children: [
 							new ButtonGroupButton({
-								size: buttonSize,
+								size: lastRowButtonSize,
 								["onPress"]: () => this.trigger("clear"),
 								children: [
 									new Glyph({
@@ -88,7 +89,7 @@ export class ButtonGroup extends GameObject {
 								],
 							}),
 							new ButtonGroupButton({
-								size: buttonSize,
+								size: lastRowButtonSize,
 								["onValue"]: (e: DigitValue) => this.trigger("value", e),
 								children: [
 									new Digit({
@@ -101,7 +102,7 @@ export class ButtonGroup extends GameObject {
 								],
 							}),
 							new ButtonGroupButton({
-								size: buttonSize,
+								size: lastRowButtonSize.add(Vector(10, 0)),
 								["onPress"]: () => this.trigger("submit"),
 								children: [
 									new Glyph({
