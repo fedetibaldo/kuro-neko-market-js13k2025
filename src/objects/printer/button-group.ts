@@ -7,7 +7,7 @@ import { Digit, DigitValue } from "../digit";
 import { Glyph } from "../glyph";
 import { activeColor } from "./colors";
 
-const buttonSize = Vector(16, 16);
+const buttonSize = Vector(14, 14);
 const fontSize = 10;
 
 export class ButtonGroupButton
@@ -32,7 +32,7 @@ export class ButtonGroupButton
 
 export class ButtonGroup extends GameObject {
 	createChildren(): GameObject[] {
-		const spaceBetween = -1;
+		const spaceBetween = 0;
 		return [
 			new Flexbox({
 				pos: Vector(4, 4),

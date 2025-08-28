@@ -1,25 +1,24 @@
 import { GameObject } from "../../core/game-object";
 import { Vector } from "../../core/vector";
 
-export type TouchableInterface = GameObject & {
-	baseLayer: number;
-};
-
-export type PickupableInterface = TouchableInterface & {
+export type PickupableInterface = GameObject & {
 	canBePickedUp: boolean;
+	baseLayer: number;
 	center: Vector;
 	pickup?(): void;
-	drop?(): void;
+	drop?(target: DropTargetInterface): void;
 };
 
-export type PressableInterface = TouchableInterface & {
+export type PressableInterface = GameObject & {
+	baseLayer: number;
 	canBePressed: true;
 	getPressPoint(point: Vector): Vector;
 	press: () => void;
 };
 
-export type DropTargetInterface = TouchableInterface & {
-	canHost: true;
+export type DropTargetInterface = GameObject & {
+	layer: number;
+	canHost: true | ((obj: GameObject) => boolean);
 	getDropPoint(point: Vector): Vector;
 };
 

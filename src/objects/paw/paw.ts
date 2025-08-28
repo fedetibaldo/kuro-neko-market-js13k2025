@@ -161,7 +161,7 @@ export class Paw extends GameObject {
 		}
 	}
 
-	click({ item, point, dropTarget }: ClickEvent) {
+	click({ item, point, dropTargets }: ClickEvent) {
 		if (item && isPickupable(item)) {
 			this.pickup(item);
 		}
@@ -169,9 +169,14 @@ export class Paw extends GameObject {
 			// item.getPressPoint(point)
 			this.press(item, point);
 		}
-		if (dropTarget) {
-			// dropTarget.getDropPoint(point)
-			this.drop(dropTarget, point);
+		if (dropTargets && this.heldItem) {
+			// TODO: block search (i.e., drop paper on fish -> tap vs fish on fish -> drop on surface behind)
+			const dropTarget = dropTargets.find(
+				(target) => target.canHost === true || target.canHost(this.heldItem!)
+			);
+			if (dropTarget) {
+				this.drop(dropTarget, point);
+			}
 			this.tap(point);
 		}
 	}
@@ -323,7 +328,7 @@ export class Paw extends GameObject {
 
 		this.scaleLerp = makeFixedTimeIncrementalLerp(
 			this.paw.scale,
-			dropTarget.baseLayer / this.baseLayer,
+			dropTarget.layer / this.baseLayer,
 			dropStage1Duration,
 			easeInOut
 		);
@@ -331,8 +336,9 @@ export class Paw extends GameObject {
 		await new Promise((resolve) => setTimeout(resolve, dropStage1Duration));
 
 		item.pos = target.diff(item.center);
-		item.scale = dropTarget.baseLayer / item.baseLayer;
-		item.drop?.();
+		item.scale = dropTarget.layer / item.baseLayer;
+
+		item.drop?.(dropTarget);
 		this.stagingArea.addChild(item);
 
 		this.offsetLerp = makeFixedTimeIncrementalLerp(
@@ -344,11 +350,12 @@ export class Paw extends GameObject {
 
 		await new Promise((resolve) => setTimeout(resolve, dropStage2Duration));
 
-		item.pos = item
-			.getGlobalPosition()
-			.diff(dropTarget.getGlobalPosition())
-			.diff(item.getLocalPosition());
+		item.rotation -= dropTarget.getGlobalRotation();
+		item.scale = item.scale / dropTarget.scale;
 		dropTarget.addChild(item);
+		item.pos = dropTarget
+			.toLocal(item.pos.add(item.center.mul(item.getGlobalScale())))
+			.diff(item.center.mul(item.getGlobalScale()));
 
 		this.graphic.isFaceUp = false;
 
@@ -379,10 +386,7 @@ export class Paw extends GameObject {
 		const pickupStage2Duration = 100 * this.debugMult;
 		const pickupStage3Duration = 200 * this.debugMult;
 
-		const target = item
-			.getGlobalPosition()
-			.add(item.center)
-			.diff(item.getLocalPosition());
+		const target = item.toGlobal(item.center);
 		const anticipationOffset = Vector(0, 40);
 
 		this.moveLerp = makeFixedTimeIncrementalLerp(
@@ -412,6 +416,8 @@ export class Paw extends GameObject {
 		await new Promise((resolve) => setTimeout(resolve, pickupStage1Duration));
 
 		item.pos = target.diff(item.center);
+		item.rotation = item.getGlobalRotation();
+		item.scale = item.getGlobalScale();
 		this.stagingArea.addChild(item);
 
 		this.graphic.isFaceUp = true;

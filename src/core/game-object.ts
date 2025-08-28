@@ -153,10 +153,10 @@ export class GameObject
 		}
 	}
 
-	getLocalPosition(): Vector {
-		const origin = getConcreteOrigin(ZERO, this.size, this.origin);
+	getPositionInSelf(v: Vector = ZERO): Vector {
+		const origin = getConcreteOrigin(v, this.size, this.origin);
 		const positionInSelf = rotateAroundOrigin(
-			scaleFromOrigin(ZERO, this.scale, origin),
+			scaleFromOrigin(v, this.scale, origin),
 			this.rotation,
 			origin
 		);
@@ -164,7 +164,7 @@ export class GameObject
 	}
 
 	getGlobalPosition(): Vector {
-		const positionInSelf = this.getLocalPosition();
+		const positionInSelf = this.getPositionInSelf();
 
 		const transformedPosition = this.pos.add(positionInSelf);
 
@@ -182,11 +182,22 @@ export class GameObject
 	}
 
 	toGlobal(localPoint: Vector) {
-		return localPoint.add(this.getGlobalPosition());
+		const positionInSelfBeforeRotation = localPoint.mul(this.getGlobalScale());
+		const positionInSelf = positionInSelfBeforeRotation.rotate(
+			this.getGlobalRotation()
+		);
+		return positionInSelf.add(this.getGlobalPosition());
 	}
 
-	fromGlobal(globalPoint: Vector) {
-		return globalPoint.diff(this.getGlobalPosition());
+	toLocal(point: Vector) {
+		const pos = this.getGlobalPosition();
+		const positionInSelf = point.diff(pos);
+		const rotatedPositionInSelf = positionInSelf.rotate(-this.rotation);
+		return scaleFromOrigin(
+			rotatedPositionInSelf,
+			this.getGlobalScale(),
+			this.size.mulv(this.origin)
+		);
 	}
 
 	isPointWithinObject(point: Vector) {

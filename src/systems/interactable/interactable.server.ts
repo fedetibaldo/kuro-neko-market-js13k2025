@@ -19,7 +19,7 @@ export type MoveEvent = {
 
 export type ClickEvent = {
 	item: PressableInterface | PickupableInterface | null;
-	dropTarget: DropTargetInterface | null;
+	dropTargets: DropTargetInterface[];
 	point: Vector;
 };
 
@@ -35,7 +35,7 @@ export class InteractableServer extends Observable {
 	input: InputServer;
 
 	hoveredItem: PressableInterface | PickupableInterface | null = null;
-	hoveredDropTarget: DropTargetInterface | null = null;
+	hoveredDropTargets: DropTargetInterface[] = [];
 
 	constructor() {
 		super();
@@ -48,7 +48,7 @@ export class InteractableServer extends Observable {
 	click() {
 		this.trigger("click", {
 			item: this.hoveredItem,
-			dropTarget: this.hoveredDropTarget,
+			dropTargets: this.hoveredDropTargets,
 			point: this.input.mousePos,
 		} satisfies ClickEvent);
 	}
@@ -72,8 +72,8 @@ export class InteractableServer extends Observable {
 				item.isPointWithinObject(this.input.mousePos)
 			) ?? null;
 
-		this.hoveredDropTarget =
-			immutableReverse(passiveItems).find((item) =>
+		this.hoveredDropTargets =
+			immutableReverse(passiveItems).filter((item) =>
 				item.isPointWithinObject(this.input.mousePos)
 			) ?? null;
 

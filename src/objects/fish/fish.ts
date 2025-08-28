@@ -5,9 +5,15 @@ import { CENTER, Vector, ZERO } from "../../core/vector";
 import { gradient } from "../../utils/gradient";
 import { FishEye } from "./fish-eye";
 import { RoundedScales } from "./rounded-scales";
-import { PickupableInterface } from "../../systems/interactable/interactable.types";
+import {
+	DropTargetInterface,
+	PickupableInterface,
+} from "../../systems/interactable/interactable.types";
 
-export class Fish extends GameObject implements PickupableInterface {
+export class Fish
+	extends GameObject
+	implements PickupableInterface, DropTargetInterface
+{
 	graphic: FishGraphic;
 	size = Vector(40, 80);
 
@@ -16,16 +22,24 @@ export class Fish extends GameObject implements PickupableInterface {
 		this.graphic = new FishGraphic({ flipH });
 		this.addChildren([this.graphic]);
 	}
+	layer = 0.75;
 	baseLayer = 0.75;
 	readonly canBePickedUp = true;
 	origin = CENTER;
 	center = this.size.mul(1 / 2);
 
+	canHost(obj: GameObject) {
+		return obj.id == "ticket" && !this.getChild("ticket");
+	}
+	getDropPoint(point: Vector): Vector {
+		return this.toGlobal(this.size.mul(1 / 2));
+	}
 	pickup(): void {
 		this.graphic.isShadowHidden = true;
 	}
-	drop(): void {
+	drop(target: DropTargetInterface) {
 		this.graphic.isShadowHidden = false;
+		this.layer = target.layer;
 	}
 }
 

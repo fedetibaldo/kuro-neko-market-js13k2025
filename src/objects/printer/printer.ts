@@ -90,6 +90,7 @@ export class Printer extends GameObject {
 	}
 
 	async onSubmit() {
+		if (this.ticketLerp) return;
 		const [left, right] = this.value;
 		if (!left && !right) return;
 		if (left) {
@@ -104,7 +105,7 @@ export class Printer extends GameObject {
 
 		await new Promise((resolve) => setTimeout(resolve, 500));
 
-		const nextTicket = new Paper({ pos: Vector(-2, 29) });
+		const nextTicket = new Paper({ id: "ticket", pos: Vector(-2, 29) });
 		this.tickets.addChild(nextTicket);
 
 		this.ticket.canBePickedUp = true;
@@ -131,7 +132,7 @@ export class Printer extends GameObject {
 		return [
 			new GameObject({
 				id: "tickets",
-				children: [new Paper({ pos: Vector(-2, 29) })],
+				children: [new Paper({ id: "ticket", pos: Vector(-2, 29) })],
 			}),
 			new PrinterMiddleLayer(),
 			new Flexbox({

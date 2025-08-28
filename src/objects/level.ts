@@ -55,7 +55,7 @@ export class Level extends GameObject {
 						pos: Vector(game.root.size.x - 90, 15),
 					}),
 					new GameObject({
-						baseLayer: 0.75,
+						layer: 0.75,
 						canHost: true,
 						size: tableSize,
 						getDropPoint(point: Vector): Vector {
@@ -65,7 +65,8 @@ export class Level extends GameObject {
 							new Fish({
 								pos: Vector(20, 10),
 								origin: CENTER,
-								rotation: (-Math.PI / 4) * 3,
+								rotation: Math.PI / 2,
+								// rotation: (-Math.PI / 4) * 3,
 							}),
 							new Fish({
 								pos: Vector(60, 15),
@@ -79,7 +80,7 @@ export class Level extends GameObject {
 			}),
 
 			new GameObject({
-				baseLayer: 0.4,
+				layer: 0.4,
 				canHost: true,
 				pos: beltPosition,
 				size: beltSize,
