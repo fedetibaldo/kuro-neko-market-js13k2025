@@ -2,8 +2,8 @@ export type VectorLike = { x: number; y: number };
 
 export const Vector = (x: number = 0, y: number = 0) => {
 	return {
-		x,
-		y,
+		["x"]: x,
+		["y"]: y,
 		add(v: VectorLike) {
 			return Vector(x + v.x, y + v.y);
 		},

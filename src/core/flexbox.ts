@@ -24,7 +24,7 @@ export class Flexbox extends GameObject {
 	}: FlexboxArgs) {
 		super({ direction, spaceBetween, align, justify, ...rest });
 	}
-	onChildrenChange() {
+	["onChildrenChange"]() {
 		const mainAxis = this.direction == "row" ? "x" : "y";
 		const secondaryAxis = this.direction == "row" ? "y" : "x";
 

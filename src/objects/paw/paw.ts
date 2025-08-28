@@ -108,7 +108,6 @@ export class Paw extends GameObject {
 	stagingArea = this.getChild("staging")!;
 
 	state = new StateMachine(pawStateMachine);
-	debugMult = 1;
 
 	heldItem: PickupableInterface | null = null;
 	movePos = this.pos;
@@ -183,7 +182,7 @@ export class Paw extends GameObject {
 
 	seek(point: Vector) {
 		if (!this.state.hasTag("moving")) return;
-		const moveDuration = 200 * this.debugMult;
+		const moveDuration = 200;
 		this.moveLerp = makeFixedTimeIncrementalLerp(
 			this.moveLerp ? this.moveLerp() : ZERO,
 			point,
@@ -197,7 +196,7 @@ export class Paw extends GameObject {
 		this.state.action("press");
 
 		const target = item.getPressPoint(point);
-		const pressDuration = 100 * this.debugMult;
+		const pressDuration = 100;
 
 		this.scaleLerp = makeFixedTimeIncrementalLerp(
 			1,
@@ -312,9 +311,9 @@ export class Paw extends GameObject {
 
 		this.heldItem = null;
 
-		const dropStage1Duration = 100 * this.debugMult;
-		const dropStage2Duration = 100 * this.debugMult;
-		const dropStage3Duration = 200 * this.debugMult;
+		const dropStage1Duration = 100;
+		const dropStage2Duration = 100;
+		const dropStage3Duration = 200;
 
 		const target = dropTarget.getDropPoint(point);
 		const anticipationOffset = Vector(0, 40);
@@ -382,9 +381,9 @@ export class Paw extends GameObject {
 
 		this.heldItem = item;
 
-		const pickupStage1Duration = 100 * this.debugMult;
-		const pickupStage2Duration = 100 * this.debugMult;
-		const pickupStage3Duration = 200 * this.debugMult;
+		const pickupStage1Duration = 100;
+		const pickupStage2Duration = 100;
+		const pickupStage3Duration = 200;
 
 		const target = item.toGlobal(item.center);
 		const anticipationOffset = Vector(0, 40);

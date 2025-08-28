@@ -74,7 +74,7 @@ export class Printer extends GameObject {
 		this.buttons.on("submit", () => this.onSubmit()),
 	];
 
-	onDestroy() {
+	["onDestroy"]() {
 		this.listeners.forEach((off) => off());
 	}
 

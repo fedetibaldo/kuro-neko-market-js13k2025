@@ -8,43 +8,43 @@ type PawStateMachine = StateMachineDef<
 export const pawStateMachine: PawStateMachine = {
 	initialState: "idling",
 	states: {
-		idling: {
+		["idling"]: {
 			tags: ["moving"],
 			actions: {
-				point: { target: "pointing" },
-				pickup: { target: "pickingUp" },
-				tap: { target: "idling" },
+				["point"]: { target: "pointing" },
+				["pickup"]: { target: "pickingUp" },
+				["tap"]: { target: "idling" },
 			},
 		},
-		pointing: {
+		["pointing"]: {
 			tags: ["moving", "pointing"],
 			actions: {
-				press: { target: "pressing" },
-				idle: { target: "idling" },
+				["press"]: { target: "pressing" },
+				["idle"]: { target: "idling" },
 			},
 		},
-		pressing: {
+		["pressing"]: {
 			tags: ["pointing"],
 			actions: {
-				next: { target: "idling" },
+				["next"]: { target: "idling" },
 			},
 		},
-		pickingUp: {
+		["pickingUp"]: {
 			tags: [],
 			actions: {
-				carry: { target: "carrying" },
+				["carry"]: { target: "carrying" },
 			},
 		},
-		carrying: {
+		["carrying"]: {
 			tags: ["moving"],
 			actions: {
-				drop: { target: "dropping" },
+				["drop"]: { target: "dropping" },
 			},
 		},
-		dropping: {
+		["dropping"]: {
 			tags: [],
 			actions: {
-				next: { target: "idling" },
+				["next"]: { target: "idling" },
 			},
 		},
 	},
