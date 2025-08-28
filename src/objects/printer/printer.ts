@@ -1,89 +1,15 @@
 import { drawSvg } from "../../core/draw-svg";
 import { Flexbox } from "../../core/flexbox";
 import { GameObject } from "../../core/game-object";
-import { CENTER, Vector, ZERO } from "../../core/vector";
-import { PickupableInterface } from "../../systems/interactable/interactable.types";
+import { IncrementalLerp, makeFixedTimeIncrementalLerp } from "../../core/lerp";
+import { CENTER, Vector, VectorLike, ZERO } from "../../core/vector";
 import { gradient } from "../../utils/gradient";
 import { Digit, DigitValue } from "../digit";
+import { Paper } from "../paper";
 import { ButtonGroup } from "./button-group";
 import { activeColor, inactiveColor } from "./colors";
 
-export class Printer extends GameObject {
-	size = Vector(74, 66);
-	center = this.size.mul(1 / 2);
-	origin = CENTER;
-
-	value = 0;
-	leftDigit = this.getChild("left-digit") as Digit;
-	rightDigit = this.getChild("right-digit") as Digit;
-	buttons = this.getChild("buttons") as ButtonGroup;
-
-	listeners = [
-		this.buttons.on("value", (e: DigitValue) => this.onValue(e)),
-		this.buttons.on("clear", () => this.setValue(0)),
-		this.buttons.on("submit", () => this.onSubmit()),
-	];
-
-	onDestroy() {
-		this.listeners.forEach((off) => off());
-	}
-
-	onValue(value: DigitValue) {
-		const nextValue = `${this.value.toString().at(-1)}${value}`;
-		this.setValue(parseInt(nextValue));
-	}
-
-	onSubmit() {
-		this.setValue(0);
-	}
-
-	setValue(value: number) {
-		this.value = value;
-		const digitValues = value.toString().split("").reverse();
-		const leftDigitValue = parseInt(digitValues[1] ?? "0") as DigitValue;
-		const rightDigitValue = parseInt(digitValues[0] ?? "0") as DigitValue;
-		const leftColor = leftDigitValue ? activeColor : inactiveColor;
-		const rightColor =
-			leftDigitValue || rightDigitValue ? activeColor : inactiveColor;
-		this.leftDigit.setValue(leftDigitValue);
-		this.leftDigit.color = leftColor;
-		this.rightDigit.setValue(rightDigitValue);
-		this.rightDigit.color = rightColor;
-	}
-
-	createChildren(): GameObject[] {
-		return [
-			new Flexbox({
-				pos: Vector(6, 7.5),
-				size: Vector(20, 12),
-				direction: "row",
-				align: "start",
-				justify: "center",
-				spaceBetween: -2,
-				children: [
-					new Digit({
-						id: "left-digit",
-						color: inactiveColor,
-						fontSize: 10,
-						value: 0,
-						origin: CENTER,
-					}),
-					new Digit({
-						id: "right-digit",
-						color: inactiveColor,
-						fontSize: 10,
-						value: 0,
-						origin: CENTER,
-					}),
-				],
-			}),
-			new ButtonGroup({
-				id: "buttons",
-				pos: Vector(22, 0),
-			}),
-		];
-	}
-
+class PrinterMiddleLayer extends GameObject {
 	render(ctx: OffscreenCanvasRenderingContext2D): void {
 		ctx.beginPath();
 		ctx.roundRect(0, 0, 74, 66 + 7, 12);
@@ -125,5 +51,117 @@ export class Printer extends GameObject {
 			[1, "#D58DE2"],
 		]);
 		ctx.fill();
+	}
+}
+
+export class Printer extends GameObject {
+	size = Vector(74, 66);
+	center = this.size.mul(1 / 2);
+	origin = CENTER;
+
+	value = [0, 0] as [DigitValue, DigitValue];
+	leftDigit = this.getChild("left-digit") as Digit;
+	rightDigit = this.getChild("right-digit") as Digit;
+	buttons = this.getChild("buttons") as ButtonGroup;
+	tickets = this.getChild("tickets") as GameObject;
+	ticket = this.tickets.children[0] as Paper;
+
+	ticketLerp: IncrementalLerp<Vector> | null = null;
+
+	listeners = [
+		this.buttons.on("value", (e: DigitValue) => this.pushValue(e)),
+		this.buttons.on("clear", () => this.reset()),
+		this.buttons.on("submit", () => this.onSubmit()),
+	];
+
+	onDestroy() {
+		this.listeners.forEach((off) => off());
+	}
+
+	reset() {
+		this.pushValue(0);
+		this.pushValue(0);
+	}
+
+	update(deltaT: number): void {
+		if (this.ticketLerp) {
+			this.ticket.pos = this.ticketLerp(deltaT);
+		}
+	}
+
+	async onSubmit() {
+		const [left, right] = this.value;
+		if (!left && !right) return;
+		if (left) {
+			this.ticket.addChild(new Digit({ value: left }));
+		}
+		this.ticket.addChild(new Digit({ value: right }));
+		this.ticketLerp = makeFixedTimeIncrementalLerp(
+			this.ticket.pos,
+			this.ticket.pos.add(Vector(-21, 0)),
+			500
+		);
+
+		await new Promise((resolve) => setTimeout(resolve, 500));
+
+		const nextTicket = new Paper({ pos: Vector(-2, 29) });
+		this.tickets.addChild(nextTicket);
+
+		this.ticket.canBePickedUp = true;
+		this.ticketLerp = null;
+
+		this.ticket = nextTicket;
+
+		this.reset();
+	}
+
+	pushValue(value: DigitValue) {
+		this.value = [this.value[1], value];
+		const [leftDigitValue, rightDigitValue] = this.value;
+		const leftColor = leftDigitValue ? activeColor : inactiveColor;
+		const rightColor =
+			leftDigitValue || rightDigitValue ? activeColor : inactiveColor;
+		this.leftDigit.setValue(leftDigitValue);
+		this.leftDigit.color = leftColor;
+		this.rightDigit.setValue(rightDigitValue);
+		this.rightDigit.color = rightColor;
+	}
+
+	createChildren(): GameObject[] {
+		return [
+			new GameObject({
+				id: "tickets",
+				children: [new Paper({ pos: Vector(-2, 29) })],
+			}),
+			new PrinterMiddleLayer(),
+			new Flexbox({
+				pos: Vector(6, 7.5),
+				size: Vector(20, 12),
+				direction: "row",
+				align: "start",
+				justify: "center",
+				spaceBetween: -2,
+				children: [
+					new Digit({
+						id: "left-digit",
+						color: inactiveColor,
+						fontSize: 10,
+						value: 0,
+						origin: CENTER,
+					}),
+					new Digit({
+						id: "right-digit",
+						color: inactiveColor,
+						fontSize: 10,
+						value: 0,
+						origin: CENTER,
+					}),
+				],
+			}),
+			new ButtonGroup({
+				id: "buttons",
+				pos: Vector(22, 0),
+			}),
+		];
 	}
 }

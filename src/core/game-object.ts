@@ -94,7 +94,7 @@ export class GameObject
 			child.parent.removeChild(child);
 		}
 		child.parent = this;
-		this.children[index] = child;
+		this.children.splice(index, 0, child);
 		child.trigger("mount");
 		this.trigger("childrenChange");
 	}

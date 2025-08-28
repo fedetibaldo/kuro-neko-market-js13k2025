@@ -6,7 +6,7 @@ export type TouchableInterface = GameObject & {
 };
 
 export type PickupableInterface = TouchableInterface & {
-	canBePickedUp: true;
+	canBePickedUp: boolean;
 	center: Vector;
 	pickup?(): void;
 	drop?(): void;

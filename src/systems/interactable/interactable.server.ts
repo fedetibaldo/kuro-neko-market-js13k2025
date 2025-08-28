@@ -58,7 +58,7 @@ export class InteractableServer extends Observable {
 		const passiveItems: DropTargetInterface[] = [];
 
 		walk<GameObjectData>(this.game.root, (obj) => {
-			if (isPressable(obj) || isPickupable(obj)) {
+			if (isPressable(obj) || (isPickupable(obj) && obj.canBePickedUp)) {
 				activeItems.push(obj);
 			}
 			if (isDropTarget(obj)) {
