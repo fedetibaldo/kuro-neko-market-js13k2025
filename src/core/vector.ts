@@ -49,6 +49,8 @@ export type Vector = ReturnType<typeof Vector>;
 
 export const ZERO = Vector();
 export const TOP_LEFT = Vector();
+export const BOTTOM_LEFT = Vector(0, 1);
+export const LEFT = Vector(0, 0.5);
 export const TOP = Vector(0.5, 0);
 export const BOTTOM = Vector(0.5, 1);
 export const BOTTOM_RIGHT = Vector(1, 1);

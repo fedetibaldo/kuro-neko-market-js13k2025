@@ -3,9 +3,12 @@ import { Game } from "../core/game";
 import { GameObject } from "../core/game-object";
 import { InputServer } from "../core/input.server";
 import { CENTER, Vector, ZERO } from "../core/vector";
+import { fishTypes } from "../data/fish-types";
+import { chooseVariants } from "../utils/choose-variants";
 import { clamp } from "../utils/clamp";
 import { Belt, BeltShadow } from "./belt";
 import { Fish } from "./fish/fish";
+import { Notebook } from "./notebook";
 import { Paw } from "./paw/paw";
 import { Printer } from "./printer/printer";
 import { Sea } from "./sea";
@@ -51,6 +54,11 @@ export class Level extends GameObject {
 				pos: Vector(0, game.root.size.y - 90),
 				size: tableSize,
 				children: [
+					new Notebook({
+						pos: Vector(5, 23),
+						fishTypes: fishTypes,
+						chosenVariants: chooseVariants(fishTypes),
+					}),
 					new Printer({
 						id: "printer",
 						pos: Vector(game.root.size.x - 90, 15),
@@ -70,21 +78,21 @@ export class Level extends GameObject {
 						},
 						children: [
 							new Fish({
-								pos: Vector(20, 10),
+								pos: Vector(95, 10),
 								origin: CENTER,
 								type: 0,
 								rotation: (-Math.PI / 4) * 3,
 							}),
 							new Fish({
 								type: 1,
-								pos: Vector(60, 15),
+								pos: Vector(130, 15),
 								origin: CENTER,
 								rotation: (Math.PI / 4) * 3,
 								flipH: true,
 							}),
 							new Fish({
 								type: 2,
-								pos: Vector(110, 15),
+								pos: Vector(180, 15),
 								origin: CENTER,
 								rotation: (Math.PI / 4) * 3,
 								flipH: true,

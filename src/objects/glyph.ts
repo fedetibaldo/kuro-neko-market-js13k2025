@@ -1,30 +1,16 @@
-import { drawSvg } from "../core/draw-svg";
-import { GameObject, GameObjectArgs } from "../core/game-object";
+import { NewOmit } from "../utils/new-omit";
+import { Svg, SvgArgs } from "./svg";
 
-export type GlyphArgs = GameObjectArgs & {
-	color?: string;
+export type GlyphArgs = NewOmit<SvgArgs, "lineWidth"> & {
 	fontSize?: number;
-	path: string;
 };
 
-export class Glyph extends GameObject {
-	color: string;
+export class Glyph extends Svg {
 	fontSize: number;
-	path: string;
 
-	constructor({ color = "#000000", fontSize = 12, path, ...rest }: GlyphArgs) {
-		super(rest);
-		this.path = path;
-		this.color = color;
+	constructor({ fontSize = 12, ...rest }: GlyphArgs) {
+		super({ ...rest, lineWidth: 2 });
 		this.fontSize = fontSize;
 		this.scale = fontSize / 12;
-	}
-
-	render(ctx: OffscreenCanvasRenderingContext2D): void {
-		drawSvg(ctx, { path: this.path });
-		ctx.lineWidth = 2;
-		ctx.lineCap = "round";
-		ctx.strokeStyle = this.color;
-		ctx.stroke();
 	}
 }

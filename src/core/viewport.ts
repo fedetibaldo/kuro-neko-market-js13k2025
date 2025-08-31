@@ -1,8 +1,9 @@
+import { NewOmit } from "../utils/new-omit";
 import { GameObject, GameObjectArgs } from "./game-object";
 import { RendererInterface } from "./render.types";
 import { Vector } from "./vector";
 
-export type ViewportArgs = Omit<GameObjectArgs, "size"> & {
+export type ViewportArgs = NewOmit<GameObjectArgs, "size"> & {
 	size: Vector;
 };
 
