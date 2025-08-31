@@ -84,7 +84,7 @@ export class Level extends GameObject {
 							}),
 							new Fish({
 								type: 2,
-								pos: Vector(80, 15),
+								pos: Vector(110, 15),
 								origin: CENTER,
 								rotation: (Math.PI / 4) * 3,
 								flipH: true,

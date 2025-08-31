@@ -273,6 +273,9 @@ export function drawSvg(
 			if (command === m || command === mFirst) {
 				command = l;
 			}
+			if (command === M) {
+				command = L;
+			}
 		}
 	}
 }
