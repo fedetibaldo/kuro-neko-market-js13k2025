@@ -2,16 +2,15 @@ import { drawSvg } from "../core/draw-svg";
 import { Flexbox } from "../core/flexbox";
 import { GameObject, GameObjectArgs } from "../core/game-object";
 import {
-	BOTTOM,
-	BOTTOM_LEFT,
-	CENTER,
-	LEFT,
-	TOP_LEFT,
-	Vector,
-	ZERO,
-} from "../core/vector";
+	easeIn,
+	easeOut,
+	IncrementalLerp,
+	makeFixedTimeIncrementalLerp,
+} from "../core/lerp";
+import { BOTTOM, BOTTOM_LEFT, CENTER, Vector, ZERO } from "../core/vector";
 import { FishType } from "../data/fish-types";
-import { VariantChoice, VariantChoices } from "../utils/choose-variants";
+import { PressableInterface } from "../systems/interactable/interactable.types";
+import { VariantChoices } from "../utils/choose-variants";
 import { gradient } from "../utils/gradient";
 import { range } from "../utils/range";
 import { CurrencySign } from "./currency-sign";
@@ -23,17 +22,50 @@ type NotebookArgs = GameObjectArgs & {
 	fishTypes: FishType[];
 	chosenVariants: VariantChoices;
 };
+const size = Vector(80, 63);
 
-export class Notebook extends GameObject {
+export class Notebook extends GameObject implements PressableInterface {
 	fishTypes: FishType[];
 	chosenVariants: VariantChoices;
 	page: number;
+	size = size;
+	origin = CENTER;
+
+	baseLayer = 0.8;
+	readonly canBePressed = true;
+
+	scaleLerp: IncrementalLerp<number> | undefined;
+
+	getPressPoint(point: Vector): Vector {
+		return this.toGlobal(this.size.mul(1 / 2));
+	}
+
+	async press() {
+		const duration = 200;
+		const lerp = makeFixedTimeIncrementalLerp(1, 0.75, duration / 2, easeIn);
+		this.scaleLerp = lerp;
+		await new Promise((resolve) => setTimeout(resolve, duration / 2));
+		this.onPageChange((this.page + 1) % this.fishTypes.length);
+		if (this.scaleLerp !== lerp) return;
+		this.scaleLerp = makeFixedTimeIncrementalLerp(
+			0.75,
+			1,
+			duration / 2,
+			easeOut
+		);
+	}
+
+	update(deltaT: number) {
+		if (this.scaleLerp) {
+			this.scale = this.scaleLerp(deltaT);
+		}
+	}
 
 	constructor({ fishTypes, chosenVariants, ...rest }: NotebookArgs) {
 		super(rest);
 		this.fishTypes = fishTypes;
 		this.chosenVariants = chosenVariants;
-		this.onPageChange(2);
+		this.onPageChange(0);
 	}
 
 	onPageChange(page: number) {
@@ -51,9 +83,7 @@ export class Notebook extends GameObject {
 				id: "page",
 				rotation: -Math.PI / 32,
 				children: [
-					new Page({
-						size: Vector(80, 63),
-					}),
+					new Page({ size }),
 					new Circle({
 						size: Vector(24, 24),
 						pos: Vector(4, 7),
@@ -127,7 +157,7 @@ export class Notebook extends GameObject {
 										children: [
 											new Circle({
 												pos: Vector(10, 0),
-												opacity: 0.4,
+												opacity: 0.5,
 												size: Vector(4, 4),
 												color,
 											}),

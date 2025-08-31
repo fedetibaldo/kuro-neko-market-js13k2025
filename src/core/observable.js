@@ -29,6 +29,7 @@ export class Observable {
 		}
 	}
 	destroy() {
+		this.trigger("destroy");
 		this.subs = [];
 	}
 }

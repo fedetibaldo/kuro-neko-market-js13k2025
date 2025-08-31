@@ -77,8 +77,8 @@ export class GameObject
 			this.parent.removeChild(this);
 		}
 		const children = this.children;
-		this.children = [];
 		children.forEach((child) => child.destroy());
+		this.children = [];
 	}
 
 	createChildren(): GameObject[] {
@@ -120,8 +120,7 @@ export class GameObject
 	}
 
 	removeChild(toRemove: GameObject) {
-		const index = this.children.findIndex((child) => child === toRemove);
-		this.children.splice(index, 1);
+		this.children = this.children.filter((child) => child !== toRemove);
 		this.trigger("childrenChange");
 	}
 

@@ -5,42 +5,42 @@ export const Vector = (x: number = 0, y: number = 0) => {
 		["x"]: x,
 		["y"]: y,
 		add(v: VectorLike) {
-			return Vector(x + v.x, y + v.y);
+			return Vector(this.x + v.x, this.y + v.y);
 		},
 		diff(v: VectorLike) {
-			return Vector(x - v.x, y - v.y);
+			return Vector(this.x - v.x, this.y - v.y);
 		},
 		mulv(v: VectorLike) {
-			return Vector(x * v.x, y * v.y);
+			return Vector(this.x * v.x, this.y * v.y);
 		},
 		oneOver() {
-			return Vector(1 / x, 1 / y);
+			return Vector(1 / this.x, 1 / this.y);
 		},
 		mul(s: number) {
-			return Vector(x * s, y * s);
+			return Vector(this.x * s, this.y * s);
 		},
 		rotate(a: number) {
 			return Vector(
-				x * Math.cos(a) - y * Math.sin(a),
-				x * Math.sin(a) + y * Math.cos(a)
+				this.x * Math.cos(a) - this.y * Math.sin(a),
+				this.x * Math.sin(a) + this.y * Math.cos(a)
 			);
 		},
 		length() {
-			return Math.sqrt(Math.pow(x, 2) + Math.pow(y, 2));
+			return Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2));
 		},
 		equals(v: VectorLike) {
-			return x == v.x && y == v.y;
+			return this.x == v.x && this.y == v.y;
 		},
 		round() {
-			return Vector(Math.round(x), Math.round(y));
+			return Vector(Math.round(this.x), Math.round(this.y));
 		},
 
 		floor() {
-			return Vector(Math.floor(x), Math.floor(y));
+			return Vector(Math.floor(this.x), Math.floor(this.y));
 		},
 
 		clone() {
-			return Vector(x, y);
+			return Vector(this.x, this.y);
 		},
 	};
 };
