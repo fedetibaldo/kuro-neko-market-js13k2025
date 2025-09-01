@@ -10,15 +10,23 @@ export const chooseVariants = (fishTypes: FishType[]) => {
 	for (const type of fishTypes) {
 		const variants = shuffle(type.variants).slice(0, 3);
 
-		const fishVariantChoices = variants.reduce(
-			(acc: VariantChoice[], variantOptions): VariantChoice[] => {
-				const option = pickRandom(variantOptions);
-				const modifier = !!option.eyeColor
-					? randomInt(-3, 0)
-					: randomInt(0, 3) || randomInt(-2, 0);
-				return [...acc, [option, modifier]];
-			},
-			[]
+		let fishVariantChoices: VariantChoice[] = [];
+		do {
+			fishVariantChoices = variants.reduce(
+				(acc: VariantChoice[], variantOptions): VariantChoice[] => {
+					const option = pickRandom(variantOptions);
+					const modifier = !!option.eyeColor
+						? randomInt(-3, 0)
+						: randomInt(0, 3) || randomInt(-2, 0);
+					return [...acc, [option, modifier]];
+				},
+				[]
+			);
+		} while (
+			fishVariantChoices.reduce(
+				(sum: number, [, modifier]) => sum + modifier,
+				type.basePrice
+			) < 1
 		);
 
 		variantChoices.push(fishVariantChoices);

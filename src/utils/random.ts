@@ -17,5 +17,5 @@ export const shuffle = <T>(array: T[]): T[] => {
 		copy[i] = copy[j]!;
 		copy[j] = temp;
 	}
-	return array;
+	return copy;
 };

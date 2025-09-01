@@ -1,12 +1,19 @@
 import { diContainer } from "../core/di-container";
 import { Game } from "../core/game";
-import { GameObject } from "../core/game-object";
-import { InputServer } from "../core/input.server";
-import { CENTER, Vector, ZERO } from "../core/vector";
-import { fishTypes } from "../data/fish-types";
-import { chooseFish, easyStrategy } from "../utils/choose-fish";
-import { chooseVariants } from "../utils/choose-variants";
+import { GameObject, GameObjectArgs } from "../core/game-object";
+import { Vector } from "../core/vector";
+import { FishType, fishTypes } from "../data/fish-types";
+import { DropTargetInterface } from "../systems/interactable/interactable.types";
+import {
+	chaosStrategy,
+	chooseFish,
+	easyStrategy,
+	hardStrategy,
+	mediumStrategy,
+} from "../utils/choose-fish";
+import { chooseVariants, VariantChoices } from "../utils/choose-variants";
 import { clamp } from "../utils/clamp";
+import { chance } from "../utils/random";
 import { Belt, BeltShadow } from "./belt";
 import { Fish } from "./fish/fish";
 import { Notebook } from "./notebook";
@@ -16,18 +23,75 @@ import { Sea } from "./sea";
 import { Sky } from "./sky";
 import { Table } from "./table";
 
+type LevelArgs = GameObjectArgs & {
+	difficulty: 0 | 1 | 2 | 3;
+};
+
 export class Level extends GameObject {
-	input = diContainer.get(InputServer);
+	isFirst = true;
+	t = 0;
+	tToSpawn: number;
+	difficulty: 0 | 1 | 2 | 3;
+	levelFishTypes: FishType[];
+	levelVariants: VariantChoices[];
 
-	paw = this.getChild("paw") as Paw;
-	table = this.getChild("table") as GameObject;
-	belt = this.getChild("belt") as GameObject;
-	printer = this.getChild("printer") as Printer;
+	spawnFish(type: FishType) {
+		const flipH = chance(1 / 2);
+		const belt = this.getChild("belt")! as DropTargetInterface;
+		const fish = new Fish({
+			flipH,
+			rotation: (-Math.PI / 4) * 3 * (flipH ? -1 : 1),
+			type,
+		});
+		fish.pos = belt
+			.toLocal(belt.getDropPoint(Vector(-30, 0)))
+			.diff(fish.size.mulv(fish.origin));
+		fish.scale = belt.layer / fish.baseLayer;
+		belt.addChild(fish);
+	}
 
-	returnPosition = ZERO;
+	update(deltaT: number): void {
+		if (this.isFirst && this.difficulty < 3) {
+			this.spawnFish(this.levelFishTypes.at(-1)!);
+			this.isFirst = false;
+		}
 
-	createChildren() {
+		const strategies = [
+			easyStrategy,
+			mediumStrategy,
+			hardStrategy,
+			chaosStrategy,
+		];
+
+		this.t += deltaT / 1000;
+		const shouldSpawn = this.t >= this.tToSpawn;
+		if (shouldSpawn) {
+			this.t = 0;
+			this.spawnFish(
+				chooseFish(
+					this.levelFishTypes,
+					this.levelVariants,
+					strategies[this.difficulty]!
+				)
+			);
+		}
+	}
+
+	constructor({ difficulty, ...rest }: LevelArgs) {
+		super(rest);
+		this.difficulty = difficulty;
+
 		const game = diContainer.get(Game);
+
+		const velocity = 30; // px / s
+		const time = 120;
+		const timeToCrossScreen = game.root.size.x / velocity;
+		const timeUntilLastSpawn = time - timeToCrossScreen;
+		const spawns = 15 + difficulty * 3;
+		this.tToSpawn = timeUntilLastSpawn / spawns;
+
+		this.levelFishTypes = fishTypes.slice(0, difficulty + 1);
+		this.levelVariants = chooseVariants(this.levelFishTypes);
 
 		const beltSize = Vector(game.root.size.x, 40);
 		const beltPosition = Vector(0, 110);
@@ -37,12 +101,8 @@ export class Level extends GameObject {
 		const seaSize = Vector(game.root.size.x, 30);
 		const seaPosition = Vector(0, beltPosition.y - seaSize.y);
 
-		const levelFishTypes = fishTypes.slice(0, 2);
-		const levelVariants = chooseVariants(levelFishTypes);
-
-		return [
+		this.addChildren([
 			new Belt({
-				id: "belt",
 				pos: Vector(0, 110),
 				size: beltSize,
 			}),
@@ -60,8 +120,8 @@ export class Level extends GameObject {
 				children: [
 					new Notebook({
 						pos: Vector(5, 23),
-						fishTypes: levelFishTypes,
-						chosenVariants: levelVariants,
+						fishTypes: this.levelFishTypes,
+						chosenVariants: this.levelVariants,
 					}),
 					new Printer({
 						id: "printer",
@@ -80,33 +140,12 @@ export class Level extends GameObject {
 							);
 							return this.toGlobal(clamped);
 						},
-						children: [
-							new Fish({
-								pos: Vector(95, 10),
-								origin: CENTER,
-								type: chooseFish(levelFishTypes, levelVariants, easyStrategy),
-								rotation: (-Math.PI / 4) * 3,
-							}),
-							new Fish({
-								type: chooseFish(levelFishTypes, levelVariants, easyStrategy),
-								pos: Vector(130, 15),
-								origin: CENTER,
-								rotation: (Math.PI / 4) * 3,
-								flipH: true,
-							}),
-							new Fish({
-								type: chooseFish(levelFishTypes, levelVariants, easyStrategy),
-								pos: Vector(180, 15),
-								origin: CENTER,
-								rotation: (Math.PI / 4) * 3,
-								flipH: true,
-							}),
-						],
 					}),
 				],
 			}),
 
 			new GameObject({
+				id: "belt",
 				layer: 0.4,
 				canHost: true,
 				pos: beltPosition,
@@ -127,6 +166,6 @@ export class Level extends GameObject {
 			new BeltShadow({ pos: beltPosition, size: beltSize }),
 
 			new Paw({ id: "paw" }),
-		];
+		]);
 	}
 }
