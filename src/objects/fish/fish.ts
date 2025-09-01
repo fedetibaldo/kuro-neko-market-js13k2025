@@ -9,11 +9,11 @@ import {
 	PickupableInterface,
 } from "../../systems/interactable/interactable.types";
 import { Svg } from "../svg";
-import { FishType, fishTypes } from "../../data/fish-types";
+import { FishType } from "../../data/fish-types";
 
 type FishArgs = GameObjectArgs & {
 	flipH?: boolean;
-	type: number;
+	type: FishType;
 };
 
 export class Fish
@@ -26,7 +26,7 @@ export class Fish
 	size = this.shape.size;
 
 	constructor({ flipH = false, type, ...rest }: FishArgs) {
-		super({ flipH, type: fishTypes[type], ...rest });
+		super({ flipH, type, ...rest });
 	}
 
 	createChildren(): GameObject[] {
@@ -34,6 +34,7 @@ export class Fish
 			const eyeXPolar = pos.x - size.x / 2;
 			return new FishEye({
 				size: Vector(diameter, diameter),
+				color: this.type.eyeColor,
 				pos: Vector(
 					size.x / 2 +
 						eyeXPolar * (this.flipH ? -1 : 1) -

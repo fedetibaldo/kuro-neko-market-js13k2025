@@ -20,13 +20,13 @@ import { Svg } from "./svg";
 
 type NotebookArgs = GameObjectArgs & {
 	fishTypes: FishType[];
-	chosenVariants: VariantChoices;
+	chosenVariants: VariantChoices[];
 };
 const size = Vector(80, 63);
 
 export class Notebook extends GameObject implements PressableInterface {
 	fishTypes: FishType[];
-	chosenVariants: VariantChoices;
+	chosenVariants: VariantChoices[];
 	page: number;
 	size = size;
 	origin = CENTER;
@@ -144,72 +144,35 @@ export class Notebook extends GameObject implements PressableInterface {
 						pos: Vector(0, 33),
 						size: Vector(80, 24),
 						spaceBetween: 5,
-						children: chosenVariants.map(
-							([variantIndex, optionIndex, modifier]) => {
-								const option =
-									variantIndex >= 0
-										? fishType.variants[variantIndex]![optionIndex]
-										: null;
-								const value = modifier ?? optionIndex;
+						children: chosenVariants.map(([option, modifier]) => {
+							const makeColoredCircles = (color: string) => {
+								return new GameObject({
+									children: [
+										new Circle({
+											pos: Vector(10, 0),
+											opacity: 0.5,
+											size: Vector(4, 4),
+											color,
+										}),
+										new Circle({
+											pos: Vector(1, 1),
+											opacity: 0.4,
+											size: Vector(6, 6),
+											color,
+										}),
+										new Circle({
+											pos: Vector(4, 4),
+											opacity: 0.4,
+											size: Vector(10, 10),
+											color,
+										}),
+									],
+								});
+							};
 
-								const makeColoredCircles = (color: string) => {
-									return new GameObject({
-										children: [
-											new Circle({
-												pos: Vector(10, 0),
-												opacity: 0.5,
-												size: Vector(4, 4),
-												color,
-											}),
-											new Circle({
-												pos: Vector(1, 1),
-												opacity: 0.4,
-												size: Vector(6, 6),
-												color,
-											}),
-											new Circle({
-												pos: Vector(4, 4),
-												opacity: 0.4,
-												size: Vector(10, 10),
-												color,
-											}),
-										],
-									});
-								};
-
-								const graphic = option
-									? option.tailFill1 || option.tailFill2
-										? new GameObject({
-												size: Vector(18, 16),
-												children: [
-													new Svg({
-														path: fishType.tailPath,
-													}),
-													makeColoredCircles(
-														(option.tailFill1 || option.tailFill2) as string
-													),
-												],
-										  })
-										: option.pattern
-										? new Svg({
-												size: Vector(16, 16),
-												path: option.pattern,
-										  })
-										: option.bodyFill1 || option.bodyFill2
-										? new GameObject({
-												size: Vector(18, 16),
-												children: [
-													new Svg({
-														pos: Vector(1, 0),
-														path: fishType.pattern,
-													}),
-													makeColoredCircles(
-														(option.bodyFill1 || option.bodyFill2) as string
-													),
-												],
-										  })
-										: null
-									: new GameObject({
+							const graphic = option
+								? option.eyeColor
+									? new GameObject({
 											size: Vector(18, 16),
 											children: [
 												new Circle({
@@ -221,35 +184,66 @@ export class Notebook extends GameObject implements PressableInterface {
 													path: "M18 1c-6 0-13.5 4.2-17 11.6L6 15M12.5 3c-6 0-6 9 0 9s6-9 0-9Z",
 												}),
 											],
-									  });
-
-								return new Flexbox({
-									size: Vector(18, 24),
-									spaceBetween: 0,
-									direction: "col",
-									justify: "start",
-									children: [
-										...(graphic ? [graphic] : []),
-										new Flexbox({
-											size: Vector(24, 0),
-											align: "start",
+									  })
+									: option.tailFill1 || option.tailFill2
+									? new GameObject({
+											size: Vector(18, 16),
 											children: [
-												new MathSign({
-													origin: BOTTOM,
-													fontSize: 10,
-													value: value,
+												new Svg({
+													path: fishType.tailPath,
 												}),
-												new Digit({
-													origin: BOTTOM,
-													fontSize: 10,
-													value: Math.abs(value) as DigitValue,
-												}),
+												makeColoredCircles(
+													(option.tailFill1 || option.tailFill2) as string
+												),
 											],
-										}),
-									],
-								});
-							}
-						),
+									  })
+									: option.pattern
+									? new Svg({
+											size: Vector(16, 16),
+											path: option.pattern,
+									  })
+									: option.bodyFill1 || option.bodyFill2
+									? new GameObject({
+											size: Vector(18, 16),
+											children: [
+												new Svg({
+													pos: Vector(1, 0),
+													path: fishType.pattern,
+												}),
+												makeColoredCircles(
+													(option.bodyFill1 || option.bodyFill2) as string
+												),
+											],
+									  })
+									: null
+								: null;
+
+							return new Flexbox({
+								size: Vector(18, 24),
+								spaceBetween: 0,
+								direction: "col",
+								justify: "start",
+								children: [
+									...(graphic ? [graphic] : []),
+									new Flexbox({
+										size: Vector(24, 0),
+										align: "start",
+										children: [
+											new MathSign({
+												origin: BOTTOM,
+												fontSize: 10,
+												value: modifier,
+											}),
+											new Digit({
+												origin: BOTTOM,
+												fontSize: 10,
+												value: Math.abs(modifier) as DigitValue,
+											}),
+										],
+									}),
+								],
+							});
+						}),
 					}),
 				],
 			})

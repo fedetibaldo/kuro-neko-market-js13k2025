@@ -1,5 +1,4 @@
 import { GameObject } from "../../core/game-object";
-import { Vector } from "../../core/vector";
 
 export class FishEye extends GameObject {
 	render(ctx: OffscreenCanvasRenderingContext2D) {
@@ -13,7 +12,8 @@ export class FishEye extends GameObject {
 			false
 		);
 		ctx.closePath();
-		ctx.fillStyle = "#3A1141";
+		ctx.fillStyle = this.color as string;
+		// ctx.fillStyle = "#C7B3CA";
 		ctx.fill();
 		ctx.lineWidth = 2;
 		ctx.strokeStyle = "white";

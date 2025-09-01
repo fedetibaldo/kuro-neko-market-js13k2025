@@ -4,6 +4,7 @@ import { GameObject } from "../core/game-object";
 import { InputServer } from "../core/input.server";
 import { CENTER, Vector, ZERO } from "../core/vector";
 import { fishTypes } from "../data/fish-types";
+import { chooseFish, easyStrategy } from "../utils/choose-fish";
 import { chooseVariants } from "../utils/choose-variants";
 import { clamp } from "../utils/clamp";
 import { Belt, BeltShadow } from "./belt";
@@ -36,6 +37,9 @@ export class Level extends GameObject {
 		const seaSize = Vector(game.root.size.x, 30);
 		const seaPosition = Vector(0, beltPosition.y - seaSize.y);
 
+		const levelFishTypes = fishTypes.slice(0, 2);
+		const levelVariants = chooseVariants(levelFishTypes);
+
 		return [
 			new Belt({
 				id: "belt",
@@ -56,8 +60,8 @@ export class Level extends GameObject {
 				children: [
 					new Notebook({
 						pos: Vector(5, 23),
-						fishTypes: fishTypes,
-						chosenVariants: chooseVariants(fishTypes),
+						fishTypes: levelFishTypes,
+						chosenVariants: levelVariants,
 					}),
 					new Printer({
 						id: "printer",
@@ -80,18 +84,18 @@ export class Level extends GameObject {
 							new Fish({
 								pos: Vector(95, 10),
 								origin: CENTER,
-								type: 0,
+								type: chooseFish(levelFishTypes, levelVariants, easyStrategy),
 								rotation: (-Math.PI / 4) * 3,
 							}),
 							new Fish({
-								type: 1,
+								type: chooseFish(levelFishTypes, levelVariants, easyStrategy),
 								pos: Vector(130, 15),
 								origin: CENTER,
 								rotation: (Math.PI / 4) * 3,
 								flipH: true,
 							}),
 							new Fish({
-								type: 2,
+								type: chooseFish(levelFishTypes, levelVariants, easyStrategy),
 								pos: Vector(180, 15),
 								origin: CENTER,
 								rotation: (Math.PI / 4) * 3,

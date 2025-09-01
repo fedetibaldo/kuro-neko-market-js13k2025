@@ -15,11 +15,15 @@ export type FishType = {
 	tailFill2: string;
 	details: string;
 	eyes: [number, Vector][];
+	eyeColor: string;
 };
+
+export type FishVariant = Omit<Partial<FishType>, "variants">;
 
 export const fishTypes: FishType[] = [
 	{
 		variants: [
+			[{ eyeColor: "#C7B3CA" }],
 			[{ bodyFill1: "#A45EB1" }, { bodyFill1: "#323033" }],
 			[{ tailFill1: "#A45EB1" }, { tailFill1: "#323033" }],
 			[
@@ -42,9 +46,11 @@ export const fishTypes: FishType[] = [
 		body: "M21 64C12 43 10 6 20 0c15 14 15 48 4 65l-3-1Z",
 		details: "m21 64 1 1m2 0h-1m-1 0-1 7m1-7h1m0 0 2 6",
 		eyes: [[8, Vector(19, 7)]],
+		eyeColor: "#3A1141",
 	},
 	{
 		variants: [
+			[{ eyeColor: "#C7B3CA" }],
 			[{ bodyFill1: "#F0C1D5" }, { bodyFill1: "#968F9D" }],
 			[{ tailFill2: "#F399EA" }, { tailFill2: "#5B5661" }],
 			[
@@ -73,9 +79,11 @@ export const fishTypes: FishType[] = [
 			[6, Vector(24, 6)],
 			[4, Vector(27, 2)],
 		],
+		eyeColor: "#3A1141",
 	},
 	{
 		variants: [
+			[{ eyeColor: "#C7B3CA" }],
 			[{ bodyFill1: "#F399EA" }, { bodyFill1: "#5B5661" }],
 			[{ tailFill2: "#F0C1D5" }, { tailFill2: "#968F9D" }],
 			[
@@ -101,5 +109,6 @@ export const fishTypes: FishType[] = [
 		body: "M28 12c5 10 1 34-5 52l1 6-3 2-4-3 1-7c-4-6-8-27-8-29 0-11 0-29 7-32 6 2 9 6 11 11Z",
 		details: "m17 69 2 1m5 0-2 1m-1 1-2-2m2 2v5m0-5 1-1m-3-1-1 5m4-4 3 6",
 		eyes: [[4, Vector(22, 7)]],
+		eyeColor: "#3A1141",
 	},
 ];
