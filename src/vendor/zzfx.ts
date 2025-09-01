@@ -1,7 +1,6 @@
 /*
 
-ZzFX - Zuper Zmall Zound Zynth v1.1.8
-By Frank Force 2019
+ZzFX - Zuper Zmall Zound Zynth v1.3.1 by Frank Force
 https://github.com/KilledByAPixel/ZzFX
 
 ZzFX Features
@@ -21,19 +20,19 @@ ZzFX Features
 /*
 
   ZzFX MIT License
-
+  
   Copyright (c) 2019 - Frank Force
-
+  
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
   in the Software without restriction, including without limitation the rights
   to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
   copies of the Software, and to permit persons to whom the Software is
   furnished to do so, subject to the following conditions:
-
+  
   The above copyright notice and this permission notice shall be included in all
   copies or substantial portions of the Software.
-
+  
   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -41,182 +40,305 @@ ZzFX Features
   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
-
+  
 */
 
-/**
- * Master volume scale.
- */
-let zzfxV = 0.3;
+"use strict";
 
-export const setVolume = (n: number) => {
-	zzfxV = n;
-};
+type BuildSamplesFn = (
+	volume?: number,
+	randomness?: number,
+	frequency?: number,
+	attack?: number,
+	sustain?: number,
+	release?: number,
+	shape?: number,
+	shapeCurve?: number,
+	slide?: number,
+	deltaSlide?: number,
+	pitchJump?: number,
+	pitchJumpTime?: number,
+	repeatTime?: number,
+	noise?: number,
+	modulation?: number,
+	bitCrush?: number,
+	delay?: number,
+	sustainVolume?: number,
+	decay?: number,
+	tremolo?: number,
+	filterBand?: number,
+	filter?: number
+) => number[];
 
-export const getVolume = () => {
-	return zzfxV;
-};
-
-/**
- * Sample rate for audio.
- */
-export const zzfxR = 44100;
-
-/**
- * Create shared audio context.
- * @const {!AudioContext}
- */
-export let zzfxX: AudioContext | null = null;
-
-export function initAudioContext() {
-	zzfxX = new AudioContext();
+// play a zzfx sound
+export function zzfx(...parameters: Parameters<BuildSamplesFn>) {
+	return ZZFX.play(...parameters);
 }
 
-/**
- * Play a sound from zzfx paramerters.
- */
-export function zzfx(
-	...parameters: (number | undefined)[]
-): AudioBufferSourceNode {
-	return zzfxP(zzfxG(...parameters));
-}
+///////////////////////////////////////////////////////////////////////////////
+// ZZFX API for playing sounds
+export const ZZFX = {
+	// master volume scale
+	volume: 0.5,
 
-/**
- * Play an array of samples.
- */
-export function zzfxP(...samples: number[][]): AudioBufferSourceNode {
-	const buffer = zzfxX!.createBuffer(samples.length, samples[0]!.length, zzfxR),
-		source = zzfxX!.createBufferSource();
+	// sample rate for audio
+	sampleRate: 44100,
 
-	samples.map((d, i) => buffer.getChannelData(i).set(d));
-	source.buffer = buffer;
-	source.connect((zzfxX! as AudioContext).destination);
-	source.start();
-	return source;
-}
+	// create shared audio context
+	audioContext: new AudioContext(),
 
-/**
- * Build an array of samples.
- */
-export function zzfxG(
-	volume = 1,
-	randomness = 0.05,
-	frequency = 220,
-	attack = 0,
-	sustain = 0,
-	release = 0.1,
-	shape = 0,
-	shapeCurve = 1,
-	slide = 0,
-	deltaSlide = 0,
-	pitchJump = 0,
-	pitchJumpTime = 0,
-	repeatTime = 0,
-	noise = 0,
-	modulation = 0,
-	bitCrush = 0,
-	delay = 0,
-	sustainVolume = 1,
-	decay = 0,
-	tremolo = 0
-): number[] {
-	// init parameters
-	const PI2 = Math.PI * 2;
-	const sampleRate = zzfxR;
-	const sign = (v: number): number => (v > 0 ? 1 : -1);
-	const startSlide = (slide *= (500 * PI2) / sampleRate / sampleRate);
-	const b: any[] = [];
+	// play a sound from zzfx paramerters
+	play: function (...parameters: Parameters<BuildSamplesFn>) {
+		// build samples and start sound
+		return this.playSamples([this.buildSamples(...parameters)]);
+	},
 
-	let startFrequency = (frequency *=
-			((1 + randomness * 2 * Math.random() - randomness) * PI2) / sampleRate),
-		t = 0,
-		tm = 0,
-		i = 0,
-		j = 1,
-		r = 0,
-		c = 0,
-		s = 0,
-		f,
-		length;
-
-	// scale by sample rate
-	attack = attack * sampleRate + 9; // minimum attack to prevent pop
-	decay *= sampleRate;
-	sustain *= sampleRate;
-	release *= sampleRate;
-	delay *= sampleRate;
-	deltaSlide *= (500 * PI2) / sampleRate ** 3;
-	modulation *= PI2 / sampleRate;
-	pitchJump *= PI2 / sampleRate;
-	pitchJumpTime *= sampleRate;
-	repeatTime = (repeatTime * sampleRate) | 0;
-
-	// generate waveform
-	for (
-		length = (attack + decay + sustain + release + delay) | 0;
-		i < length;
-		b[i++] = s
+	// play an array of samples
+	playSamples: function (
+		sampleChannels: [number[]],
+		volumeScale = 1,
+		rate = 1,
+		pan = 0,
+		loop = false
 	) {
-		if (!(++c % ((bitCrush * 100) | 0))) {
-			// bit crush
-			s = shape
-				? shape > 1
-					? shape > 2
-						? shape > 3 // wave shape
-							? Math.sin((t % PI2) ** 3) // 4 noise
-							: Math.max(Math.min(Math.tan(t), 1), -1) // 3 tan
-						: 1 - (((((2 * t) / PI2) % 2) + 2) % 2) // 2 saw
-					: 1 - 4 * Math.abs(Math.round(t / PI2) - t / PI2) // 1 triangle
-				: Math.sin(t); // 0 sin
+		// create buffer and source
+		const channelCount = sampleChannels.length;
+		const sampleLength = sampleChannels[0].length;
+		const buffer = this.audioContext.createBuffer(
+			channelCount,
+			sampleLength,
+			this.sampleRate
+		);
+		const source = this.audioContext.createBufferSource();
 
-			s =
-				(repeatTime
-					? 1 - tremolo + tremolo * Math.sin((PI2 * i) / repeatTime) // tremolo
-					: 1) *
-				sign(s) *
-				Math.abs(s) ** shapeCurve * // curve 0=square, 2=pointy
-				volume *
-				zzfxV * // envelope
-				(i < attack
-					? i / attack // attack
-					: i < attack + decay // decay
-					? 1 - ((i - attack) / decay) * (1 - sustainVolume) // decay falloff
-					: i < attack + decay + sustain // sustain
-					? sustainVolume // sustain volume
-					: i < length - delay // release
-					? ((length - i - delay) / release) * // release falloff
-					  sustainVolume // release volume
-					: 0); // post release
+		// copy samples to buffer and setup source
+		sampleChannels.forEach((c, i) => buffer.getChannelData(i).set(c));
+		source.buffer = buffer;
+		source.playbackRate.value = rate;
+		source.loop = loop;
 
-			s = delay
-				? s / 2 +
-				  (delay > i
-						? 0 // delay
-						: ((i < length - delay ? 1 : (length - i) / delay) * // release delay
-								b[(i - delay) | 0]) /
-						  2)
-				: s; // sample delay
+		// create and connect gain node
+		const gainNode = this.audioContext.createGain();
+		gainNode.gain.value = this.volume * volumeScale;
+		gainNode.connect(this.audioContext.destination);
+
+		// connect source to stereo panner and gain
+		const pannerNode = new StereoPannerNode(this.audioContext, { pan: pan });
+		source.connect(pannerNode).connect(gainNode);
+		source.start();
+
+		// return sound
+		return source;
+	},
+
+	// build an array of samples
+	buildSamples: function (
+		volume = 1,
+		randomness = 0.05,
+		frequency = 220,
+		attack = 0,
+		sustain = 0,
+		release = 0.1,
+		shape = 0,
+		shapeCurve = 1,
+		slide = 0,
+		deltaSlide = 0,
+		pitchJump = 0,
+		pitchJumpTime = 0,
+		repeatTime = 0,
+		noise = 0,
+		modulation = 0,
+		bitCrush = 0,
+		delay = 0,
+		sustainVolume = 1,
+		decay = 0,
+		tremolo = 0,
+		filterBand = 0,
+		filter = 0
+	) {
+		// init parameters
+		let PI2 = Math.PI * 2,
+			sign = (v: number) => (v < 0 ? -1 : 1),
+			sampleRate = this.sampleRate,
+			startSlide = (slide *= (500 * PI2) / sampleRate / sampleRate),
+			startFrequency = (frequency *=
+				((1 + randomness * 2 * Math.random() - randomness) * PI2) / sampleRate),
+			b = [],
+			t = 0,
+			tm = 0,
+			i = 0,
+			j = 1,
+			r = 0,
+			c = 0,
+			s = 0,
+			f,
+			length,
+			// biquad LP/HP filter
+			quality = 2,
+			w = (PI2 * Math.abs(filterBand) * 2) / sampleRate,
+			sin = Math.sin(w),
+			cos = Math.cos(w),
+			alpha = Math.sin(w) / 2 / quality,
+			a0 = 1 + alpha,
+			a1 = (-2 * cos) / a0,
+			a2 = (1 - alpha) / a0,
+			x2 = 0,
+			x1 = 0,
+			y2 = 0,
+			y1 = 0;
+
+		const lp = (): [number, number, number] => {
+			return [
+				((1.0 - cos) * 0.5) / a0,
+				(1.0 - cos) / a0,
+				((1.0 - cos) * 0.5) / a0,
+			];
+		};
+		const hp = (): [number, number, number] => {
+			return [
+				((1.0 + cos) * 0.5) / a0,
+				-(1.0 + cos) / a0,
+				((1.0 + cos) * 0.5) / a0,
+			];
+		};
+		const bp = (): [number, number, number] => {
+			return [(sin * 0.5) / a0, 0, (-sin * 0.5) / a0];
+		};
+
+		let [b0, b1, b2] = (
+			filter
+				? filter > 1
+					? bp // 2 bandpass
+					: hp // 1 highpass
+				: lp
+		)(); // 0 lowpass
+
+		// scale by sample rate
+		attack = attack * sampleRate + 9; // minimum attack to prevent pop
+		decay *= sampleRate;
+		sustain *= sampleRate;
+		release *= sampleRate;
+		delay *= sampleRate;
+		deltaSlide *= (500 * PI2) / sampleRate ** 3;
+		modulation *= PI2 / sampleRate;
+		pitchJump *= PI2 / sampleRate;
+		pitchJumpTime *= sampleRate;
+		repeatTime = (repeatTime * sampleRate) | 0;
+		volume *= this.volume;
+
+		// generate waveform
+		for (
+			length = (attack + decay + sustain + release + delay) | 0;
+			i < length;
+			b[i++] = s * volume // sample
+		) {
+			if (!(++c % ((bitCrush * 100) | 0))) {
+				// bit crush
+				s = shape
+					? shape > 1
+						? shape > 2
+							? shape > 3 // wave shape
+								? Math.sin(t ** 3) // 4 noise
+								: Math.max(Math.min(Math.tan(t), 1), -1) // 3 tan
+							: 1 - (((((2 * t) / PI2) % 2) + 2) % 2) // 2 saw
+						: 1 - 4 * Math.abs(Math.round(t / PI2) - t / PI2) // 1 triangle
+					: Math.sin(t); // 0 sin
+
+				s =
+					(repeatTime
+						? 1 - tremolo + tremolo * Math.sin((PI2 * i) / repeatTime) // tremolo
+						: 1) *
+					sign(s) *
+					Math.abs(s) ** shapeCurve * // curve
+					(i < attack
+						? i / attack // attack
+						: i < attack + decay // decay
+						? 1 - ((i - attack) / decay) * (1 - sustainVolume) // decay falloff
+						: i < attack + decay + sustain // sustain
+						? sustainVolume // sustain volume
+						: i < length - delay // release
+						? ((length - i - delay) / release) * // release falloff
+						  sustainVolume // release volume
+						: 0); // post release
+
+				s = delay
+					? s / 2 +
+					  (delay > i
+							? 0 // delay
+							: ((i < length - delay ? 1 : (length - i) / delay) * // release delay
+									b[(i - delay) | 0]!) /
+							  2 /
+							  volume)
+					: s; // sample delay
+
+				if (filterBand)
+					// apply filter
+					s = y1 =
+						b2 * x2 + b1 * (x2 = x1) + b0 * (x1 = s) - a2 * y2 - a1 * (y2 = y1);
+			}
+
+			f =
+				(frequency += slide += deltaSlide) * // frequency
+				Math.cos(modulation * tm++); // modulation
+			t += f + f * noise * Math.sin(i ** 5); // noise
+
+			if (j && ++j > pitchJumpTime) {
+				// pitch jump
+				frequency += pitchJump; // apply pitch jump
+				startFrequency += pitchJump; // also apply to start
+				j = 0; // stop pitch jump time
+			}
+
+			if (repeatTime && !(++r % repeatTime)) {
+				// repeat
+				frequency = startFrequency; // reset frequency
+				slide = startSlide; // reset slide
+				j = j || 1; // reset pitch jump time
+			}
 		}
 
-		f =
-			(frequency += slide += deltaSlide) * // frequency
-			Math.cos(modulation * tm++); // modulation
-		t += f - f * noise * (1 - (((Math.sin(i) + 1) * 1e9) % 2)); // noise
+		return b; // return sample buffer
+	},
 
-		if (j && ++j > pitchJumpTime) {
-			// pitch jump
-			frequency += pitchJump; // apply pitch jump
-			startFrequency += pitchJump; // also apply to start
-			j = 0; // stop pitch jump time
-		}
+	// get frequency of a musical note on a diatonic scale
+	getNote: function (semitoneOffset = 0, rootNoteFrequency = 440) {
+		return rootNoteFrequency * 2 ** (semitoneOffset / 12);
+	},
+};
 
-		if (repeatTime && !(++r % repeatTime)) {
-			// repeat
-			frequency = startFrequency; // reset frequency
-			slide = startSlide; // reset slide
-			j = j || 1; // reset pitch jump time
-		}
+///////////////////////////////////////////////////////////////////////////////
+// Sound object that can precache and play ZZFX sounds
+export class ZZFXSound {
+	randomness: number;
+	zzfxSound: Parameters<BuildSamplesFn>;
+	samples: number[];
+	source: AudioBufferSourceNode | undefined;
+
+	constructor(zzfxSound: Parameters<BuildSamplesFn> = []) {
+		this.zzfxSound = zzfxSound;
+
+		// extract randomness parameter from zzfxSound
+		this.randomness = zzfxSound[1] != undefined ? zzfxSound[1] : 0.05;
+		zzfxSound[1] = 0; // generate without frequency randomness
+
+		// cache the sound samples
+		this.samples = ZZFX.buildSamples(...zzfxSound);
 	}
 
-	return b;
+	play(volume = 1, pitch = 1, randomnessScale = 1, pan = 0, loop = false) {
+		if (!this.samples) return;
+
+		// play the sound
+		const playbackRate =
+			pitch +
+			pitch * this.randomness * randomnessScale * (Math.random() * 2 - 1);
+		this.source = ZZFX.playSamples(
+			[this.samples],
+			volume,
+			playbackRate,
+			pan,
+			loop
+		);
+		return this.source;
+	}
 }

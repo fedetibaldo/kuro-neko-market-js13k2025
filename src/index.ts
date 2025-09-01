@@ -9,6 +9,7 @@ import { DisplayServer } from "./core/display.server";
 import { InputServer } from "./core/input.server";
 import { InteractableServer } from "./systems/interactable/interactable.server";
 import { Pointer } from "./objects/pointer";
+import { playMeow } from "./utils/play-meow";
 
 const canvas = document.getElementById("game") as HTMLCanvasElement;
 const viewRes = Vector(360, 240);
@@ -28,3 +29,5 @@ game.root.addChildren([
 
 // start game
 game.play();
+
+playMeow();
