@@ -2,7 +2,7 @@ import { drawSvg } from "../../core/draw-svg";
 import { Flexbox } from "../../core/flexbox";
 import { GameObject } from "../../core/game-object";
 import { IncrementalLerp, makeFixedTimeIncrementalLerp } from "../../core/lerp";
-import { CENTER, Vector, VectorLike, ZERO } from "../../core/vector";
+import { CENTER, Vector, ZERO } from "../../core/vector";
 import { gradient } from "../../utils/gradient";
 import { Digit, DigitValue } from "../digit";
 import { Paper } from "../paper";
@@ -12,12 +12,12 @@ import { activeColor, inactiveColor } from "./colors";
 class PrinterMiddleLayer extends GameObject {
 	render(ctx: OffscreenCanvasRenderingContext2D): void {
 		ctx.beginPath();
-		ctx.roundRect(0, 0, 74, 66 + 7, 12);
+		ctx.roundRect(0, 0, this.size.x, this.size.y + 7, 12);
 		ctx.fillStyle = "#00000066";
 		ctx.fill();
 
 		ctx.beginPath();
-		ctx.roundRect(0, 0, 74, 66, 12);
+		ctx.roundRect(0, 0, this.size.x, this.size.y, 12);
 		ctx.fillStyle = gradient(ctx, ZERO, Vector(0, 2), [
 			[0, "#FFFFFF"],
 			[1, "#F3DEF7"],
@@ -134,14 +134,14 @@ export class Printer extends GameObject {
 				id: "tickets",
 				children: [new Paper({ id: "ticket", pos: Vector(-2, 29) })],
 			}),
-			new PrinterMiddleLayer(),
+			new PrinterMiddleLayer({ size: Vector(77, 66) }),
 			new Flexbox({
-				pos: Vector(6, 7.5),
-				size: Vector(20, 12),
+				pos: Vector(15.5, 11.5),
+				mode: "hug",
+				origin: CENTER,
 				direction: "row",
 				align: "start",
 				justify: "center",
-				spaceBetween: -2,
 				children: [
 					new Digit({
 						id: "left-digit",
@@ -161,7 +161,7 @@ export class Printer extends GameObject {
 			}),
 			new ButtonGroup({
 				id: "buttons",
-				pos: Vector(22, 0),
+				pos: Vector(25, 0),
 			}),
 		];
 	}
