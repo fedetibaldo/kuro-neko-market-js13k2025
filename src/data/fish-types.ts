@@ -25,7 +25,10 @@ export const fishTypes: FishType[] = [
 		variants: [
 			[{ eyeColor: "#C7B3CA" }],
 			[{ bodyFill1: "#A45EB1" }, { bodyFill1: "#323033" }],
-			[{ tailFill1: "#A45EB1" }, { tailFill1: "#323033" }],
+			[
+				{ tailFill1: "#A45EB1", tailFill2: "#A45EB1" },
+				{ tailFill1: "#323033", tailFill2: "#323033" },
+			],
 			[
 				{ pattern: "m0 1 4 4 4-4 4 4 4-4M0 9l4 4 4-4 4 4 4-4" },
 				{ pattern: "M0 5c3 0 5-4 8-4s5 4 8 4M0 13c3 0 5-4 8-4s5 4 8 4" },
@@ -51,7 +54,7 @@ export const fishTypes: FishType[] = [
 	{
 		variants: [
 			[{ eyeColor: "#C7B3CA" }],
-			[{ bodyFill1: "#F0C1D5" }, { bodyFill1: "#968F9D" }],
+			[{ bodyFill1: "#F399EA" }, { bodyFill1: "#968F9D" }],
 			[{ tailFill2: "#F399EA" }, { tailFill2: "#5B5661" }],
 			[
 				{ pattern: "M0 5c3 0 5-4 8-4s5 4 8 4M0 13c3 0 5-4 8-4s5 4 8 4" },
@@ -85,7 +88,10 @@ export const fishTypes: FishType[] = [
 		variants: [
 			[{ eyeColor: "#C7B3CA" }],
 			[{ bodyFill1: "#F399EA" }, { bodyFill1: "#5B5661" }],
-			[{ tailFill2: "#F0C1D5" }, { tailFill2: "#968F9D" }],
+			[
+				{ tailFill1: "#A45EB1", tailFill2: "#A45EB1" },
+				{ tailFill1: "#968F9D", tailFill2: "#968F9D" },
+			],
 			[
 				{
 					pattern: "m0 1 4 4 4-4 4 4 4-4M0 9l4 4 4-4 4 4 4-4",

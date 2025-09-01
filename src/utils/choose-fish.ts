@@ -15,17 +15,6 @@ export const easyStrategy: FishChoiceStrategy = (fishType, variants) => {
 	};
 };
 
-// Avoid ambiguity
-const isCompatible = (variantA: FishVariant, variantB: FishVariant) => {
-	const isBody = (variant: FishVariant) =>
-		!!variant.bodyFill1 || !!variant.bodyFill2;
-	const isPattern = (variant: FishVariant) => !!variant.pattern;
-	return !(
-		(isBody(variantA) && isPattern(variantB)) ||
-		(isPattern(variantA) && isBody(variantB))
-	);
-};
-
 export const mediumStrategy: FishChoiceStrategy = (fishType, variants) => {
 	if (chance(1 / 4)) return fishType;
 	const shuffledVariants = shuffle(variants);
@@ -37,7 +26,7 @@ export const mediumStrategy: FishChoiceStrategy = (fishType, variants) => {
 	};
 
 	const secondVariant = shuffledVariants[1]!;
-	if (!isCompatible(firstVariant, secondVariant) || chance(1 / 3)) {
+	if (chance(1 / 3)) {
 		return fish;
 	}
 
@@ -51,10 +40,7 @@ export const hardStrategy: FishChoiceStrategy = (fishType, variants) => {
 	const shuffledVariants = shuffle(variants);
 
 	const selectedVariants = shuffledVariants.reduce((variants, variant) => {
-		if (
-			chance(1 / 3) ||
-			variants.some((prevVariant) => !isCompatible(prevVariant, variant))
-		) {
+		if (chance(1 / 3)) {
 			return variants;
 		}
 		return [...variants, variant];
@@ -74,10 +60,7 @@ export const chaosStrategy: FishChoiceStrategy = (fishType, variants) => {
 	const selectedVariants = shuffledVariants.reduce(
 		(variants, options) => {
 			const variant = pickRandom(options);
-			if (
-				chance(1 / 3) ||
-				variants.some((prevVariant) => !isCompatible(prevVariant, variant))
-			) {
+			if (chance(1 / 3)) {
 				return variants;
 			}
 			return [...variants, variant];

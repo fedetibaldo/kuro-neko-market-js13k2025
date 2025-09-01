@@ -200,16 +200,18 @@ export class Notebook extends GameObject implements PressableInterface {
 									: option.pattern
 									? new Svg({
 											size: Vector(16, 16),
+											origin: CENTER,
+											rotation: Math.PI,
 											path: option.pattern,
 									  })
 									: option.bodyFill1 || option.bodyFill2
 									? new GameObject({
 											size: Vector(18, 16),
 											children: [
-												new Svg({
-													pos: Vector(1, 0),
-													path: fishType.pattern,
-												}),
+												// new Svg({
+												// 	pos: Vector(1, 0),
+												// 	path: fishType.pattern,
+												// }),
 												makeColoredCircles(
 													(option.bodyFill1 || option.bodyFill2) as string
 												),
