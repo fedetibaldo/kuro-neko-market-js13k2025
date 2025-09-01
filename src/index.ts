@@ -21,7 +21,10 @@ diContainer.set(DisplayServer, new DisplayServer({ canvas }));
 diContainer.set(InputServer, new InputServer());
 diContainer.set(InteractableServer, new InteractableServer());
 
-game.root.addChildren([new Level({ difficulty: 1 }), new Pointer()]);
+game.root.addChildren([
+	new Level({ difficulty: 3, duration: 120 }),
+	new Pointer(),
+]);
 
 // start game
 game.play();

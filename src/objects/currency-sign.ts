@@ -9,7 +9,7 @@ export class CurrencySign extends Glyph {
 
 	constructor({ ...rest }: CurrencySignArgs) {
 		super({
-			path: "M6.5 3.5c-2.5-2.5-5 0-5 2s2 3.5 5 2M4.5 1v8.5",
+			path: "M6.5 3c-2.5-2.5-5 0-5 2s2 3.5 5 2m-2-6v7.61",
 			...rest,
 		});
 	}

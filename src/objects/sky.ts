@@ -1,16 +1,24 @@
-import { GameObject } from "../core/game-object";
+import { GameObject, GameObjectArgs } from "../core/game-object";
 import { BOTTOM, Vector, ZERO } from "../core/vector";
 import { gradient } from "../utils/gradient";
 import { rotateAroundOrigin } from "../utils/origin-helper";
 
+type SkyArgs = GameObjectArgs & {
+	duration: number;
+};
+
 export class Sky extends GameObject {
 	sunAngle = Math.PI;
-	dayDuration = 90;
-	sunVelocity = Math.PI / this.dayDuration;
+	duration: number;
+
+	constructor({ duration, ...rest }: SkyArgs) {
+		super(rest);
+		this.duration = duration;
+	}
 
 	update(deltaT: number): void {
-		this.sunAngle =
-			(this.sunAngle + (this.sunVelocity * deltaT) / 1000) % Math.PI;
+		const sunVelocity = Math.PI / this.duration;
+		this.sunAngle = (this.sunAngle + (sunVelocity * deltaT) / 1000) % Math.PI;
 	}
 
 	render(ctx: OffscreenCanvasRenderingContext2D): void {
