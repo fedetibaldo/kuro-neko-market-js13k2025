@@ -10,7 +10,7 @@ import {
 import { BOTTOM, BOTTOM_LEFT, CENTER, Vector, ZERO } from "../core/vector";
 import { FishType } from "../data/fish-types";
 import { PressableInterface } from "../systems/interactable/interactable.types";
-import { VariantChoices } from "../utils/choose-variants";
+import { FishChosenVariants } from "../utils/choose-variants";
 import { gradient } from "../utils/gradient";
 import { range } from "../utils/range";
 import { CurrencySign } from "./currency-sign";
@@ -20,13 +20,13 @@ import { Svg } from "./svg";
 
 type NotebookArgs = GameObjectArgs & {
 	fishTypes: FishType[];
-	chosenVariants: VariantChoices[];
+	chosenVariants: FishChosenVariants[];
 };
 const size = Vector(80, 63);
 
 export class Notebook extends GameObject implements PressableInterface {
 	fishTypes: FishType[];
-	chosenVariants: VariantChoices[];
+	chosenVariants: FishChosenVariants[];
 	page: number;
 	size = size;
 	origin = CENTER;

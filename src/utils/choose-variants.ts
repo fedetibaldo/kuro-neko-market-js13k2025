@@ -1,19 +1,19 @@
 import { FishType, FishVariant } from "../data/fish-types";
 import { pickRandom, randomInt, shuffle } from "./random";
 
-export type VariantChoice = [FishVariant, number];
+export type FishChosenVariant = [FishVariant, number];
 
-export type VariantChoices = VariantChoice[];
+export type FishChosenVariants = FishChosenVariant[];
 
-export const chooseVariants = (fishTypes: FishType[]) => {
-	const variantChoices: VariantChoices[] = [];
+export const chooseVariants = (fishTypes: FishType[]): FishChosenVariants[] => {
+	const chosenVariants: FishChosenVariants[] = [];
 	for (const type of fishTypes) {
 		const variants = shuffle(type.variants).slice(0, 3);
 
-		let fishVariantChoices: VariantChoice[] = [];
+		let fishChosenVariants: FishChosenVariant[] = [];
 		do {
-			fishVariantChoices = variants.reduce(
-				(acc: VariantChoice[], variantOptions): VariantChoice[] => {
+			fishChosenVariants = variants.reduce(
+				(acc: FishChosenVariant[], variantOptions): FishChosenVariant[] => {
 					const option = pickRandom(variantOptions);
 					const modifier = !!option.eyeColor
 						? randomInt(-3, 0)
@@ -23,13 +23,13 @@ export const chooseVariants = (fishTypes: FishType[]) => {
 				[]
 			);
 		} while (
-			fishVariantChoices.reduce(
+			fishChosenVariants.reduce(
 				(sum: number, [, modifier]) => sum + modifier,
 				type.basePrice
 			) < 1
 		);
 
-		variantChoices.push(fishVariantChoices);
+		chosenVariants.push(fishChosenVariants);
 	}
-	return variantChoices;
+	return chosenVariants;
 };

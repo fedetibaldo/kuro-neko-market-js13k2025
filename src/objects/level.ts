@@ -12,7 +12,7 @@ import {
 	hardStrategy,
 	mediumStrategy,
 } from "../utils/choose-fish";
-import { chooseVariants, VariantChoices } from "../utils/choose-variants";
+import { chooseVariants, FishChosenVariants } from "../utils/choose-variants";
 import { clamp } from "../utils/clamp";
 import { chance } from "../utils/random";
 import { Belt, BeltShadow } from "./belt";
@@ -39,7 +39,7 @@ export class Level extends GameObject {
 	tToSpawn: number;
 	difficulty: 0 | 1 | 2 | 3;
 	levelFishTypes: FishType[];
-	levelVariants: VariantChoices[];
+	levelVariants: FishChosenVariants[];
 
 	spawnFish(type: FishType) {
 		const flipH = chance(1 / 2);

@@ -22,14 +22,14 @@ export class Fish
 {
 	flipH: boolean;
 	type: FishType;
-	shape = this.getChild("shape") as FishShape;
-	size = this.shape.size;
+	shape: FishShape;
+	center: Vector;
 
 	constructor({ flipH = false, type, ...rest }: FishArgs) {
-		super({ flipH, type, ...rest });
-	}
+		super(rest);
+		this.type = type;
+		this.flipH = flipH;
 
-	createChildren(): GameObject[] {
 		const createEye = (pos: Vector, diameter: number, size: Vector) => {
 			const eyeXPolar = pos.x - size.x / 2;
 			return new FishEye({
@@ -43,11 +43,12 @@ export class Fish
 				),
 			});
 		};
-		return [
+
+		this.addChildren([
 			new FishShape({
-				id: "shape",
 				flipH: this.flipH,
 				...this.type,
+				id: "shape",
 				children: [
 					...this.type.eyes.map(([diameter, pos]) =>
 						createEye(pos, diameter, this.type.size)
@@ -61,14 +62,17 @@ export class Fish
 					}),
 				],
 			}),
-		];
+		]);
+
+		this.shape = this.getChild("shape") as FishShape;
+		this.size = this.shape.size;
+		this.center = this.size.mul(1 / 2);
 	}
 
 	layer = 0.75;
 	baseLayer = 0.75;
-	readonly canBePickedUp = true;
+	canBePickedUp = true;
 	origin = CENTER;
-	center = this.size.mul(1 / 2);
 
 	canHost(obj: GameObject) {
 		return obj.id == "ticket";

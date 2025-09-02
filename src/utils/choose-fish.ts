@@ -1,5 +1,5 @@
 import { FishType, FishVariant } from "../data/fish-types";
-import { VariantChoices } from "./choose-variants";
+import { FishChosenVariants } from "./choose-variants";
 import { randomInt, chance, pickRandom, shuffle } from "./random";
 
 type FishChoiceStrategy = (
@@ -82,7 +82,7 @@ export const chaosStrategy: FishChoiceStrategy = (fishType, variants) => {
 
 export const chooseFish = (
 	fishTypes: FishType[],
-	chosenVariants: VariantChoices[],
+	chosenVariants: FishChosenVariants[],
 	strategy: FishChoiceStrategy
 ) => {
 	const idx = randomInt(0, fishTypes.length);
