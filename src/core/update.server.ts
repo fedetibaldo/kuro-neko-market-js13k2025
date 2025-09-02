@@ -4,6 +4,9 @@ import { diContainer } from "./di-container";
 import { Game } from "./game";
 import { UpdatableInterface } from "./update.types";
 
+export const isUpdatable = (obj: object): obj is UpdatableInterface =>
+	!!(obj as any).update;
+
 export class UpdateServer {
 	game: Game;
 
@@ -13,9 +16,6 @@ export class UpdateServer {
 	}
 
 	update(deltaT: number) {
-		const isUpdatable = (obj: object): obj is UpdatableInterface =>
-			"update" in obj;
-
 		if (!this.game.root) return;
 
 		walk<GameObjectData>(this.game.root, (obj) => {

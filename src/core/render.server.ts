@@ -1,14 +1,12 @@
-import {
-	getConcreteOrigin,
-	rotateAroundOrigin,
-	scaleFromOrigin,
-} from "../utils/origin-helper";
+import { rotateAroundOrigin, scaleFromOrigin } from "../utils/origin-helper";
 import { GameObjectData } from "./game-object-data";
 import { diContainer } from "./di-container";
 import { Game } from "./game";
 import { Observable } from "./observable";
 import { RenderableInterface, RendererInterface } from "./render.types";
 import { ZERO } from "./vector";
+// import { walk } from "../utils/walk";
+// import { GameObject } from "./game-object";
 
 export class RenderServer extends Observable {
 	game: Game;
@@ -28,13 +26,40 @@ export class RenderServer extends Observable {
 		for (const child of viewport.children) {
 			this.renderObject(viewport.ctx, child);
 		}
+
+		// walk<GameObject>(viewport as any, (obj) => {
+		// 	const ctx = viewport.ctx;
+
+		// 	ctx.save();
+		// 	const pos = obj.getGlobalPosition();
+		// 	ctx.translate(pos.x, pos.y);
+
+		// 	const origin = obj.size.mulv(obj.origin);
+
+		// 	const scale = obj.getGlobalScale();
+		// 	const scaleDiff = scaleFromOrigin(ZERO, scale, origin);
+		// 	ctx.translate(scaleDiff.x, scaleDiff.y);
+		// 	ctx.scale(scale, scale);
+
+		// 	const rotation = obj.getGlobalRotation();
+		// 	const rotationDiff = rotateAroundOrigin(ZERO, rotation, origin);
+		// 	ctx.translate(rotationDiff.x, rotationDiff.y);
+		// 	ctx.rotate(rotation);
+
+		// 	ctx.strokeStyle = "red";
+		// 	obj.size && ctx.strokeRect(0, 0, obj.size.x, obj.size.y);
+
+		// 	ctx.restore();
+		// 	return obj.children;
+		// });
 	}
 
 	renderObject(ctx: OffscreenCanvasRenderingContext2D, obj: GameObjectData) {
 		const isRenderable = (obj: object): obj is RenderableInterface =>
-			"render" in obj;
+			!!(obj as any).render;
 
-		const isRenderer = (obj: object): obj is RendererInterface => "ctx" in obj;
+		const isRenderer = (obj: object): obj is RendererInterface =>
+			!!(obj as any).ctx;
 
 		if (isRenderer(obj)) {
 			this.renderViewport(obj);
@@ -46,7 +71,7 @@ export class RenderServer extends Observable {
 		ctx.save();
 		ctx.translate(pos.x, pos.y);
 
-		const origin = getConcreteOrigin(ZERO, obj.size, obj.origin);
+		const origin = obj.size.mulv(obj.origin);
 
 		const scaleDiff = scaleFromOrigin(ZERO, scale, origin);
 		ctx.translate(scaleDiff.x, scaleDiff.y);
@@ -57,8 +82,8 @@ export class RenderServer extends Observable {
 		ctx.rotate(rotation);
 
 		ctx.globalAlpha = ctx.globalAlpha * opacity;
-		// ctx.strokeStyle = "red";
-		// obj.size && ctx.strokeRect(0, 0, obj.size.x, obj.size.y);
+		ctx.strokeStyle = "red";
+		obj.size && ctx.strokeRect(0, 0, obj.size.x, obj.size.y);
 
 		if (isRenderable(obj)) {
 			obj.render(ctx);

@@ -3,7 +3,7 @@ import { diContainer } from "../../core/di-container";
 import { Game } from "../../core/game";
 import { InputServer } from "../../core/input.server";
 import { Observable } from "../../core/observable";
-import { Vector } from "../../core/vector";
+import { Vector, ZERO } from "../../core/vector";
 import { immutableReverse } from "../../utils/immutable-reverse";
 import { walk } from "../../utils/walk";
 import {
@@ -24,11 +24,11 @@ export type ClickEvent = {
 };
 
 export const isPressable = (obj: object): obj is PressableInterface =>
-	"canBePressed" in obj;
+	typeof (obj as any).canBePressed != "undefined";
 export const isPickupable = (obj: object): obj is PickupableInterface =>
-	"canBePickedUp" in obj;
+	typeof (obj as any).canBePickedUp != "undefined";
 export const isDropTarget = (obj: object): obj is DropTargetInterface =>
-	"canHost" in obj;
+	typeof (obj as any).canHost != "undefined";
 
 export class InteractableServer extends Observable {
 	game: Game;
@@ -54,28 +54,35 @@ export class InteractableServer extends Observable {
 	}
 
 	move() {
-		const activeItems: (PressableInterface | PickupableInterface)[] = [];
-		const passiveItems: DropTargetInterface[] = [];
+		if (
+			!this.input.mousePos.gt(ZERO) ||
+			!this.input.mousePos.lt(this.game.root.size)
+		) {
+			this.hoveredItem = null;
+			this.hoveredDropTargets = [];
+		} else {
+			const activeItems: (PressableInterface | PickupableInterface)[] = [];
+			const passiveItems: DropTargetInterface[] = [];
 
-		walk<GameObjectData>(this.game.root, (obj) => {
-			if (isPressable(obj) || (isPickupable(obj) && obj.canBePickedUp)) {
-				activeItems.push(obj);
-			}
-			if (isDropTarget(obj)) {
-				passiveItems.push(obj);
-			}
-			return obj.children;
-		});
+			walk<GameObjectData>(this.game.root, (obj) => {
+				if (isPressable(obj) || (isPickupable(obj) && obj.canBePickedUp)) {
+					activeItems.push(obj);
+				}
+				if (isDropTarget(obj)) {
+					passiveItems.push(obj);
+				}
+				return obj.children;
+			});
 
-		this.hoveredItem =
-			immutableReverse(activeItems).find((item) =>
+			this.hoveredItem =
+				immutableReverse(activeItems).find((item) =>
+					item.isPointWithinObject(this.input.mousePos)
+				) ?? null;
+
+			this.hoveredDropTargets = immutableReverse(passiveItems).filter((item) =>
 				item.isPointWithinObject(this.input.mousePos)
-			) ?? null;
-
-		this.hoveredDropTargets =
-			immutableReverse(passiveItems).filter((item) =>
-				item.isPointWithinObject(this.input.mousePos)
-			) ?? null;
+			);
+		}
 
 		this.trigger("move", {
 			hoveredItem: this.hoveredItem,

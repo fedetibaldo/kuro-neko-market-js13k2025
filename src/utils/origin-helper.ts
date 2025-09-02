@@ -1,9 +1,5 @@
 import { Vector } from "../core/vector";
 
-export function getConcreteOrigin(pos: Vector, size: Vector, origin: Vector) {
-	return size.mulv(origin);
-}
-
 export function scaleFromOrigin(
 	point: Vector,
 	scale: number,

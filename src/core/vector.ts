@@ -4,6 +4,12 @@ export const Vector = (x: number = 0, y: number = 0) => {
 	return {
 		["x"]: x,
 		["y"]: y,
+		gt(v: VectorLike) {
+			return this.x > v.x && this.y > v.y;
+		},
+		lt(v: VectorLike) {
+			return this.x < v.x && this.y < v.y;
+		},
 		add(v: VectorLike) {
 			return Vector(this.x + v.x, this.y + v.y);
 		},

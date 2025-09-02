@@ -1,8 +1,4 @@
-import {
-	getConcreteOrigin,
-	rotateAroundOrigin,
-	scaleFromOrigin,
-} from "../utils/origin-helper";
+import { rotateAroundOrigin, scaleFromOrigin } from "../utils/origin-helper";
 import { GameObjectData } from "./game-object-data";
 import { Observable } from "./observable";
 import { RenderableInterface } from "./render.types";
@@ -152,71 +148,74 @@ export class GameObject
 		}
 	}
 
-	getPositionInSelf(v: Vector = ZERO): Vector {
-		const origin = getConcreteOrigin(v, this.size, this.origin);
-		const positionInSelf = rotateAroundOrigin(
-			scaleFromOrigin(v, this.scale, origin),
-			this.rotation,
-			origin
-		);
-		return positionInSelf;
-	}
-
 	getGlobalPosition(): Vector {
-		const positionInSelf = this.getPositionInSelf();
-
-		const transformedPosition = this.pos.add(positionInSelf);
+		const pos = this.pos;
 
 		if (!this.parent) {
-			return transformedPosition;
+			return pos;
 		}
 
+		const parentOrigin = this.parent.size.mulv(this.parent.origin);
 		const positionInParent = rotateAroundOrigin(
-			scaleFromOrigin(transformedPosition, this.parent.getGlobalScale(), ZERO),
+			scaleFromOrigin(pos, this.parent.getGlobalScale(), parentOrigin),
 			this.parent.getGlobalRotation(),
-			ZERO
+			parentOrigin
 		);
 
 		return positionInParent.add(this.parent.getGlobalPosition());
 	}
 
-	toGlobal(localPoint: Vector) {
-		const positionInSelfBeforeRotation = localPoint.mul(this.getGlobalScale());
-		const positionInSelf = positionInSelfBeforeRotation.rotate(
-			this.getGlobalRotation()
+	project(obj: GameObject) {
+		const projectedScale = obj.getGlobalScale() / this.getGlobalScale();
+
+		const objOrigin = obj.size.mulv(obj.origin);
+		const localOrigin = this.toLocal(
+			obj.getGlobalPosition().add(objOrigin.mul(projectedScale))
 		);
-		return positionInSelf.add(this.getGlobalPosition());
+		const projectedPosition = localOrigin.diff(objOrigin.mul(projectedScale));
+
+		const projectedRotation = obj.rotation - this.getGlobalRotation();
+
+		return {
+			scale: projectedScale,
+			pos: projectedPosition,
+			rotation: projectedRotation,
+		};
+	}
+
+	toGlobal(localPoint: Vector) {
+		const position = this.getGlobalPosition();
+		const rotation = this.getGlobalRotation();
+		const scale = this.getGlobalScale();
+		const origin = this.size.mulv(this.origin);
+
+		const globalPoint = position.add(
+			rotateAroundOrigin(
+				scaleFromOrigin(localPoint, scale, origin),
+				rotation,
+				origin
+			)
+		);
+
+		return globalPoint;
 	}
 
 	toLocal(point: Vector) {
 		const pos = this.getGlobalPosition();
-		const positionInSelf = point.diff(pos);
-		const rotatedPositionInSelf = positionInSelf.rotate(-this.rotation);
-		return scaleFromOrigin(
-			rotatedPositionInSelf,
-			this.getGlobalScale(),
-			this.size.mulv(this.origin)
+		const pointRelativeToPos = point.diff(pos);
+		const origin = this.size.mulv(this.origin);
+
+		const localPoint = rotateAroundOrigin(
+			scaleFromOrigin(pointRelativeToPos, 1 / this.getGlobalScale(), origin),
+			-this.getGlobalRotation(),
+			origin
 		);
+
+		return localPoint;
 	}
 
 	isPointWithinObject(point: Vector) {
-		const pos = this.getGlobalPosition();
-		const scale = this.getGlobalScale();
-		const rotation = this.getGlobalRotation();
-
-		const localPoint = rotateAroundOrigin(
-			scaleFromOrigin(point, 1 / scale, pos),
-			-rotation,
-			pos
-		);
-
-		const { x, y } = pos;
-		const { x: w, y: h } = this.size;
-		return (
-			localPoint.x > x &&
-			localPoint.x < x + w &&
-			localPoint.y > y &&
-			localPoint.y < y + h
-		);
+		const localPoint = this.toLocal(point);
+		return localPoint.gt(ZERO) && localPoint.lt(this.size);
 	}
 }

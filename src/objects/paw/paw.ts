@@ -12,6 +12,7 @@ import {
 } from "../../core/lerp";
 import { StateMachine } from "../../core/state-machine";
 import { Vector, ZERO } from "../../core/vector";
+import { canDrift } from "../../systems/drift/drift.system";
 import {
 	ClickEvent,
 	MoveEvent,
@@ -315,7 +316,12 @@ export class Paw extends GameObject {
 		const dropStage2Duration = 100;
 		const dropStage3Duration = 200;
 
-		const target = dropTarget.getDropPoint(point);
+		let target = dropTarget.getDropPoint(point);
+		if (canDrift(dropTarget)) {
+			target = target.add(
+				Vector(1, 0).mul((dropTarget.vel * dropStage1Duration) / 1000)
+			);
+		}
 		const anticipationOffset = Vector(0, 40);
 
 		this.moveLerp = makeFixedTimeIncrementalLerp(
@@ -339,6 +345,9 @@ export class Paw extends GameObject {
 
 		item.drop?.(dropTarget);
 		this.stagingArea.addChild(item);
+		if (canDrift(dropTarget)) {
+			item.vel = dropTarget.vel;
+		}
 
 		this.offsetLerp = makeFixedTimeIncrementalLerp(
 			ZERO,
@@ -349,13 +358,12 @@ export class Paw extends GameObject {
 
 		await new Promise((resolve) => setTimeout(resolve, dropStage2Duration));
 
-		item.rotation -= dropTarget.getGlobalRotation();
-		item.scale = item.scale / dropTarget.scale;
+		if (canDrift(dropTarget) && !dropTarget.still) {
+			item.vel = 0;
+		}
+		Object.assign(item, dropTarget.project(item));
 		dropTarget.host?.(item);
 		dropTarget.addChild(item);
-		item.pos = dropTarget
-			.toLocal(item.pos.add(item.center.mul(item.getGlobalScale())))
-			.diff(item.center.mul(item.getGlobalScale()));
 
 		this.graphic.isFaceUp = false;
 
@@ -386,7 +394,14 @@ export class Paw extends GameObject {
 		const pickupStage2Duration = 100;
 		const pickupStage3Duration = 200;
 
-		const target = item.toGlobal(item.center);
+		let target = item.toGlobal(item.center);
+		if (canDrift(item)) {
+			target = target.add(
+				Vector(1, 0).mul(
+					(item.vel * (pickupStage1Duration + pickupStage2Duration)) / 1000
+				)
+			);
+		}
 		const anticipationOffset = Vector(0, 40);
 
 		this.moveLerp = makeFixedTimeIncrementalLerp(
@@ -415,9 +430,7 @@ export class Paw extends GameObject {
 
 		await new Promise((resolve) => setTimeout(resolve, pickupStage1Duration));
 
-		item.pos = target.diff(item.center);
-		item.rotation = item.getGlobalRotation();
-		item.scale = item.getGlobalScale();
+		Object.assign(item, this.game.root.project(item));
 		this.stagingArea.addChild(item);
 
 		this.graphic.isFaceUp = true;
@@ -430,6 +443,10 @@ export class Paw extends GameObject {
 		);
 
 		await new Promise((resolve) => setTimeout(resolve, pickupStage2Duration));
+
+		if (canDrift(item)) {
+			item.vel = 0;
+		}
 
 		const ratioWithItem = this.baseLayer / item.baseLayer;
 		item.scale = ratioWithItem;

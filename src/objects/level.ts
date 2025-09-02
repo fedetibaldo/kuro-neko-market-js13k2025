@@ -16,6 +16,7 @@ import { chooseVariants, FishChosenVariants } from "../utils/choose-variants";
 import { clamp } from "../utils/clamp";
 import { chance } from "../utils/random";
 import { Belt, BeltShadow } from "./belt";
+import { MovingBelt } from "./belt/moving-belt";
 import { CurrencySign } from "./currency-sign";
 import { Digit, DigitValue } from "./digit";
 import { Fish } from "./fish/fish";
@@ -152,23 +153,10 @@ export class Level extends GameObject {
 				],
 			}),
 
-			new GameObject({
+			new MovingBelt({
 				id: "belt",
-				layer: 0.4,
-				canHost: true,
 				pos: beltPosition,
 				size: beltSize,
-				getDropPoint(this: GameObject, point: Vector): Vector {
-					return this.toGlobal(Vector(point.x, (this.size.y - 10) / 2));
-				},
-				update(deltaT: number) {
-					for (const child of this.children!) {
-						child.pos = child.pos.add(Vector((deltaT / 1000) * 25, 0));
-						if (child.pos.x > game.root.size.x) {
-							child.destroy();
-						}
-					}
-				},
 			}),
 
 			new BeltShadow({ pos: beltPosition, size: beltSize }),
