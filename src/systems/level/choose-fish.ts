@@ -1,13 +1,13 @@
-import { FishType, FishVariant } from "../data/fish-types";
-import { FishChosenVariants } from "./choose-variants";
-import { randomInt, chance, pickRandom, shuffle } from "./random";
+import { FishType, FishVariant, VariedFish } from "../../data/fish-types";
+import { ScoringVariants } from "./choose-variants";
+import { randomInt, chance, pickRandom, shuffle } from "../../utils/random";
 
-type FishChoiceStrategy = (
+export type ChooseFishStrategy = (
 	fishType: FishType,
 	variants: FishVariant[]
-) => FishType;
+) => VariedFish;
 
-export const easyStrategy: FishChoiceStrategy = (fishType, variants) => {
+export const easyStrategy: ChooseFishStrategy = (fishType, variants) => {
 	if (chance(1 / 3)) return fishType;
 	return {
 		...fishType,
@@ -15,7 +15,7 @@ export const easyStrategy: FishChoiceStrategy = (fishType, variants) => {
 	};
 };
 
-export const mediumStrategy: FishChoiceStrategy = (fishType, variants) => {
+export const mediumStrategy: ChooseFishStrategy = (fishType, variants) => {
 	if (chance(1 / 4)) return fishType;
 	const shuffledVariants = shuffle(variants);
 	const firstVariant = shuffledVariants[0]!;
@@ -36,7 +36,7 @@ export const mediumStrategy: FishChoiceStrategy = (fishType, variants) => {
 	};
 };
 
-export const hardStrategy: FishChoiceStrategy = (fishType, variants) => {
+export const hardStrategy: ChooseFishStrategy = (fishType, variants) => {
 	const shuffledVariants = shuffle(variants);
 
 	const selectedVariants = shuffledVariants.reduce((variants, variant) => {
@@ -47,12 +47,12 @@ export const hardStrategy: FishChoiceStrategy = (fishType, variants) => {
 	}, [] as FishVariant[]);
 
 	return selectedVariants.reduce(
-		(fish: FishType, variant) => ({ ...fish, ...variant }),
+		(fish: VariedFish, variant) => ({ ...fish, ...variant }),
 		fishType
 	);
 };
 
-export const chaosStrategy: FishChoiceStrategy = (fishType, variants) => {
+export const chaosStrategy: ChooseFishStrategy = (fishType, variants) => {
 	const shuffledVariants = shuffle(fishType.variants);
 
 	const randomPick = chance(1 / 2) ? pickRandom(variants) : null;
@@ -75,15 +75,15 @@ export const chaosStrategy: FishChoiceStrategy = (fishType, variants) => {
 	}
 
 	return selectedVariants.reduce(
-		(fish: FishType, variant) => ({ ...fish, ...variant }),
+		(fish: VariedFish, variant) => ({ ...fish, ...variant }),
 		fishType
 	);
 };
 
 export const chooseFish = (
 	fishTypes: FishType[],
-	chosenVariants: FishChosenVariants[],
-	strategy: FishChoiceStrategy
+	chosenVariants: ScoringVariants[],
+	strategy: ChooseFishStrategy
 ) => {
 	const idx = randomInt(0, fishTypes.length);
 	const chosenFish = fishTypes[idx]!;

@@ -31,7 +31,7 @@ export class Flexbox extends GameObject {
 		this.align = align;
 		this.justify = justify;
 		this.mode = mode;
-		this.onChildrenChange();
+		this["onChildrenChange"]();
 	}
 	["onChildrenChange"]() {
 		const mainAxis = this.direction == "row" ? "x" : "y";

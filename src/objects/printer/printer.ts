@@ -97,6 +97,7 @@ export class Printer extends GameObject {
 			this.ticket.addChild(new Digit({ value: left }));
 		}
 		this.ticket.addChild(new Digit({ value: right }));
+		this.ticket.value = left * 10 + right;
 		this.ticketLerp = makeFixedTimeIncrementalLerp(
 			this.ticket.pos,
 			this.ticket.pos.add(Vector(-21, 0)),

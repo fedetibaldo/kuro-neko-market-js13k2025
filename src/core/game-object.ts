@@ -95,14 +95,14 @@ export class GameObject
 		this.trigger("childrenChange");
 	}
 
-	getChild(id: string): GameObject | undefined {
+	getChild<T extends GameObject>(id: string): T | undefined {
 		for (const child of this.children) {
 			if (child.id === id) {
-				return child;
+				return child as T;
 			}
 			const needle = child.getChild(id);
 			if (needle) {
-				return needle;
+				return needle as T;
 			}
 		}
 	}

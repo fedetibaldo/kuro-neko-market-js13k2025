@@ -9,32 +9,44 @@ import {
 	PickupableInterface,
 } from "../../systems/interactable/interactable.types";
 import { Svg } from "../svg";
-import { FishType } from "../../data/fish-types";
+import { LevelSystem } from "../../systems/level/level.system";
+import { diContainer } from "../../core/di-container";
+import { Paper } from "../paper";
 
 type FishArgs = GameObjectArgs & {
 	flipH?: boolean;
-	type: FishType;
+	fishIndex: number;
 };
 
 export class Fish
 	extends GameObject
 	implements PickupableInterface, DropTargetInterface
 {
+	id = "fish";
+	level: LevelSystem;
+
 	flipH: boolean;
-	type: FishType;
+	fishIndex: number;
+	value = 0;
+
 	shape: FishShape;
 	center: Vector;
 
-	constructor({ flipH = false, type, ...rest }: FishArgs) {
+	constructor({ flipH = false, fishIndex, ...rest }: FishArgs) {
 		super(rest);
-		this.type = type;
+
+		this.level = diContainer.get(LevelSystem);
+
+		this.fishIndex = fishIndex;
 		this.flipH = flipH;
+
+		const type = this.level.getFish(fishIndex);
 
 		const createEye = (pos: Vector, diameter: number, size: Vector) => {
 			const eyeXPolar = pos.x - size.x / 2;
 			return new FishEye({
 				size: Vector(diameter, diameter),
-				color: this.type.eyeColor,
+				color: type.eyeColor,
 				pos: Vector(
 					size.x / 2 +
 						eyeXPolar * (this.flipH ? -1 : 1) -
@@ -47,18 +59,16 @@ export class Fish
 		this.addChildren([
 			new FishShape({
 				flipH: this.flipH,
-				...this.type,
+				...type,
 				id: "shape",
 				children: [
-					...this.type.eyes.map(([diameter, pos]) =>
-						createEye(pos, diameter, this.type.size)
+					...type.eyes.map(([diameter, pos]) =>
+						createEye(pos, diameter, type.size)
 					),
 					new Viewport({
 						id: "texture",
 						size: Vector(16, 16),
-						children: [
-							new Svg({ path: this.type.pattern, size: Vector(16, 16) }),
-						],
+						children: [new Svg({ path: type.pattern, size: Vector(16, 16) })],
 					}),
 				],
 			}),
@@ -74,9 +84,33 @@ export class Fish
 	canBePickedUp = true;
 	origin = CENTER;
 
-	canHost(obj: GameObject) {
-		return obj.id == "ticket";
+	attemptScore() {
+		if (this.parent?.id != "belt") return;
+		const ticket = this.getChild<Paper>("ticket");
+		if (!ticket) return;
+		const value = ticket.value;
+		if (!this.level.verifyScore(this.fishIndex, value)) {
+			// TODO: Show X
+			return;
+		}
+		// TODO: Show v
+		this.canHost = false;
+		this.opacity = 0.5;
+		this.canBePickedUp = false;
 	}
+
+	["onMount"]() {
+		this.attemptScore();
+	}
+
+	["onChildrenChange"]() {
+		this.attemptScore();
+	}
+
+	canHost: boolean | ((obj: GameObject) => boolean) = (obj: GameObject) => {
+		return obj.id == "ticket";
+	};
+
 	host(obj: PickupableInterface) {
 		this.getChild("ticket")?.destroy();
 		obj.canBePickedUp = false;

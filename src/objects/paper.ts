@@ -14,6 +14,7 @@ export class Paper extends Flexbox implements PickupableInterface {
 	align = "center" as const;
 	justify = "center" as const;
 	spaceBetween = 0;
+	value = 0;
 
 	isHeld = false;
 	pickup(): void {

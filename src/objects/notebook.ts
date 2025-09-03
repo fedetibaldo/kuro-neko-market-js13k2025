@@ -1,3 +1,4 @@
+import { diContainer } from "../core/di-container";
 import { drawSvg } from "../core/draw-svg";
 import { Flexbox } from "../core/flexbox";
 import { GameObject, GameObjectArgs } from "../core/game-object";
@@ -8,9 +9,8 @@ import {
 	makeFixedTimeIncrementalLerp,
 } from "../core/lerp";
 import { BOTTOM, BOTTOM_LEFT, CENTER, Vector, ZERO } from "../core/vector";
-import { FishType } from "../data/fish-types";
 import { PressableInterface } from "../systems/interactable/interactable.types";
-import { FishChosenVariants } from "../utils/choose-variants";
+import { LevelSystem } from "../systems/level/level.system";
 import { gradient } from "../utils/gradient";
 import { range } from "../utils/range";
 import { CurrencySign } from "./currency-sign";
@@ -18,15 +18,11 @@ import { Digit, DigitValue } from "./digit";
 import { MathSign } from "./math-sign";
 import { Svg } from "./svg";
 
-type NotebookArgs = GameObjectArgs & {
-	fishTypes: FishType[];
-	chosenVariants: FishChosenVariants[];
-};
+type NotebookArgs = GameObjectArgs;
 const size = Vector(80, 63);
 
 export class Notebook extends GameObject implements PressableInterface {
-	fishTypes: FishType[];
-	chosenVariants: FishChosenVariants[];
+	level: LevelSystem;
 	page: number;
 	size = size;
 	origin = CENTER;
@@ -45,7 +41,7 @@ export class Notebook extends GameObject implements PressableInterface {
 		const lerp = makeFixedTimeIncrementalLerp(1, 0.75, duration / 2, easeIn);
 		this.scaleLerp = lerp;
 		await new Promise((resolve) => setTimeout(resolve, duration / 2));
-		this.onPageChange((this.page + 1) % this.fishTypes.length);
+		this.onPageChange((this.page + 1) % this.level.fishTypes.length);
 		if (this.scaleLerp !== lerp) return;
 		this.scaleLerp = makeFixedTimeIncrementalLerp(
 			0.75,
@@ -61,10 +57,9 @@ export class Notebook extends GameObject implements PressableInterface {
 		}
 	}
 
-	constructor({ fishTypes, chosenVariants, ...rest }: NotebookArgs) {
-		super(rest);
-		this.fishTypes = fishTypes;
-		this.chosenVariants = chosenVariants;
+	constructor(args: NotebookArgs) {
+		super(args);
+		this.level = diContainer.get(LevelSystem);
 		this.onPageChange(0);
 	}
 
@@ -75,8 +70,8 @@ export class Notebook extends GameObject implements PressableInterface {
 			oldPage.destroy();
 		}
 
-		const fishType = this.fishTypes[this.page]!;
-		const chosenVariants = this.chosenVariants[this.page]!;
+		const fishType = this.level.fishTypes[this.page]!;
+		const scoringVariants = this.level.scoringVariants[this.page]!;
 
 		this.addChild(
 			new GameObject({
@@ -144,7 +139,7 @@ export class Notebook extends GameObject implements PressableInterface {
 						pos: Vector(0, 33),
 						size: Vector(80, 24),
 						spaceBetween: 5,
-						children: chosenVariants.map(([option, modifier]) => {
+						children: scoringVariants.map(([option, modifier]) => {
 							const makeColoredCircles = (color: string) => {
 								return new GameObject({
 									children: [

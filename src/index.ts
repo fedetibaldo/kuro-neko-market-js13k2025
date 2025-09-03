@@ -11,6 +11,7 @@ import { InteractableServer } from "./systems/interactable/interactable.server";
 import { Pointer } from "./objects/pointer";
 import { playMeow } from "./utils/play-meow";
 import { DriftSystem } from "./systems/drift/drift.system";
+import { LevelSystem } from "./systems/level/level.system";
 
 const canvas = document.getElementById("game") as HTMLCanvasElement;
 const viewRes = Vector(360, 240);
@@ -23,6 +24,7 @@ diContainer.set(DisplayServer, new DisplayServer({ canvas }));
 diContainer.set(InputServer, new InputServer());
 diContainer.set(InteractableServer, new InteractableServer());
 diContainer.set(DriftSystem, new DriftSystem());
+diContainer.set(LevelSystem, new LevelSystem());
 
 game.root.addChildren([
 	new Level({ difficulty: 3, duration: 120 }),

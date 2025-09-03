@@ -1,6 +1,7 @@
 import { Flexbox } from "../../core/flexbox";
 import { GameObject } from "../../core/game-object";
 import { CENTER, Vector } from "../../core/vector";
+import { GLYPH_CROSS, GLYPH_TICK } from "../../data/glyphs";
 import { PressableInterface } from "../../systems/interactable/interactable.types";
 import { range } from "../../utils/range";
 import { Digit, DigitValue } from "../digit";
@@ -81,7 +82,7 @@ export class ButtonGroup extends GameObject {
 								children: [
 									new Glyph({
 										color: "#8B2325",
-										path: "m1.5 8 5-7m-5 0 5 7",
+										path: GLYPH_CROSS,
 										fontSize,
 										pos: Vector(3, 2.5),
 										origin: CENTER,
@@ -107,7 +108,7 @@ export class ButtonGroup extends GameObject {
 								children: [
 									new Glyph({
 										color: "#10A11A",
-										path: "m1 4.7 2 3.1c.1.2.4.2.5 0L6.9 1",
+										path: GLYPH_TICK,
 										fontSize,
 										pos: Vector(3, 2.5),
 										origin: CENTER,

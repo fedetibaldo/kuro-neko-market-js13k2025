@@ -1,19 +1,19 @@
-import { FishType, FishVariant } from "../data/fish-types";
-import { pickRandom, randomInt, shuffle } from "./random";
+import { FishType, FishVariant } from "../../data/fish-types";
+import { pickRandom, randomInt, shuffle } from "../../utils/random";
 
-export type FishChosenVariant = [FishVariant, number];
+export type ScoringVariant = [FishVariant, number];
 
-export type FishChosenVariants = FishChosenVariant[];
+export type ScoringVariants = ScoringVariant[];
 
-export const chooseVariants = (fishTypes: FishType[]): FishChosenVariants[] => {
-	const chosenVariants: FishChosenVariants[] = [];
+export const chooseVariants = (fishTypes: FishType[]): ScoringVariants[] => {
+	const chosenVariants: ScoringVariants[] = [];
 	for (const type of fishTypes) {
 		const variants = shuffle(type.variants).slice(0, 3);
 
-		let fishChosenVariants: FishChosenVariant[] = [];
+		let fishChosenVariants: ScoringVariant[] = [];
 		do {
 			fishChosenVariants = variants.reduce(
-				(acc: FishChosenVariant[], variantOptions): FishChosenVariant[] => {
+				(acc: ScoringVariant[], variantOptions): ScoringVariant[] => {
 					const option = pickRandom(variantOptions);
 					const modifier = !!option.eyeColor
 						? randomInt(-3, 0)

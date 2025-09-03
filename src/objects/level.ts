@@ -6,16 +6,13 @@ import { TOP_RIGHT, Vector } from "../core/vector";
 import { FishType, fishTypes } from "../data/fish-types";
 import { DropTargetInterface } from "../systems/interactable/interactable.types";
 import {
-	chaosStrategy,
-	chooseFish,
-	easyStrategy,
-	hardStrategy,
-	mediumStrategy,
-} from "../utils/choose-fish";
-import { chooseVariants, FishChosenVariants } from "../utils/choose-variants";
+	LevelSpawnFrequency,
+	LevelSystem,
+} from "../systems/level/level.system";
 import { clamp } from "../utils/clamp";
 import { chance } from "../utils/random";
-import { Belt, BeltShadow } from "./belt";
+import { BeltColor } from "./belt/belt-color";
+import { BeltShadow } from "./belt/belt-shadow";
 import { MovingBelt } from "./belt/moving-belt";
 import { CurrencySign } from "./currency-sign";
 import { Digit, DigitValue } from "./digit";
@@ -39,67 +36,47 @@ export class Level extends GameObject {
 	duration: number;
 	tToSpawn: number;
 	difficulty: 0 | 1 | 2 | 3;
-	levelFishTypes: FishType[];
-	levelVariants: FishChosenVariants[];
 
-	spawnFish(type: FishType) {
+	level: LevelSystem;
+
+	onSpawn(index: number): void {
 		const flipH = chance(1 / 2);
 		const belt = this.getChild("belt")! as DropTargetInterface;
 		const fish = new Fish({
 			flipH,
 			rotation: (-Math.PI / 4) * 3 * (flipH ? -1 : 1),
-			type,
+			fishIndex: index,
 		});
 		fish.pos = belt
 			.toLocal(belt.getDropPoint(Vector(-30, 0)))
 			.diff(fish.size.mulv(fish.origin));
 		fish.scale = belt.layer / fish.baseLayer;
+		fish.vel = belt.vel;
+		fish.layer = belt.layer;
 		belt.addChild(fish);
-	}
-
-	update(deltaT: number): void {
-		if (this.isFirst && this.difficulty < 3) {
-			this.spawnFish(this.levelFishTypes.at(-1)!);
-			this.isFirst = false;
-		}
-
-		const strategies = [
-			easyStrategy,
-			mediumStrategy,
-			hardStrategy,
-			chaosStrategy,
-		];
-
-		this.t += deltaT / 1000;
-		const shouldSpawn = this.t >= this.tToSpawn;
-		if (shouldSpawn) {
-			this.t = 0;
-			this.spawnFish(
-				chooseFish(
-					this.levelFishTypes,
-					this.levelVariants,
-					strategies[this.difficulty]!
-				)
-			);
-		}
 	}
 
 	constructor({ difficulty, duration, ...rest }: LevelArgs) {
 		super(rest);
-		this.difficulty = difficulty;
-		this.duration = duration;
 
 		const game = diContainer.get(Game);
+		this.level = diContainer.get(LevelSystem);
 
-		const velocity = 30; // px / s
-		const time = 120;
-		const timeToCrossScreen = game.root.size.x / velocity;
-		const timeUntilLastSpawn = time - timeToCrossScreen;
-		const spawns = 15 + difficulty * 3;
-		this.tToSpawn = timeUntilLastSpawn / spawns;
+		const fishes = fishTypes.slice(0, difficulty + 1);
+		this.level.init(
+			fishes,
+			Math.max(difficulty, 2) as LevelSpawnFrequency,
+			difficulty
+		);
+		this.level.start();
 
-		this.levelFishTypes = fishTypes.slice(0, difficulty + 1);
-		this.levelVariants = chooseVariants(this.levelFishTypes);
+		this.level.on("spawn", (idx: number) => this.onSpawn(idx));
+		this.level.on("tick", (time: number) =>
+			(this.getChild("timer") as Counter).setValue(Math.floor(time))
+		);
+		this.level.on("score", (score: number) =>
+			(this.getChild("score") as Counter).setValue(score)
+		);
 
 		const beltSize = Vector(game.root.size.x, 40);
 		const beltPosition = Vector(0, 110);
@@ -110,7 +87,7 @@ export class Level extends GameObject {
 		const seaPosition = Vector(0, beltPosition.y - seaSize.y);
 
 		this.addChildren([
-			new Belt({
+			new BeltColor({
 				pos: Vector(0, 110),
 				size: beltSize,
 			}),
@@ -129,8 +106,6 @@ export class Level extends GameObject {
 				children: [
 					new Notebook({
 						pos: Vector(5, 23),
-						fishTypes: this.levelFishTypes,
-						chosenVariants: this.levelVariants,
 					}),
 					new Printer({
 						id: "printer",
@@ -161,7 +136,18 @@ export class Level extends GameObject {
 
 			new BeltShadow({ pos: beltPosition, size: beltSize }),
 
-			new Timer({ pos: Vector(8, 9), seconds: this.duration }),
+			new CounterCountainer({
+				pos: Vector(8, 9),
+				children: [
+					new Counter({ id: "timer" }),
+					new Glyph({
+						size: Vector(8, 8),
+						color: "#9C5FA7",
+						fontSize: 14,
+						path: "M5 1.8c-1.4-1-3.1-.6-3.4.5-.2.6-.2 1.9 2.1 2.3 2.8.5 2 3.4-.4 3.4-.4 0-1.2-.2-2-1",
+					}),
+				],
+			}),
 
 			new CounterCountainer({
 				pos: game.root.size.mulv(TOP_RIGHT).diff(Vector(8, -8)),
@@ -236,34 +222,5 @@ class Counter extends Flexbox {
 			digitObject.setValue(digitValue);
 			digitObject.opacity = opacity;
 		}
-	}
-}
-
-type TimerArgs = GameObjectArgs & {
-	seconds: number;
-};
-
-class Timer extends CounterCountainer {
-	seconds: number;
-	t = 0;
-
-	update(deltaT: number) {
-		this.t += deltaT;
-		const seconds = this.seconds - Math.floor(this.t / 1000);
-		(this.getChild("counter") as Counter).setValue(seconds);
-	}
-
-	constructor({ seconds, ...rest }: TimerArgs) {
-		super(rest);
-		this.seconds = seconds;
-		this.addChildren([
-			new Counter({ id: "counter" }),
-			new Glyph({
-				size: Vector(8, 8),
-				color: "#9C5FA7",
-				fontSize: 14,
-				path: "M5 1.8c-1.4-1-3.1-.6-3.4.5-.2.6-.2 1.9 2.1 2.3 2.8.5 2 3.4-.4 3.4-.4 0-1.2-.2-2-1",
-			}),
-		]);
 	}
 }

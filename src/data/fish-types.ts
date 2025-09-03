@@ -1,7 +1,7 @@
 import { Vector } from "../core/vector";
 
-export type FishType = {
-	variants: Omit<Partial<FishType>, "variants">[][];
+type BaseFishData = {
+	id: string;
 	basePrice: 5 | 6 | 7;
 	size: Vector;
 	pattern: string;
@@ -18,10 +18,17 @@ export type FishType = {
 	eyeColor: string;
 };
 
-export type FishVariant = Omit<Partial<FishType>, "variants">;
+export type FishVariant = Partial<BaseFishData>;
+
+export type FishType = BaseFishData & {
+	variants: FishVariant[][];
+};
+
+export type VariedFish = BaseFishData;
 
 export const fishTypes: FishType[] = [
 	{
+		id: "mackerel",
 		variants: [
 			[{ eyeColor: "#C7B3CA" }],
 			[{ bodyFill1: "#A45EB1" }, { bodyFill1: "#323033" }],
@@ -52,6 +59,7 @@ export const fishTypes: FishType[] = [
 		eyeColor: "#3A1141",
 	},
 	{
+		id: "sole",
 		variants: [
 			[{ eyeColor: "#C7B3CA" }],
 			[{ bodyFill1: "#F399EA" }, { bodyFill1: "#968F9D" }],
@@ -85,6 +93,7 @@ export const fishTypes: FishType[] = [
 		eyeColor: "#3A1141",
 	},
 	{
+		id: "tile",
 		variants: [
 			[{ eyeColor: "#C7B3CA" }],
 			[{ bodyFill1: "#F399EA" }, { bodyFill1: "#5B5661" }],

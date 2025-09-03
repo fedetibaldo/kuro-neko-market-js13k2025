@@ -1,0 +1,124 @@
+import { diContainer } from "../../core/di-container";
+import { Game } from "../../core/game";
+import { Observable } from "../../core/observable";
+import { FishType, VariedFish } from "../../data/fish-types";
+import { chooseVariants, ScoringVariants } from "./choose-variants";
+import {
+	chaosStrategy,
+	chooseFish,
+	ChooseFishStrategy,
+	easyStrategy,
+	hardStrategy,
+	mediumStrategy,
+} from "./choose-fish";
+import { scoreFish } from "./score-fish";
+
+export type LevelSpawnFrequency = 0 | 1 | 2;
+export type LevelDifficulty = 0 | 1 | 2 | 3;
+
+const DURATION = 120;
+const PADDING = 15;
+
+export class LevelSystem extends Observable {
+	game: Game;
+
+	// Init args
+	fishTypes: FishType[];
+	freq: LevelSpawnFrequency;
+	difficulty: LevelDifficulty;
+
+	// Computed from init args
+	scoringVariants: ScoringVariants[];
+	strategy: ChooseFishStrategy;
+	tToSpawn: number;
+
+	// State
+	spawnedFishes: [VariedFish, number, boolean][] = [];
+	hasStarted = false;
+	totT = 0;
+	t = 0;
+
+	constructor() {
+		super();
+		this.game = diContainer.get(Game);
+		this.game.on("tick", (deltaT: number) => this.onGameTick(deltaT));
+	}
+
+	init(
+		fishTypes: FishType[],
+		freq: LevelSpawnFrequency,
+		difficulty: LevelDifficulty
+	) {
+		this.fishTypes = fishTypes;
+		this.freq = freq;
+		this.difficulty = difficulty;
+
+		this.scoringVariants = chooseVariants(fishTypes);
+
+		this.strategy = (
+			[easyStrategy, mediumStrategy, hardStrategy, chaosStrategy] as const
+		)[difficulty];
+
+		const spawnAmount = 15 + this.freq * 3;
+		this.tToSpawn = (DURATION - PADDING) / spawnAmount;
+
+		this.hasStarted = false;
+		this.t = 0;
+		this.totT = 0;
+		this.spawnedFishes = [];
+	}
+
+	spawnFish(fish: VariedFish) {
+		const typeIndex = this.fishTypes.findIndex(({ id }) => id == fish.id);
+		const scoringVariants = this.scoringVariants[typeIndex]!;
+		const score = scoreFish(fish, scoringVariants);
+		const length = this.spawnedFishes.push([fish, score, false]);
+		this.trigger("spawn", length - 1);
+	}
+
+	start() {
+		this.hasStarted = true;
+	}
+
+	onGameTick(deltaT: number) {
+		this.trigger("tick", DURATION - this.totT);
+
+		if (!this.hasStarted) return;
+
+		this.totT += deltaT / 1000;
+
+		if (this.t <= 0) {
+			const fish = chooseFish(
+				this.fishTypes,
+				this.scoringVariants,
+				this.strategy
+			);
+			this.spawnFish(fish);
+			this.t = this.tToSpawn;
+		}
+
+		if (this.totT > DURATION - PADDING) return;
+
+		this.t -= deltaT / 1000;
+	}
+
+	getFish(fishIndex: number): VariedFish {
+		return this.spawnedFishes[fishIndex]![0];
+	}
+
+	getScore() {
+		return this.spawnedFishes.reduce((sum, [, value, isCorrect]) => {
+			return isCorrect ? sum + value : sum;
+		}, 0);
+	}
+
+	verifyScore(fishIndex: number, userScore: number) {
+		const spawnedFish = this.spawnedFishes[fishIndex]!;
+		if (spawnedFish[1] == userScore) {
+			spawnedFish[2] = true;
+			this.trigger("score", this.getScore());
+			return true;
+		}
+		return false;
+	}
+}

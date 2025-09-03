@@ -68,7 +68,7 @@ export class InteractableServer extends Observable {
 				if (isPressable(obj) || (isPickupable(obj) && obj.canBePickedUp)) {
 					activeItems.push(obj);
 				}
-				if (isDropTarget(obj)) {
+				if (isDropTarget(obj) && obj.canHost) {
 					passiveItems.push(obj);
 				}
 				return obj.children;

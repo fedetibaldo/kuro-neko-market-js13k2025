@@ -82,8 +82,8 @@ export class RenderServer extends Observable {
 		ctx.rotate(rotation);
 
 		ctx.globalAlpha = ctx.globalAlpha * opacity;
-		ctx.strokeStyle = "red";
-		obj.size && ctx.strokeRect(0, 0, obj.size.x, obj.size.y);
+		// ctx.strokeStyle = "red";
+		// obj.size && ctx.strokeRect(0, 0, obj.size.x, obj.size.y);
 
 		if (isRenderable(obj)) {
 			obj.render(ctx);

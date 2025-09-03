@@ -1,8 +1,8 @@
-import { drawSvg } from "../core/draw-svg";
-import { GameObject } from "../core/game-object";
-import { Vector } from "../core/vector";
-import { gradient } from "../utils/gradient";
-import { range } from "../utils/range";
+import { drawSvg } from "../../core/draw-svg";
+import { GameObject } from "../../core/game-object";
+import { Vector } from "../../core/vector";
+import { gradient } from "../../utils/gradient";
+import { range } from "../../utils/range";
 
 class BeltBackground extends GameObject {
 	render(ctx: OffscreenCanvasRenderingContext2D) {
@@ -64,7 +64,7 @@ class BeltMiddleLayer extends GameObject {
 	}
 }
 
-export class Belt extends GameObject {
+export class BeltColor extends GameObject {
 	createChildren(): GameObject[] {
 		return [
 			new BeltBackground({
@@ -75,12 +75,5 @@ export class Belt extends GameObject {
 				size: Vector(this.size.x, this.size.y - 10),
 			}),
 		];
-	}
-}
-
-export class BeltShadow extends GameObject {
-	render(ctx: OffscreenCanvasRenderingContext2D): void {
-		ctx.fillStyle = "#00000088";
-		ctx.fillRect(0, this.size.y - 10, this.size.x, 20);
 	}
 }

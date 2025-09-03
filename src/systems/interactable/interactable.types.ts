@@ -18,7 +18,7 @@ export type PressableInterface = GameObject & {
 
 export type DropTargetInterface = GameObject & {
 	layer: number;
-	canHost: true | ((obj: GameObject) => boolean);
+	canHost: boolean | ((obj: GameObject) => boolean);
 	getDropPoint(point: Vector): Vector;
 	host?(obj?: PickupableInterface): void;
 };
