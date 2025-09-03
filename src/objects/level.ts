@@ -30,16 +30,9 @@ import { Table } from "./table";
 
 type LevelArgs = GameObjectArgs & {
 	difficulty: 0 | 1 | 2 | 3;
-	duration: number;
 };
 
 export class Level extends GameObject {
-	isFirst = true;
-	t = 0;
-	duration: number;
-	tToSpawn: number;
-	difficulty: 0 | 1 | 2 | 3;
-
 	level: LevelSystem;
 
 	onSpawn(index: number): void {
@@ -59,7 +52,7 @@ export class Level extends GameObject {
 		belt.addChild(fish);
 	}
 
-	constructor({ difficulty, duration, ...rest }: LevelArgs) {
+	constructor({ difficulty, ...rest }: LevelArgs) {
 		super(rest);
 
 		const game = diContainer.get(Game);
@@ -95,7 +88,6 @@ export class Level extends GameObject {
 				size: beltSize,
 			}),
 			new Sky({
-				duration: this.duration,
 				size: Vector(game.root.size.x, seaPosition.y),
 			}),
 			new Sea({

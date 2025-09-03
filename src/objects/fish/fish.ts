@@ -27,7 +27,6 @@ export class Fish
 	extends GameObject
 	implements PickupableInterface, DropTargetInterface
 {
-	id = "fish";
 	level: LevelSystem;
 
 	flipH: boolean;

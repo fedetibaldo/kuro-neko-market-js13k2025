@@ -17,11 +17,12 @@ import { unique } from "../../core/unique";
 export type LevelSpawnFrequency = 0 | 1 | 2;
 export type LevelDifficulty = 0 | 1 | 2 | 3;
 
-const DURATION = 120;
+export const LEVEL_DURATION = 120;
 const PADDING = 15;
 
 export const LEVEL_SPAWN_EVENT = unique();
 export const LEVEL_TICK_EVENT = unique();
+export const LEVEL_END_EVENT = unique();
 export const LEVEL_SCORE_EVENT = unique();
 
 export class LevelSystem extends Observable {
@@ -40,6 +41,7 @@ export class LevelSystem extends Observable {
 	// State
 	spawnedFishes: [VariedFish, number, boolean][] = [];
 	hasStarted = false;
+	hasEnded = false;
 	totT = 0;
 	t = 0;
 
@@ -65,9 +67,10 @@ export class LevelSystem extends Observable {
 		)[difficulty];
 
 		const spawnAmount = 15 + this.freq * 3;
-		this.tToSpawn = (DURATION - PADDING) / spawnAmount;
+		this.tToSpawn = (LEVEL_DURATION - PADDING) / spawnAmount;
 
 		this.hasStarted = false;
+		this.hasEnded = false;
 		this.t = 0;
 		this.totT = 0;
 		this.spawnedFishes = [];
@@ -86,7 +89,15 @@ export class LevelSystem extends Observable {
 	}
 
 	onGameTick(deltaT: number) {
-		this.trigger(LEVEL_TICK_EVENT, DURATION - this.totT);
+		if (this.hasEnded) return;
+
+		if (this.totT > LEVEL_DURATION) {
+			this.hasEnded = true;
+			this.trigger(LEVEL_END_EVENT);
+			return;
+		}
+
+		this.trigger(LEVEL_TICK_EVENT, LEVEL_DURATION - this.totT);
 
 		if (!this.hasStarted) return;
 
@@ -102,7 +113,7 @@ export class LevelSystem extends Observable {
 			this.t = this.tToSpawn;
 		}
 
-		if (this.totT > DURATION - PADDING) return;
+		if (this.totT > LEVEL_DURATION - PADDING) return;
 
 		this.t -= deltaT / 1000;
 	}

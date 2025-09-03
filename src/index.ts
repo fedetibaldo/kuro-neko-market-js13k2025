@@ -28,7 +28,7 @@ diContainer.set(DriftSystem, new DriftSystem());
 diContainer.set(LevelSystem, new LevelSystem());
 
 game.root.addChildren([
-	new Level({ difficulty: 3, duration: 120 }),
+	new Level({ difficulty: 3 }),
 	new ScreenTransition(),
 	new Pointer(),
 ]);

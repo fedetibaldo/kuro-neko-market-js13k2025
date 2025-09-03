@@ -1,25 +1,33 @@
-import { GameObject, GameObjectArgs } from "../core/game-object";
+import { diContainer } from "../core/di-container";
+import {
+	GAME_OBJECT_KILL_EVENT,
+	GameObject,
+	GameObjectArgs,
+} from "../core/game-object";
 import { BOTTOM, Vector, ZERO } from "../core/vector";
+import {
+	LEVEL_DURATION,
+	LEVEL_TICK_EVENT,
+	LevelSystem,
+} from "../systems/level/level.system";
 import { gradient } from "../utils/gradient";
 import { rotateAroundOrigin } from "../utils/origin-helper";
 
-type SkyArgs = GameObjectArgs & {
-	duration: number;
-};
-
 export class Sky extends GameObject {
 	sunAngle = Math.PI;
-	duration: number;
 
-	constructor({ duration, ...rest }: SkyArgs) {
-		super(rest);
-		this.duration = duration;
+	constructor(args: GameObjectArgs) {
+		super(args);
+		const level = diContainer.get(LevelSystem);
+		this.on(
+			GAME_OBJECT_KILL_EVENT,
+			level.on(LEVEL_TICK_EVENT, this.onLevelTick)
+		);
 	}
 
-	update(deltaT: number): void {
-		const sunVelocity = Math.PI / this.duration;
-		this.sunAngle = (this.sunAngle + (sunVelocity * deltaT) / 1000) % Math.PI;
-	}
+	onLevelTick = (t: number): void => {
+		this.sunAngle = Math.PI - (Math.PI / LEVEL_DURATION) * t;
+	};
 
 	render(ctx: OffscreenCanvasRenderingContext2D): void {
 		ctx.fillStyle = gradient(ctx, ZERO, Vector(0, this.size.y), [
