@@ -1,50 +1,82 @@
 import { StateMachineDef } from "../../core/state-machine";
+import { unique } from "../../core/unique";
+
+export const PAW_IDLING_STATE = unique();
+export const PAW_POINTING_STATE = unique();
+export const PAW_PRESSING_STATE = unique();
+export const PAW_PICKING_UP_STATE = unique();
+export const PAW_CARRYING_STATE = unique();
+export const PAW_DROPPING_STATE = unique();
+
+export const PAW_DROP_ACTION = unique();
+export const PAW_POINT_ACTION = unique();
+export const PAW_PICKUP_ACTION = unique();
+export const PAW_TAP_ACTION = unique();
+export const PAW_PRESS_ACTION = unique();
+export const PAW_NEXT_ACTION = unique();
+export const PAW_CARRY_ACTION = unique();
+export const PAW_IDLE_ACTION = unique();
+
+export const PAW_MOVING_TAG = unique();
+export const PAW_POINTING_TAG = unique();
 
 type PawStateMachine = StateMachineDef<
-	"idling" | "pointing" | "pressing" | "pickingUp" | "carrying" | "dropping",
-	"drop" | "point" | "pickup" | "tap" | "press" | "next" | "carry" | "idle"
+	| typeof PAW_IDLING_STATE
+	| typeof PAW_POINTING_STATE
+	| typeof PAW_PRESSING_STATE
+	| typeof PAW_PICKING_UP_STATE
+	| typeof PAW_CARRYING_STATE
+	| typeof PAW_DROPPING_STATE,
+	| typeof PAW_DROP_ACTION
+	| typeof PAW_POINT_ACTION
+	| typeof PAW_PICKUP_ACTION
+	| typeof PAW_TAP_ACTION
+	| typeof PAW_PRESS_ACTION
+	| typeof PAW_NEXT_ACTION
+	| typeof PAW_CARRY_ACTION
+	| typeof PAW_IDLE_ACTION
 >;
 
 export const pawStateMachine: PawStateMachine = {
-	initialState: "idling",
+	initialState: PAW_IDLING_STATE,
 	states: {
-		["idling"]: {
-			tags: ["moving"],
+		[PAW_IDLING_STATE]: {
+			tags: [PAW_MOVING_TAG],
 			actions: {
-				["point"]: { target: "pointing" },
-				["pickup"]: { target: "pickingUp" },
-				["tap"]: { target: "idling" },
+				[PAW_POINT_ACTION]: { target: PAW_POINTING_STATE },
+				[PAW_PICKUP_ACTION]: { target: PAW_PICKING_UP_STATE },
+				[PAW_TAP_ACTION]: { target: PAW_IDLING_STATE },
 			},
 		},
-		["pointing"]: {
-			tags: ["moving", "pointing"],
+		[PAW_POINTING_STATE]: {
+			tags: [PAW_MOVING_TAG, PAW_POINTING_TAG],
 			actions: {
-				["press"]: { target: "pressing" },
-				["idle"]: { target: "idling" },
+				[PAW_PRESS_ACTION]: { target: PAW_PRESSING_STATE },
+				[PAW_IDLE_ACTION]: { target: PAW_IDLING_STATE },
 			},
 		},
-		["pressing"]: {
-			tags: ["pointing"],
+		[PAW_PRESSING_STATE]: {
+			tags: [PAW_POINTING_TAG],
 			actions: {
-				["next"]: { target: "idling" },
+				[PAW_NEXT_ACTION]: { target: PAW_IDLING_STATE },
 			},
 		},
-		["pickingUp"]: {
+		[PAW_PICKING_UP_STATE]: {
 			tags: [],
 			actions: {
-				["carry"]: { target: "carrying" },
+				[PAW_CARRY_ACTION]: { target: PAW_CARRYING_STATE },
 			},
 		},
-		["carrying"]: {
-			tags: ["moving"],
+		[PAW_CARRYING_STATE]: {
+			tags: [PAW_MOVING_TAG],
 			actions: {
-				["drop"]: { target: "dropping" },
+				[PAW_DROP_ACTION]: { target: PAW_DROPPING_STATE },
 			},
 		},
-		["dropping"]: {
+		[PAW_DROPPING_STATE]: {
 			tags: [],
 			actions: {
-				["next"]: { target: "idling" },
+				[PAW_NEXT_ACTION]: { target: PAW_IDLING_STATE },
 			},
 		},
 	},

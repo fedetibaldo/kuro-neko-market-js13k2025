@@ -1,5 +1,5 @@
 import { diContainer } from "../../core/di-container";
-import { Game } from "../../core/game";
+import { Game, GAME_TICK_EVENT } from "../../core/game";
 import { Observable } from "../../core/observable";
 import { FishType, VariedFish } from "../../data/fish-types";
 import { chooseVariants, ScoringVariants } from "./choose-variants";
@@ -12,12 +12,17 @@ import {
 	mediumStrategy,
 } from "./choose-fish";
 import { scoreFish } from "./score-fish";
+import { unique } from "../../core/unique";
 
 export type LevelSpawnFrequency = 0 | 1 | 2;
 export type LevelDifficulty = 0 | 1 | 2 | 3;
 
 const DURATION = 120;
 const PADDING = 15;
+
+export const LEVEL_SPAWN_EVENT = unique();
+export const LEVEL_TICK_EVENT = unique();
+export const LEVEL_SCORE_EVENT = unique();
 
 export class LevelSystem extends Observable {
 	game: Game;
@@ -41,7 +46,7 @@ export class LevelSystem extends Observable {
 	constructor() {
 		super();
 		this.game = diContainer.get(Game);
-		this.game.on("tick", (deltaT: number) => this.onGameTick(deltaT));
+		this.game.on(GAME_TICK_EVENT, (deltaT: number) => this.onGameTick(deltaT));
 	}
 
 	init(
@@ -73,7 +78,7 @@ export class LevelSystem extends Observable {
 		const scoringVariants = this.scoringVariants[typeIndex]!;
 		const score = scoreFish(fish, scoringVariants);
 		const length = this.spawnedFishes.push([fish, score, false]);
-		this.trigger("spawn", length - 1);
+		this.trigger(LEVEL_SPAWN_EVENT, length - 1);
 	}
 
 	start() {
@@ -81,7 +86,7 @@ export class LevelSystem extends Observable {
 	}
 
 	onGameTick(deltaT: number) {
-		this.trigger("tick", DURATION - this.totT);
+		this.trigger(LEVEL_TICK_EVENT, DURATION - this.totT);
 
 		if (!this.hasStarted) return;
 
@@ -116,7 +121,7 @@ export class LevelSystem extends Observable {
 		const spawnedFish = this.spawnedFishes[fishIndex]!;
 		if (spawnedFish[1] == userScore) {
 			spawnedFish[2] = true;
-			this.trigger("score", this.getScore());
+			this.trigger(LEVEL_SCORE_EVENT, this.getScore());
 			return true;
 		}
 		return false;

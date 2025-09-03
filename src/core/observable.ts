@@ -1,35 +1,32 @@
+type Callback = (args?: any) => void;
+export type OffFunction = () => void;
+
 export class Observable {
+	subs: Record<symbol, (Callback | null)[]>;
 	constructor() {
 		this.subs = {};
 	}
-	on(event, cb) {
+	on(event: symbol, cb: Callback): OffFunction {
 		if (!this.subs[event]) {
 			this.subs[event] = [];
 		}
 		this.subs[event].push(cb);
 		return () => {
-			const index = this.subs[event].findIndex((sub) => sub === cb);
+			const index = this.subs[event]!.findIndex((sub) => sub === cb);
 			if (index >= 0) {
 				// schedule for removal
-				this.subs[event][index] = null;
+				this.subs[event]![index] = null;
 			}
 		};
 	}
-	trigger(event, args) {
-		const implicitMethodName = `on${event.charAt(0).toUpperCase()}${event.slice(
-			1
-		)}`;
-		if (typeof this[implicitMethodName] == "function") {
-			this[implicitMethodName](args);
-		}
+	trigger(event: symbol, args?: any) {
 		if (this.subs[event]) {
 			this.subs[event].forEach((sub) => sub && sub(args));
 			// remove unsubscribed watchers
 			this.subs[event] = this.subs[event].filter(Boolean);
 		}
 	}
-	destroy() {
-		this.trigger("destroy");
-		this.subs = [];
+	kill() {
+		this.subs = {};
 	}
 }

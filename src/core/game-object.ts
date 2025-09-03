@@ -1,5 +1,6 @@
 import { rotateAroundOrigin, scaleFromOrigin } from "../utils/origin-helper";
 import { GameObjectData } from "./game-object-data";
+import { unique } from "./unique";
 import { Observable } from "./observable";
 import { RenderableInterface } from "./render.types";
 import { UpdatableInterface } from "./update.types";
@@ -16,6 +17,10 @@ export type GameObjectArgs = {
 	children?: GameObject[];
 	[k: string]: unknown;
 };
+
+export const GAME_OBJECT_MOUNT_EVENT = unique();
+export const GAME_OBJECT_KILL_EVENT = unique();
+export const GAME_OBJECT_CHILDREN_CHANGE_EVENT = unique();
 
 export class GameObject
 	extends Observable
@@ -67,14 +72,15 @@ export class GameObject
 		this.addChildren(this.createChildren());
 		this.addChildren(children || []);
 	}
-	destroy() {
-		super.destroy();
+	kill() {
+		super.kill();
 		if (this.parent) {
 			this.parent.removeChild(this);
 		}
 		const children = this.children;
-		children.forEach((child) => child.destroy());
+		children.forEach((child) => child.kill());
 		this.children = [];
+		this.trigger(GAME_OBJECT_KILL_EVENT);
 	}
 
 	createChildren(): GameObject[] {
@@ -91,8 +97,8 @@ export class GameObject
 		}
 		child.parent = this;
 		this.children.splice(index, 0, child);
-		child.trigger("mount");
-		this.trigger("childrenChange");
+		child.trigger(GAME_OBJECT_MOUNT_EVENT);
+		this.trigger(GAME_OBJECT_CHILDREN_CHANGE_EVENT);
 	}
 
 	getChild<T extends GameObject>(id: string): T | undefined {
@@ -107,17 +113,9 @@ export class GameObject
 		}
 	}
 
-	get(prop: string): unknown {
-		if (typeof this[prop] == "function") {
-			return this[prop]();
-		} else {
-			return this[prop];
-		}
-	}
-
 	removeChild(toRemove: GameObject) {
 		this.children = this.children.filter((child) => child !== toRemove);
-		this.trigger("childrenChange");
+		this.trigger(GAME_OBJECT_CHILDREN_CHANGE_EVENT);
 	}
 
 	update(deltaT: number) {}

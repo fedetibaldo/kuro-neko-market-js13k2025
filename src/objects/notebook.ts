@@ -67,7 +67,7 @@ export class Notebook extends GameObject implements PressableInterface {
 		this.page = page;
 		const oldPage = this.getChild("page");
 		if (oldPage) {
-			oldPage.destroy();
+			oldPage.kill();
 		}
 
 		const fishType = this.level.fishTypes[this.page]!;

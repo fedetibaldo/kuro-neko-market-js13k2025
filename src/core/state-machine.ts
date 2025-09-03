@@ -1,32 +1,32 @@
-export type Action<T extends string /* , U = void */> = T; // { [key in T]: U };
+export type Action<T extends symbol /* , U = void */> = T; // { [key in T]: U };
 
-// type ActionMachineInterface<S extends string, C extends {}> = {
+// type ActionMachineInterface<S extends symbol, C extends {}> = {
 // 	transition: (state: S) => void;
 // 	// setContext: (context: Partial<C>) => void;
 // 	// context: C;
 // };
 
-export type ActionDef<S extends string> = { target: S };
+export type ActionDef<S extends symbol> = { target: S };
 
-// type ActionCallback<S extends string, C extends {}, U = void> = U extends void
+// type ActionCallback<S extends symbol, C extends {}, U = void> = U extends void
 // 	? ActionDef<S> | ((machine: ActionMachineInterface<S, C>) => void)
 // 	: (machine: ActionMachineInterface<S, C>, args: U) => void;
 
 export type State<
-	S extends string /* , C extends {} */,
-	A extends Action<string /* , any */>
+	S extends symbol /* , C extends {} */,
+	A extends Action<symbol /* , any */>
 > = {
 	// enter?: ActionCallback<S, C>;
-	tags?: string[];
+	tags?: symbol[];
 	actions?: {
 		[K in /* keyof */ A]?: ActionDef<S>; // ActionCallback<S, C, A[K]>;
 	};
 };
 
 export type StateMachineDef<
-	S extends string,
+	S extends symbol,
 	// C extends {},
-	A extends Action<string /* , any */>
+	A extends Action<symbol /* , any */>
 > = {
 	// context: C;
 	initialState: S;
@@ -43,8 +43,8 @@ export type StateMachineDef<
 // 	: never;
 
 export class StateMachine<
-	S extends string /* , C extends {} */,
-	A extends Action<string /* , any */>
+	S extends symbol /* , C extends {} */,
+	A extends Action<symbol /* , any */>
 > {
 	// implements ActionMachineInterface<S, C>
 	protected machine: StateMachineDef<S /* , C */, A>;
@@ -64,11 +64,11 @@ export class StateMachine<
 	// 	};
 	// }
 
-	can(action: string) {
+	can(action: symbol) {
 		return !!this.state.actions && action in this.state.actions;
 	}
 
-	hasTag(tag: string) {
+	hasTag(tag: symbol) {
 		return !!this.state.tags && this.state.tags.includes(tag);
 	}
 

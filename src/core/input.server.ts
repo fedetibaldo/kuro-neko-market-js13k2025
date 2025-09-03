@@ -1,7 +1,8 @@
 import { diContainer } from "./di-container";
 import { DisplayServer } from "./display.server";
-import { Game } from "./game";
+import { Game, GAME_TICK_EVENT } from "./game";
 import { Observable } from "./observable";
+import { unique } from "./unique";
 import { Vector, ZERO } from "./vector";
 
 export type NormalizedTouchEvent = TouchEvent & {
@@ -9,6 +10,11 @@ export type NormalizedTouchEvent = TouchEvent & {
 	clientY: number;
 	isTouchEvent: true;
 };
+
+export const INPUT_SCROLL_EVENT = unique();
+export const INPUT_MOUSEDOWN_EVENT = unique();
+export const INPUT_MOUSEUP_EVENT = unique();
+export const INPUT_MOUSEMOVE_EVENT = unique();
 
 export class InputServer extends Observable {
 	displayServer: DisplayServer;
@@ -34,15 +40,15 @@ export class InputServer extends Observable {
 
 		const canvas = this.displayServer.canvas;
 
-		canvas.addEventListener("mousedown", (e) => this.onCanvasMouseDown(e));
-		canvas.addEventListener("mouseup", (e) => this.onCanvasMouseUp(e));
-		canvas.addEventListener("mousemove", (e) => this.onCanvasMouseMove(e));
+		canvas.onmousedown = (e) => this.onCanvasMouseDown(e);
+		canvas.onmouseup = (e) => this.onCanvasMouseUp(e);
+		canvas.onmousemove = (e) => this.onCanvasMouseMove(e);
 
-		canvas.addEventListener("touchstart", (e) => this.onCanvasTouchStart(e));
-		canvas.addEventListener("touchend", (e) => this.onCanvasTouchEnd(e));
-		canvas.addEventListener("touchmove", (e) => this.onCanvasTouchMove(e));
+		canvas.ontouchstart = (e) => this.onCanvasTouchStart(e);
+		canvas.ontouchend = (e) => this.onCanvasTouchEnd(e);
+		canvas.ontouchmove = (e) => this.onCanvasTouchMove(e);
 
-		canvas.addEventListener("wheel", (e) => this.onCanvasWheel(e));
+		canvas.onwheel = (e) => this.onCanvasWheel(e);
 	}
 
 	onCanvasTouchStart(e: TouchEvent) {
@@ -73,18 +79,18 @@ export class InputServer extends Observable {
 			this.eventToVector(e)
 		);
 		this.stopMomentum && this.stopMomentum();
-		this.triggerMouseEvent("mousedown", e);
+		this.triggerMouseEvent(INPUT_MOUSEDOWN_EVENT, e);
 	}
 
 	onCanvasMouseUp(e: MouseEvent | NormalizedTouchEvent) {
 		this.isMouseDown = false;
-		this.triggerMouseEvent("mouseup", e);
+		this.triggerMouseEvent(INPUT_MOUSEUP_EVENT, e);
 		if (this.isScrolling) {
-			this.stopMomentum = this.game.on("tick", (deltaT: number) => {
+			this.stopMomentum = this.game.on(GAME_TICK_EVENT, (deltaT: number) => {
 				const delta = (this.lastDelta = this.lastDelta!.diff(
 					this.lastDelta!.mul(this.scrollVelocity * (deltaT / 1000))
 				));
-				this.trigger("scroll", { delta });
+				this.trigger(INPUT_SCROLL_EVENT, { delta });
 				if (delta.length() < 0.1) {
 					this.stopMomentum && this.stopMomentum();
 				}
@@ -94,7 +100,7 @@ export class InputServer extends Observable {
 	}
 
 	onCanvasMouseMove(e: MouseEvent | NormalizedTouchEvent) {
-		this.triggerMouseEvent("mousemove", e);
+		this.triggerMouseEvent(INPUT_MOUSEMOVE_EVENT, e);
 		if (this.isMouseDown) {
 			const newDragPoint = this.projectPosition(this.eventToVector(e));
 			if (!this.isScrolling && this.initialDragPoint) {
@@ -107,7 +113,7 @@ export class InputServer extends Observable {
 				const delta = newDragPoint.diff(this.lastDragPoint);
 				this.lastDelta = delta;
 				this.lastDragPoint = newDragPoint;
-				this.trigger("scroll", { delta });
+				this.trigger(INPUT_SCROLL_EVENT, { delta });
 			}
 		}
 	}
@@ -117,10 +123,10 @@ export class InputServer extends Observable {
 			.mul(this.scrollVelocity)
 			.mul(-1);
 		// const delta = dir.mul(this.scrollVelocity)
-		this.trigger("scroll", { delta });
+		this.trigger(INPUT_SCROLL_EVENT, { delta });
 	}
 
-	triggerMouseEvent(name: string, e: MouseEvent | NormalizedTouchEvent) {
+	triggerMouseEvent(name: symbol, e: MouseEvent | NormalizedTouchEvent) {
 		if (!("isTouchEvent" in e) && this.isTouchDevice) {
 			return;
 		}

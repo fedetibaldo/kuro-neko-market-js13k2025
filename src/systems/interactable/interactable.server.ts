@@ -1,7 +1,7 @@
 import { GameObjectData } from "../../core/game-object-data";
 import { diContainer } from "../../core/di-container";
-import { Game } from "../../core/game";
-import { InputServer } from "../../core/input.server";
+import { Game, GAME_TICK_EVENT } from "../../core/game";
+import { INPUT_MOUSEDOWN_EVENT, InputServer } from "../../core/input.server";
 import { Observable } from "../../core/observable";
 import { Vector, ZERO } from "../../core/vector";
 import { immutableReverse } from "../../utils/immutable-reverse";
@@ -11,6 +11,7 @@ import {
 	PickupableInterface,
 	PressableInterface,
 } from "./interactable.types";
+import { unique } from "../../core/unique";
 
 export type MoveEvent = {
 	hoveredItem: PressableInterface | PickupableInterface | null;
@@ -30,6 +31,9 @@ export const isPickupable = (obj: object): obj is PickupableInterface =>
 export const isDropTarget = (obj: object): obj is DropTargetInterface =>
 	typeof (obj as any).canHost != "undefined";
 
+export const INTERACTABLE_CLICK_EVENT = unique();
+export const INTERACTABLE_MOVE_EVENT = unique();
+
 export class InteractableServer extends Observable {
 	game: Game;
 	input: InputServer;
@@ -41,12 +45,12 @@ export class InteractableServer extends Observable {
 		super();
 		this.game = diContainer.get(Game);
 		this.input = diContainer.get(InputServer);
-		this.game.on("tick", () => this.move());
-		this.input.on("mousedown", () => this.click());
+		this.game.on(GAME_TICK_EVENT, () => this.move());
+		this.input.on(INPUT_MOUSEDOWN_EVENT, () => this.click());
 	}
 
 	click() {
-		this.trigger("click", {
+		this.trigger(INTERACTABLE_CLICK_EVENT, {
 			item: this.hoveredItem,
 			dropTargets: this.hoveredDropTargets,
 			point: this.input.mousePos,
@@ -84,7 +88,7 @@ export class InteractableServer extends Observable {
 			);
 		}
 
-		this.trigger("move", {
+		this.trigger(INTERACTABLE_MOVE_EVENT, {
 			hoveredItem: this.hoveredItem,
 			point: this.input.mousePos,
 		} satisfies MoveEvent);

@@ -1,5 +1,6 @@
 import { Flexbox } from "../../core/flexbox";
 import { GameObject } from "../../core/game-object";
+import { unique } from "../../core/unique";
 import { CENTER, Vector } from "../../core/vector";
 import { GLYPH_CROSS, GLYPH_TICK } from "../../data/glyphs";
 import { PressableInterface } from "../../systems/interactable/interactable.types";
@@ -11,6 +12,9 @@ import { activeColor } from "./colors";
 const buttonSize = Vector(14, 14);
 const lastRowButtonSize = Vector(14, 32);
 const fontSize = 10;
+
+const BUTTON_VALUE_EVENT = unique();
+const BUTTON_PRESS_EVENT = unique();
 
 export class ButtonGroupButton
 	extends GameObject
@@ -26,15 +30,71 @@ export class ButtonGroupButton
 	press() {
 		const [child] = this.children;
 		if (child instanceof Digit) {
-			this.trigger("value", child.value);
+			this.trigger(BUTTON_VALUE_EVENT, child.value);
 		}
-		this.trigger("press");
+		this.trigger(BUTTON_PRESS_EVENT);
 	}
 }
+
+export const BUTTON_GROUP_VALUE_EVENT = unique();
+export const BUTTON_GROUP_CLEAR_EVENT = unique();
+export const BUTTON_GROUP_SUBMIT_EVENT = unique();
 
 export class ButtonGroup extends GameObject {
 	createChildren(): GameObject[] {
 		const spaceBetween = 0;
+		const buttons = range(10).map((idx) => {
+			const value = idx as DigitValue;
+			const button = new ButtonGroupButton({
+				size: buttonSize,
+				children: [
+					new Digit({
+						color: activeColor,
+						fontSize,
+						value,
+						pos: Vector(3, 2.5),
+						origin: CENTER,
+					}),
+				],
+			});
+			button.on(BUTTON_VALUE_EVENT, (e: DigitValue) =>
+				this.trigger(BUTTON_GROUP_VALUE_EVENT, e)
+			);
+			return button;
+		});
+
+		const clearButton = new ButtonGroupButton({
+			size: lastRowButtonSize,
+			children: [
+				new Glyph({
+					color: "#8B2325",
+					path: GLYPH_CROSS,
+					fontSize,
+					pos: Vector(3, 2.5),
+					origin: CENTER,
+				}),
+			],
+		});
+		clearButton.on(BUTTON_PRESS_EVENT, () =>
+			this.trigger(BUTTON_GROUP_CLEAR_EVENT)
+		);
+
+		const submitButton = new ButtonGroupButton({
+			size: lastRowButtonSize.add(Vector(10, 0)),
+			children: [
+				new Glyph({
+					color: "#10A11A",
+					path: GLYPH_TICK,
+					fontSize,
+					pos: Vector(3, 2.5),
+					origin: CENTER,
+				}),
+			],
+		});
+		submitButton.on(BUTTON_PRESS_EVENT, () =>
+			this.trigger(BUTTON_GROUP_SUBMIT_EVENT)
+		);
+
 		return [
 			new Flexbox({
 				pos: Vector(4, 4),
@@ -51,22 +111,7 @@ export class ButtonGroup extends GameObject {
 								direction: "row",
 								justify: "start",
 								spaceBetween,
-								children: range(3).map(
-									(col) =>
-										new ButtonGroupButton({
-											size: buttonSize,
-											["onValue"]: (e: DigitValue) => this.trigger("value", e),
-											children: [
-												new Digit({
-													color: activeColor,
-													fontSize,
-													value: (row * 3 + col + 1) as DigitValue,
-													pos: Vector(3, 2.5),
-													origin: CENTER,
-												}),
-											],
-										})
-								),
+								children: buttons.slice(1 + row * 3, 1 + row * 3 + 3),
 							})
 					),
 					new Flexbox({
@@ -75,47 +120,7 @@ export class ButtonGroup extends GameObject {
 						direction: "row",
 						justify: "start",
 						spaceBetween,
-						children: [
-							new ButtonGroupButton({
-								size: lastRowButtonSize,
-								["onPress"]: () => this.trigger("clear"),
-								children: [
-									new Glyph({
-										color: "#8B2325",
-										path: GLYPH_CROSS,
-										fontSize,
-										pos: Vector(3, 2.5),
-										origin: CENTER,
-									}),
-								],
-							}),
-							new ButtonGroupButton({
-								size: lastRowButtonSize,
-								["onValue"]: (e: DigitValue) => this.trigger("value", e),
-								children: [
-									new Digit({
-										color: activeColor,
-										fontSize,
-										value: 0,
-										pos: Vector(3, 2.5),
-										origin: CENTER,
-									}),
-								],
-							}),
-							new ButtonGroupButton({
-								size: lastRowButtonSize.add(Vector(10, 0)),
-								["onPress"]: () => this.trigger("submit"),
-								children: [
-									new Glyph({
-										color: "#10A11A",
-										path: GLYPH_TICK,
-										fontSize,
-										pos: Vector(3, 2.5),
-										origin: CENTER,
-									}),
-								],
-							}),
-						],
+						children: [clearButton, buttons[0]!, submitButton],
 					}),
 				],
 			}),

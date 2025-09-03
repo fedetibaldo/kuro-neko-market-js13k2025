@@ -1,4 +1,4 @@
-import { GameObject } from "./game-object";
+import { GAME_OBJECT_CHILDREN_CHANGE_EVENT, GameObject } from "./game-object";
 import { Vector } from "./vector";
 
 export type FlexboxArgs = {
@@ -31,9 +31,10 @@ export class Flexbox extends GameObject {
 		this.align = align;
 		this.justify = justify;
 		this.mode = mode;
-		this["onChildrenChange"]();
+		this.on(GAME_OBJECT_CHILDREN_CHANGE_EVENT, () => this.onChildrenChange());
+		this.onChildrenChange();
 	}
-	["onChildrenChange"]() {
+	onChildrenChange() {
 		const mainAxis = this.direction == "row" ? "x" : "y";
 		const secondaryAxis = this.direction == "row" ? "y" : "x";
 
@@ -58,7 +59,8 @@ export class Flexbox extends GameObject {
 				.add(this.size.mulv(this.origin))
 				.diff(newSize.mulv(this.origin));
 			this.size = newSize;
-			this.parent?.trigger("childrenChange");
+			// Dirty, but works
+			this.parent?.trigger(GAME_OBJECT_CHILDREN_CHANGE_EVENT);
 		}
 
 		let mainOffset = 0;

@@ -1,6 +1,11 @@
 import { Viewport } from "../../core/viewport";
 import { drawSvg } from "../../core/draw-svg";
-import { GameObject, GameObjectArgs } from "../../core/game-object";
+import {
+	GAME_OBJECT_CHILDREN_CHANGE_EVENT,
+	GAME_OBJECT_MOUNT_EVENT,
+	GameObject,
+	GameObjectArgs,
+} from "../../core/game-object";
 import { CENTER, Vector, ZERO } from "../../core/vector";
 import { gradient } from "../../utils/gradient";
 import { FishEye } from "./fish-eye";
@@ -77,6 +82,9 @@ export class Fish
 		this.shape = this.getChild("shape") as FishShape;
 		this.size = this.shape.size;
 		this.center = this.size.mul(1 / 2);
+
+		this.on(GAME_OBJECT_MOUNT_EVENT, () => this.attemptScore());
+		this.on(GAME_OBJECT_CHILDREN_CHANGE_EVENT, () => this.attemptScore());
 	}
 
 	layer = 0.75;
@@ -99,20 +107,12 @@ export class Fish
 		this.canBePickedUp = false;
 	}
 
-	["onMount"]() {
-		this.attemptScore();
-	}
-
-	["onChildrenChange"]() {
-		this.attemptScore();
-	}
-
 	canHost: boolean | ((obj: GameObject) => boolean) = (obj: GameObject) => {
 		return obj.id == "ticket";
 	};
 
 	host(obj: PickupableInterface) {
-		this.getChild("ticket")?.destroy();
+		this.getChild("ticket")?.kill();
 		obj.canBePickedUp = false;
 	}
 	getDropPoint(point: Vector): Vector {

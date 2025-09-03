@@ -1,6 +1,9 @@
+import { unique } from "./unique";
 import { Observable } from "./observable";
 import { Vector } from "./vector";
 import { Viewport } from "./viewport";
+
+export const GAME_TICK_EVENT = unique();
 
 export class Game extends Observable {
 	root: Viewport;
@@ -17,7 +20,7 @@ export class Game extends Observable {
 		if (this.root) {
 			if (this.oldT) {
 				const deltaT = newT - this.oldT;
-				this.trigger("tick", deltaT);
+				this.trigger(GAME_TICK_EVENT, deltaT);
 			}
 			this.oldT = newT;
 		}

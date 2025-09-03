@@ -1,12 +1,15 @@
 import { rotateAroundOrigin, scaleFromOrigin } from "../utils/origin-helper";
 import { GameObjectData } from "./game-object-data";
 import { diContainer } from "./di-container";
-import { Game } from "./game";
+import { Game, GAME_TICK_EVENT } from "./game";
 import { Observable } from "./observable";
 import { RenderableInterface, RendererInterface } from "./render.types";
 import { ZERO } from "./vector";
+import { unique } from "./unique";
 // import { walk } from "../utils/walk";
 // import { GameObject } from "./game-object";
+
+export const RENDER_RENDER_EVENT = unique();
 
 export class RenderServer extends Observable {
 	game: Game;
@@ -14,12 +17,12 @@ export class RenderServer extends Observable {
 	constructor() {
 		super();
 		this.game = diContainer.get(Game);
-		this.game.on("tick", () => this.render());
+		this.game.on(GAME_TICK_EVENT, () => this.render());
 	}
 
 	render() {
 		this.renderViewport(this.game.root);
-		this.trigger("render");
+		this.trigger(RENDER_RENDER_EVENT);
 	}
 
 	renderViewport(viewport: RendererInterface) {

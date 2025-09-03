@@ -37,6 +37,10 @@ export const Vector = (x: number = 0, y: number = 0) => {
 		equals(v: VectorLike) {
 			return this.x == v.x && this.y == v.y;
 		},
+		ceil() {
+			return Vector(Math.ceil(this.x), Math.ceil(this.y));
+		},
+
 		round() {
 			return Vector(Math.round(this.x), Math.round(this.y));
 		},

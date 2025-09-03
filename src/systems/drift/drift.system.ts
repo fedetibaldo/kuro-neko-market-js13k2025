@@ -1,5 +1,5 @@
 import { diContainer } from "../../core/di-container";
-import { Game } from "../../core/game";
+import { Game, GAME_TICK_EVENT } from "../../core/game";
 import { GameObject } from "../../core/game-object";
 import { Observable } from "../../core/observable";
 import { Vector } from "../../core/vector";
@@ -18,7 +18,7 @@ export class DriftSystem extends Observable {
 	constructor() {
 		super();
 		this.game = diContainer.get(Game);
-		this.game.on("tick", (deltaT: number) => this.drift(deltaT));
+		this.game.on(GAME_TICK_EVENT, (deltaT: number) => this.drift(deltaT));
 	}
 
 	drift(deltaT: number) {
@@ -30,7 +30,7 @@ export class DriftSystem extends Observable {
 				if (!obj.still) {
 					obj.pos = obj.pos.add(Vector(1, 0).mul((obj.vel * deltaT) / 1000));
 					if (obj.pos.x > this.game.root.size.x) {
-						obj.destroy();
+						obj.kill();
 					}
 				}
 			}

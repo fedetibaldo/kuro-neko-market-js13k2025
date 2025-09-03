@@ -1,12 +1,22 @@
 import { drawSvg } from "../../core/draw-svg";
 import { Flexbox } from "../../core/flexbox";
-import { GameObject } from "../../core/game-object";
+import {
+	GAME_OBJECT_KILL_EVENT,
+	GameObject,
+	GameObjectArgs,
+} from "../../core/game-object";
 import { IncrementalLerp, makeFixedTimeIncrementalLerp } from "../../core/lerp";
+import { OffFunction } from "../../core/observable";
 import { CENTER, Vector, ZERO } from "../../core/vector";
 import { gradient } from "../../utils/gradient";
 import { Digit, DigitValue } from "../digit";
 import { Paper } from "../paper";
-import { ButtonGroup } from "./button-group";
+import {
+	BUTTON_GROUP_CLEAR_EVENT,
+	BUTTON_GROUP_SUBMIT_EVENT,
+	BUTTON_GROUP_VALUE_EVENT,
+	ButtonGroup,
+} from "./button-group";
 import { activeColor, inactiveColor } from "./colors";
 
 class PrinterMiddleLayer extends GameObject {
@@ -60,22 +70,71 @@ export class Printer extends GameObject {
 	origin = CENTER;
 
 	value = [0, 0] as [DigitValue, DigitValue];
-	leftDigit = this.getChild("left-digit") as Digit;
-	rightDigit = this.getChild("right-digit") as Digit;
-	buttons = this.getChild("buttons") as ButtonGroup;
-	tickets = this.getChild("tickets") as GameObject;
-	ticket = this.tickets.children[0] as Paper;
+	leftDigit: Digit;
+	rightDigit: Digit;
+	tickets: GameObject;
+	ticket: Paper;
+	listeners: OffFunction[];
 
 	ticketLerp: IncrementalLerp<Vector> | null = null;
 
-	listeners = [
-		this.buttons.on("value", (e: DigitValue) => this.pushValue(e)),
-		this.buttons.on("clear", () => this.reset()),
-		this.buttons.on("submit", () => this.onSubmit()),
-	];
+	constructor(args: GameObjectArgs) {
+		super(args);
 
-	["onDestroy"]() {
+		const buttons = new ButtonGroup({
+			pos: Vector(25, 0),
+		});
+
+		this.ticket = new Paper({ id: "ticket", pos: Vector(-2, 29) });
+		this.tickets = new GameObject({
+			children: [this.ticket],
+		});
+
+		this.leftDigit = new Digit({
+			color: inactiveColor,
+			fontSize: 10,
+			value: 0,
+			origin: CENTER,
+		});
+		this.rightDigit = new Digit({
+			color: inactiveColor,
+			fontSize: 10,
+			value: 0,
+			origin: CENTER,
+		});
+
+		this.addChildren([
+			this.tickets,
+			new PrinterMiddleLayer({ size: Vector(77, 66) }),
+			new Flexbox({
+				pos: Vector(15.5, 11.5),
+				mode: "hug",
+				origin: CENTER,
+				direction: "row",
+				align: "start",
+				justify: "center",
+				children: [this.leftDigit, this.rightDigit],
+			}),
+			buttons,
+		]);
+
+		this.listeners = [
+			buttons.on(BUTTON_GROUP_VALUE_EVENT, (e: DigitValue) =>
+				this.pushValue(e)
+			),
+			buttons.on(BUTTON_GROUP_CLEAR_EVENT, () => this.reset()),
+			buttons.on(BUTTON_GROUP_SUBMIT_EVENT, () => this.onSubmit()),
+		];
+
+		this.on(GAME_OBJECT_KILL_EVENT, () => this.onKill());
+	}
+
+	onKill() {
 		this.listeners.forEach((off) => off());
+		this.leftDigit = null as any;
+		this.rightDigit = null as any;
+		this.tickets = null as any;
+		this.ticket = null as any;
 	}
 
 	reset() {
@@ -127,43 +186,5 @@ export class Printer extends GameObject {
 		this.leftDigit.color = leftColor;
 		this.rightDigit.setValue(rightDigitValue);
 		this.rightDigit.color = rightColor;
-	}
-
-	createChildren(): GameObject[] {
-		return [
-			new GameObject({
-				id: "tickets",
-				children: [new Paper({ id: "ticket", pos: Vector(-2, 29) })],
-			}),
-			new PrinterMiddleLayer({ size: Vector(77, 66) }),
-			new Flexbox({
-				pos: Vector(15.5, 11.5),
-				mode: "hug",
-				origin: CENTER,
-				direction: "row",
-				align: "start",
-				justify: "center",
-				children: [
-					new Digit({
-						id: "left-digit",
-						color: inactiveColor,
-						fontSize: 10,
-						value: 0,
-						origin: CENTER,
-					}),
-					new Digit({
-						id: "right-digit",
-						color: inactiveColor,
-						fontSize: 10,
-						value: 0,
-						origin: CENTER,
-					}),
-				],
-			}),
-			new ButtonGroup({
-				id: "buttons",
-				pos: Vector(25, 0),
-			}),
-		];
 	}
 }

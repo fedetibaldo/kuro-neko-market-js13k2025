@@ -1,7 +1,7 @@
 import { walk } from "../utils/walk";
 import { GameObjectData } from "./game-object-data";
 import { diContainer } from "./di-container";
-import { Game } from "./game";
+import { Game, GAME_TICK_EVENT } from "./game";
 import { UpdatableInterface } from "./update.types";
 
 export const isUpdatable = (obj: object): obj is UpdatableInterface =>
@@ -12,7 +12,7 @@ export class UpdateServer {
 
 	constructor() {
 		this.game = diContainer.get(Game);
-		this.game.on("tick", (deltaT: number) => this.update(deltaT));
+		this.game.on(GAME_TICK_EVENT, (deltaT: number) => this.update(deltaT));
 	}
 
 	update(deltaT: number) {

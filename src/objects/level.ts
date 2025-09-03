@@ -6,6 +6,9 @@ import { TOP_RIGHT, Vector } from "../core/vector";
 import { FishType, fishTypes } from "../data/fish-types";
 import { DropTargetInterface } from "../systems/interactable/interactable.types";
 import {
+	LEVEL_SCORE_EVENT,
+	LEVEL_SPAWN_EVENT,
+	LEVEL_TICK_EVENT,
 	LevelSpawnFrequency,
 	LevelSystem,
 } from "../systems/level/level.system";
@@ -70,11 +73,11 @@ export class Level extends GameObject {
 		);
 		this.level.start();
 
-		this.level.on("spawn", (idx: number) => this.onSpawn(idx));
-		this.level.on("tick", (time: number) =>
+		this.level.on(LEVEL_SPAWN_EVENT, (idx: number) => this.onSpawn(idx));
+		this.level.on(LEVEL_TICK_EVENT, (time: number) =>
 			(this.getChild("timer") as Counter).setValue(Math.floor(time))
 		);
-		this.level.on("score", (score: number) =>
+		this.level.on(LEVEL_SCORE_EVENT, (score: number) =>
 			(this.getChild("score") as Counter).setValue(score)
 		);
 

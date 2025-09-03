@@ -1,6 +1,6 @@
 import { diContainer } from "./di-container";
 import { Game } from "./game";
-import { RenderServer } from "./render.server";
+import { RENDER_RENDER_EVENT, RenderServer } from "./render.server";
 import { Vector } from "./vector";
 
 type DisplayServerArgs = {
@@ -29,8 +29,8 @@ export class DisplayServer {
 
 		this.fitScreen();
 
-		window.addEventListener("resize", () => this.fitScreen());
-		this.renderServer.on("render", () => this.draw());
+		window.onresize = () => this.fitScreen();
+		this.renderServer.on(RENDER_RENDER_EVENT, () => this.draw());
 	}
 
 	fitScreen() {
