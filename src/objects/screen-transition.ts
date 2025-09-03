@@ -60,7 +60,6 @@ class TransitionSquare extends GameObject {
 	update(deltaT: number): void {
 		if (this.rotationLerp) {
 			this.rotation = this.rotationLerp(deltaT);
-			console.log(this.rotation);
 		}
 		if (this.scaleLerp) {
 			this.scale = this.scaleLerp(deltaT);
