@@ -8,7 +8,7 @@ export type ChooseFishStrategy = (
 ) => VariedFish;
 
 export const easyStrategy: ChooseFishStrategy = (fishType, variants) => {
-	if (chance(1 / 3)) return fishType;
+	if (chance(1 / 4)) return fishType;
 	return {
 		...fishType,
 		...pickRandom(variants),

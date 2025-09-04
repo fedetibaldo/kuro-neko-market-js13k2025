@@ -18,7 +18,7 @@ export type LevelSpawnFrequency = 0 | 1 | 2;
 export type LevelDifficulty = 0 | 1 | 2 | 3;
 
 export const LEVEL_DURATION = 120;
-const PADDING = 15;
+const PADDING = 5;
 
 export const LEVEL_SPAWN_EVENT = unique();
 export const LEVEL_TICK_EVENT = unique();
@@ -66,7 +66,7 @@ export class LevelSystem extends Observable {
 			[easyStrategy, mediumStrategy, hardStrategy, chaosStrategy] as const
 		)[difficulty];
 
-		const spawnAmount = 15 + this.freq * 3;
+		const spawnAmount = 16 + this.freq * 2;
 		this.tToSpawn = (LEVEL_DURATION - PADDING) / spawnAmount;
 
 		this.hasStarted = false;

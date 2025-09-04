@@ -36,10 +36,7 @@ export const fishTypes: FishType[] = [
 				{ tailFill1: "#A45EB1", tailFill2: "#A45EB1" },
 				{ tailFill1: "#323033", tailFill2: "#323033" },
 			],
-			[
-				{ pattern: "m0 1 4 4 4-4 4 4 4-4M0 9l4 4 4-4 4 4 4-4" },
-				{ pattern: "M0 5c3 0 5-4 8-4s5 4 8 4M0 13c3 0 5-4 8-4s5 4 8 4" },
-			],
+			[{ pattern: "m0 4 12 12 4-4M0 12 12 0l4 4" }],
 		],
 		basePrice: 5,
 		size: Vector(40, 70),
