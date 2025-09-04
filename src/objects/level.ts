@@ -61,7 +61,7 @@ export class Level extends GameObject {
 		const fishes = fishTypes.slice(0, difficulty + 1);
 		this.level.init(
 			fishes,
-			Math.max(difficulty, 2) as LevelSpawnFrequency,
+			Math.min(difficulty, 2) as LevelSpawnFrequency,
 			difficulty
 		);
 		this.level.start();
