@@ -38,46 +38,41 @@ type PawStateMachine = StateMachineDef<
 >;
 
 export const pawStateMachine: PawStateMachine = {
-	initialState: PAW_IDLING_STATE,
-	states: {
-		[PAW_IDLING_STATE]: {
-			tags: [PAW_MOVING_TAG],
-			actions: {
-				[PAW_POINT_ACTION]: { target: PAW_POINTING_STATE },
-				[PAW_PICKUP_ACTION]: { target: PAW_PICKING_UP_STATE },
-				[PAW_TAP_ACTION]: { target: PAW_IDLING_STATE },
-			},
+	[PAW_IDLING_STATE]: [
+		{
+			[PAW_POINT_ACTION]: PAW_POINTING_STATE,
+			[PAW_PICKUP_ACTION]: PAW_PICKING_UP_STATE,
+			[PAW_TAP_ACTION]: PAW_IDLING_STATE,
 		},
-		[PAW_POINTING_STATE]: {
-			tags: [PAW_MOVING_TAG, PAW_POINTING_TAG],
-			actions: {
-				[PAW_PRESS_ACTION]: { target: PAW_PRESSING_STATE },
-				[PAW_IDLE_ACTION]: { target: PAW_IDLING_STATE },
-			},
+		[PAW_MOVING_TAG],
+	],
+	[PAW_POINTING_STATE]: [
+		{
+			[PAW_PRESS_ACTION]: PAW_PRESSING_STATE,
+			[PAW_IDLE_ACTION]: PAW_IDLING_STATE,
 		},
-		[PAW_PRESSING_STATE]: {
-			tags: [PAW_POINTING_TAG],
-			actions: {
-				[PAW_NEXT_ACTION]: { target: PAW_IDLING_STATE },
-			},
+		[PAW_MOVING_TAG, PAW_POINTING_TAG],
+	],
+	[PAW_PRESSING_STATE]: [
+		{
+			[PAW_NEXT_ACTION]: PAW_IDLING_STATE,
 		},
-		[PAW_PICKING_UP_STATE]: {
-			tags: [],
-			actions: {
-				[PAW_CARRY_ACTION]: { target: PAW_CARRYING_STATE },
-			},
+		[PAW_POINTING_TAG],
+	],
+	[PAW_PICKING_UP_STATE]: [
+		{
+			[PAW_CARRY_ACTION]: PAW_CARRYING_STATE,
 		},
-		[PAW_CARRYING_STATE]: {
-			tags: [PAW_MOVING_TAG],
-			actions: {
-				[PAW_DROP_ACTION]: { target: PAW_DROPPING_STATE },
-			},
+	],
+	[PAW_CARRYING_STATE]: [
+		{
+			[PAW_DROP_ACTION]: PAW_DROPPING_STATE,
 		},
-		[PAW_DROPPING_STATE]: {
-			tags: [],
-			actions: {
-				[PAW_NEXT_ACTION]: { target: PAW_IDLING_STATE },
-			},
+		[PAW_MOVING_TAG],
+	],
+	[PAW_DROPPING_STATE]: [
+		{
+			[PAW_NEXT_ACTION]: PAW_IDLING_STATE,
 		},
-	},
+	],
 };

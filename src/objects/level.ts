@@ -3,15 +3,16 @@ import { Flexbox } from "../core/flexbox";
 import { Game } from "../core/game";
 import { GameObject, GameObjectArgs } from "../core/game-object";
 import { TOP_RIGHT, Vector } from "../core/vector";
-import { FishType, fishTypes } from "../data/fish-types";
+import { RESULTS_SCREEN } from "../data/screens";
 import { DropTargetInterface } from "../systems/interactable/interactable.types";
 import {
+	LEVEL_END_EVENT,
 	LEVEL_SCORE_EVENT,
 	LEVEL_SPAWN_EVENT,
 	LEVEL_TICK_EVENT,
-	LevelSpawnFrequency,
 	LevelSystem,
 } from "../systems/level/level.system";
+import { ScreenSystem } from "../systems/screen/screen.system";
 import { clamp } from "../utils/clamp";
 import { chance } from "../utils/random";
 import { BeltColor } from "./belt/belt-color";
@@ -27,10 +28,6 @@ import { Printer } from "./printer/printer";
 import { Sea } from "./sea";
 import { Sky } from "./sky";
 import { Table } from "./table";
-
-type LevelArgs = GameObjectArgs & {
-	difficulty: 0 | 1 | 2 | 3;
-};
 
 export class Level extends GameObject {
 	level: LevelSystem;
@@ -52,20 +49,16 @@ export class Level extends GameObject {
 		belt.addChild(fish);
 	}
 
-	constructor({ difficulty, ...rest }: LevelArgs) {
-		super(rest);
+	constructor() {
+		super();
 
 		const game = diContainer.get(Game);
 		this.level = diContainer.get(LevelSystem);
-
-		const fishes = fishTypes.slice(0, difficulty + 1);
-		this.level.init(
-			fishes,
-			Math.min(difficulty, 2) as LevelSpawnFrequency,
-			difficulty
-		);
 		this.level.start();
 
+		this.level.on(LEVEL_END_EVENT, () =>
+			diContainer.get(ScreenSystem).to(RESULTS_SCREEN)
+		);
 		this.level.on(LEVEL_SPAWN_EVENT, (idx: number) => this.onSpawn(idx));
 		this.level.on(LEVEL_TICK_EVENT, (time: number) =>
 			(this.getChild("timer") as Counter).setValue(Math.floor(time))

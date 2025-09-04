@@ -31,6 +31,7 @@ import {
 	PAW_CARRY_ACTION,
 	PAW_DROP_ACTION,
 	PAW_IDLE_ACTION,
+	PAW_IDLING_STATE,
 	PAW_MOVING_TAG,
 	PAW_NEXT_ACTION,
 	PAW_PICKUP_ACTION,
@@ -122,7 +123,7 @@ export class Paw extends GameObject {
 	nail = this.getChild("nail") as Nail;
 	stagingArea = this.getChild("staging")!;
 
-	state = new StateMachine(pawStateMachine);
+	_state = new StateMachine(pawStateMachine, PAW_IDLING_STATE);
 
 	heldItem: PickupableInterface | null = null;
 	movePos = this.pos;
@@ -201,7 +202,7 @@ export class Paw extends GameObject {
 	}
 
 	seek(point: Vector) {
-		if (!this.state.hasTag(PAW_MOVING_TAG)) return;
+		if (!this._state.hasTag(PAW_MOVING_TAG)) return;
 		const moveDuration = 200;
 		this.moveLerp = makeFixedTimeIncrementalLerp(
 			this.moveLerp ? this.moveLerp() : ZERO,
@@ -212,8 +213,8 @@ export class Paw extends GameObject {
 	}
 
 	async press(item: PressableInterface, point: Vector) {
-		if (!this.state.can(PAW_PRESS_ACTION)) return;
-		this.state.action(PAW_PRESS_ACTION);
+		if (!this._state.can(PAW_PRESS_ACTION)) return;
+		this._state.act(PAW_PRESS_ACTION);
 
 		const target = item.getPressPoint(point);
 		const pressDuration = 100;
@@ -254,13 +255,13 @@ export class Paw extends GameObject {
 			easeOut
 		);
 
-		this.state.action(PAW_NEXT_ACTION);
+		this._state.act(PAW_NEXT_ACTION);
 		this.replayMove();
 	}
 
 	async tap(point: Vector) {
-		if (!this.state.can(PAW_TAP_ACTION)) return;
-		this.state.action(PAW_TAP_ACTION);
+		if (!this._state.can(PAW_TAP_ACTION)) return;
+		this._state.act(PAW_TAP_ACTION);
 
 		const tapDuration = 75;
 		this.scaleLerp = makeFixedTimeIncrementalLerp(1, 0.8, tapDuration, easeIn);
@@ -271,8 +272,8 @@ export class Paw extends GameObject {
 	}
 
 	idle() {
-		if (!this.state.can(PAW_IDLE_ACTION)) return;
-		this.state.action(PAW_IDLE_ACTION);
+		if (!this._state.can(PAW_IDLE_ACTION)) return;
+		this._state.act(PAW_IDLE_ACTION);
 
 		const resetDuration = 200;
 		if (this.offsetLerp) {
@@ -298,8 +299,8 @@ export class Paw extends GameObject {
 	}
 
 	async point() {
-		if (!this.state.can(PAW_POINT_ACTION)) return;
-		this.state.action(PAW_POINT_ACTION);
+		if (!this._state.can(PAW_POINT_ACTION)) return;
+		this._state.act(PAW_POINT_ACTION);
 
 		const pointDuration = 200;
 		const nailDelay = 150;
@@ -314,7 +315,7 @@ export class Paw extends GameObject {
 
 		await new Promise((resolve) => setTimeout(resolve, nailDelay));
 
-		if (this.state.hasTag(PAW_POINTING_TAG)) {
+		if (this._state.hasTag(PAW_POINTING_TAG)) {
 			this.nailLerp = makeFixedTimeIncrementalLerp(
 				this.nailLerp ? this.nailLerp() : ZERO,
 				Vector(0, -7.5),
@@ -326,8 +327,8 @@ export class Paw extends GameObject {
 
 	async drop(dropTarget: DropTargetInterface, point: Vector) {
 		const item = this.heldItem;
-		if (!this.state.can(PAW_DROP_ACTION) || !item) return;
-		this.state.action(PAW_DROP_ACTION);
+		if (!this._state.can(PAW_DROP_ACTION) || !item) return;
+		this._state.act(PAW_DROP_ACTION);
 
 		this.heldItem = null;
 
@@ -386,7 +387,7 @@ export class Paw extends GameObject {
 
 		this.graphic.isFaceUp = false;
 
-		this.state.action(PAW_NEXT_ACTION);
+		this._state.act(PAW_NEXT_ACTION);
 
 		this.offsetLerp = makeFixedTimeIncrementalLerp(
 			anticipationOffset,
@@ -404,8 +405,8 @@ export class Paw extends GameObject {
 	}
 
 	async pickup(item: PickupableInterface) {
-		if (!this.state.can(PAW_PICKUP_ACTION)) return;
-		this.state.action(PAW_PICKUP_ACTION);
+		if (!this._state.can(PAW_PICKUP_ACTION)) return;
+		this._state.act(PAW_PICKUP_ACTION);
 
 		this.heldItem = item;
 
@@ -473,7 +474,7 @@ export class Paw extends GameObject {
 		item.pickup?.();
 		this.paw.addChild(item);
 
-		this.state.action(PAW_CARRY_ACTION);
+		this._state.act(PAW_CARRY_ACTION);
 
 		this.scaleLerp = makeFixedTimeIncrementalLerp(
 			this.paw.scale,

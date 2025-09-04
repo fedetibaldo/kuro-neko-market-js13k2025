@@ -1,90 +1,56 @@
-export type Action<T extends symbol /* , U = void */> = T; // { [key in T]: U };
+export type Action<T extends symbol> = T;
 
-// type ActionMachineInterface<S extends symbol, C extends {}> = {
-// 	transition: (state: S) => void;
-// 	// setContext: (context: Partial<C>) => void;
-// 	// context: C;
-// };
+export type State<S extends symbol, A extends Action<symbol>> =
+	| [
+			(
+				| {
+						[K in A]?: S;
+				  }
+			),
+			symbol[]
+	  ]
+	| [
+			| {
+					[K in A]?: S;
+			  }
+	  ];
 
-export type ActionDef<S extends symbol> = { target: S };
-
-// type ActionCallback<S extends symbol, C extends {}, U = void> = U extends void
-// 	? ActionDef<S> | ((machine: ActionMachineInterface<S, C>) => void)
-// 	: (machine: ActionMachineInterface<S, C>, args: U) => void;
-
-export type State<
-	S extends symbol /* , C extends {} */,
-	A extends Action<symbol /* , any */>
-> = {
-	// enter?: ActionCallback<S, C>;
-	tags?: symbol[];
-	actions?: {
-		[K in /* keyof */ A]?: ActionDef<S>; // ActionCallback<S, C, A[K]>;
-	};
+export type StateMachineDef<S extends symbol, A extends Action<symbol>> = {
+	[key in S]: State<S, A>;
 };
 
-export type StateMachineDef<
-	S extends symbol,
-	// C extends {},
-	A extends Action<symbol /* , any */>
-> = {
-	// context: C;
-	initialState: S;
-	states: {
-		[key in S]: State<S /* , C */, A>;
-	};
-};
+export class StateMachine<S extends symbol, A extends Action<symbol>> {
+	protected _machine: StateMachineDef<S, A>;
+	protected _name: S;
+	protected _state: State<S, A>;
 
-// type ActionCallbackOf<
-// 	T extends StateMachine<any, any, any>,
-// 	K extends T extends StateMachine<any, any, infer A> ? keyof A : never
-// > = T extends StateMachine<infer S, infer C, infer A>
-// 	? ActionCallback<S, C, A[K]>
-// 	: never;
-
-export class StateMachine<
-	S extends symbol /* , C extends {} */,
-	A extends Action<symbol /* , any */>
-> {
-	// implements ActionMachineInterface<S, C>
-	protected machine: StateMachineDef<S /* , C */, A>;
-	protected state: State<S /* , C */, A>;
-	// context: C;
-
-	constructor(machine: StateMachineDef<S /* , C */, A>) {
-		this.machine = machine;
-		// this.context = machine.context;
-		this.transition(machine.initialState);
+	constructor(machine: StateMachineDef<S, A>, state: S) {
+		this._machine = machine;
+		this.to(state);
 	}
 
-	// setContext(context: Partial<C>) {
-	// 	this.context = {
-	// 		...this.context,
-	// 		...context,
-	// 	};
-	// }
+	is(name: S) {
+		return this._name == name;
+	}
 
 	can(action: symbol) {
-		return !!this.state.actions && action in this.state.actions;
+		return !!this._state[0] && action in this._state[0];
 	}
 
 	hasTag(tag: symbol) {
-		return !!this.state.tags && this.state.tags.includes(tag);
+		return !!this._state[1] && this._state[1].includes(tag);
 	}
 
-	transition(name: S) {
-		const state = this.machine.states[name];
+	to(name: S) {
+		const state = this._machine[name];
 		if (!state) return;
-		this.state = state;
-		// this.state.enter?.(this);
+		this._name = name;
+		this._state = state;
 	}
 
-	action<K extends /* keyof */ A>(
-		name: K /* , ...args: A[K] extends void ? [] : [A[K]] */
-	) {
-		const action = this.state.actions?.[name];
+	act<K extends A>(name: K) {
+		const action = this._state[0]![name];
 		if (!action) return;
-		// action(this, args);
-		this.transition(action.target);
+		this.to(action);
 	}
 }

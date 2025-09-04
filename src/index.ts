@@ -12,7 +12,11 @@ import { Pointer } from "./objects/pointer";
 import { playMeow } from "./utils/play-meow";
 import { DriftSystem } from "./systems/drift/drift.system";
 import { LevelSystem } from "./systems/level/level.system";
-import { ScreenTransition } from "./objects/screen-transition";
+import { Results } from "./objects/results/results";
+import { LEVEL_SCREEN, RESULTS_SCREEN } from "./data/screens";
+import { ScreenSystem } from "./systems/screen/screen.system";
+import { ScreenTransitionContainer } from "./systems/screen/screen-transition-container";
+import { LevelSelect } from "./objects/level-select";
 
 const canvas = document.getElementById("game") as HTMLCanvasElement;
 const viewRes = Vector(360, 240);
@@ -26,10 +30,18 @@ diContainer.set(InputServer, new InputServer());
 diContainer.set(InteractableServer, new InteractableServer());
 diContainer.set(DriftSystem, new DriftSystem());
 diContainer.set(LevelSystem, new LevelSystem());
+diContainer.set(
+	ScreenSystem,
+	new ScreenSystem({
+		[LEVEL_SCREEN]: Level,
+		[RESULTS_SCREEN]: Results,
+	})
+);
 
 game.root.addChildren([
-	new Level({ difficulty: 3 }),
-	new ScreenTransition(),
+	new ScreenTransitionContainer({
+		children: [new LevelSelect()],
+	}),
 	new Pointer(),
 ]);
 
