@@ -21,7 +21,7 @@ export class ScreenTransitionContainer extends GameObject {
 	onEnter = async (nextScreen: GameObject) => {
 		const [child] = this.children;
 		if (child) {
-			this.removeChild(child);
+			child.kill();
 		}
 
 		this.addChild(nextScreen, 0);

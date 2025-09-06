@@ -30,6 +30,7 @@ export class GameObject
 
 	parent: GameObject | undefined;
 
+	id: string | symbol;
 	pos: Vector;
 	opacity: number;
 	scale: number;
@@ -101,7 +102,7 @@ export class GameObject
 		this.trigger(GAME_OBJECT_CHILDREN_CHANGE_EVENT);
 	}
 
-	getChild<T extends GameObject>(id: string): T | undefined {
+	getChild<T extends GameObject>(id: string | symbol): T | undefined {
 		for (const child of this.children) {
 			if (child.id === id) {
 				return child as T;

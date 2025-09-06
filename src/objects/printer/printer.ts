@@ -7,7 +7,8 @@ import {
 } from "../../core/game-object";
 import { IncrementalLerp, makeFixedTimeIncrementalLerp } from "../../core/lerp";
 import { OffFunction } from "../../core/observable";
-import { CENTER, Vector, ZERO } from "../../core/vector";
+import { CENTER, ONE, Vector, ZERO } from "../../core/vector";
+import { fill, fillRoundRect, stroke } from "../../utils/draw";
 import { gradient } from "../../utils/gradient";
 import { Digit, DigitValue } from "../digit";
 import { Paper } from "../paper";
@@ -21,18 +22,18 @@ import { activeColor, inactiveColor } from "./colors";
 
 class PrinterMiddleLayer extends GameObject {
 	render(ctx: OffscreenCanvasRenderingContext2D): void {
-		ctx.beginPath();
-		ctx.roundRect(0, 0, this.size.x, this.size.y + 7, 12);
-		ctx.fillStyle = "#00000066";
-		ctx.fill();
+		fillRoundRect(ctx, ZERO, this.size.add(Vector(0, 7)), 12, "#00000066");
 
-		ctx.beginPath();
-		ctx.roundRect(0, 0, this.size.x, this.size.y, 12);
-		ctx.fillStyle = gradient(ctx, ZERO, Vector(0, 2), [
-			[0, "#FFFFFF"],
-			[1, "#F3DEF7"],
-		]);
-		ctx.fill();
+		fillRoundRect(
+			ctx,
+			ZERO,
+			this.size,
+			12,
+			gradient(ctx, ZERO, Vector(0, 2), [
+				[0, "#FFFFFF"],
+				[1, "#F3DEF7"],
+			])
+		);
 
 		const drawPanel = () =>
 			drawSvg(ctx, {
@@ -40,27 +41,27 @@ class PrinterMiddleLayer extends GameObject {
 			});
 
 		drawPanel();
-		ctx.strokeStyle = "#FFFFFF";
-		ctx.stroke();
+		stroke(ctx, "white");
 
 		ctx.translate(0, -1);
 		drawPanel();
-		ctx.strokeStyle = "#C7B3CA";
-		ctx.stroke();
+		stroke(ctx, "#C7B3CA");
 		ctx.translate(0, 1);
 
 		ctx.beginPath();
 		ctx.arc(11, 54, 2, 0, Math.PI * 2, true);
-		ctx.fillStyle = "#C7B3CA";
-		ctx.fill();
+		fill(ctx, "#C7B3CA");
 
-		ctx.beginPath();
-		ctx.roundRect(6, 6, 20, 12, 6);
-		ctx.fillStyle = gradient(ctx, Vector(6, 6), Vector(6, 7), [
-			[0, "#732182"],
-			[1, "#D58DE2"],
-		]);
-		ctx.fill();
+		fillRoundRect(
+			ctx,
+			ONE.mul(6),
+			Vector(20, 12),
+			6,
+			gradient(ctx, Vector(6, 6), Vector(6, 7), [
+				[0, "#732182"],
+				[1, "#D58DE2"],
+			])
+		);
 	}
 }
 

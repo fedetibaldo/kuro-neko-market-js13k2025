@@ -1,9 +1,14 @@
-import { drawSvg } from "../core/draw-svg";
-import { GameObject } from "../core/game-object";
-import { Vector } from "../core/vector";
-import { gradient } from "../utils/gradient";
+import { drawSvg } from "../../core/draw-svg";
+import { GameObject } from "../../core/game-object";
+import { unique } from "../../core/unique";
+import { Vector } from "../../core/vector";
+import { Viewport } from "../../core/viewport";
+import { fill } from "../../utils/draw";
+import { gradient } from "../../utils/gradient";
 
-export class Wood extends GameObject {
+export const WOOD_ID = unique();
+
+class Wood extends GameObject {
 	shadeDarkViewBox = Vector(9, 13);
 	shadeLightViewBox = Vector(14, 11);
 	shadeDarkPath = "M0 13c3.9 0 9-3 9-6.5C9 2.9 3.9 0 0 0v13Z";
@@ -77,10 +82,9 @@ export class Wood extends GameObject {
 		for (const { gradient, positions, viewBox, path } of shades) {
 			for (const { pos, flipH } of positions) {
 				ctx.save();
-				ctx.fillStyle = gradient(ctx, flipH);
 				ctx.translate(pos.x, pos.y);
 				drawSvg(ctx, { path, viewBox, flipH });
-				ctx.fill();
+				fill(ctx, gradient(ctx, flipH));
 				ctx.restore();
 			}
 		}
@@ -150,3 +154,9 @@ export class Wood extends GameObject {
 		}
 	}
 }
+
+export const woodPattern = new Viewport({
+	id: WOOD_ID,
+	size: Vector(60, 60),
+	children: [new Wood()],
+});

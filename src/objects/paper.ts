@@ -2,6 +2,7 @@ import { drawSvg } from "../core/draw-svg";
 import { Flexbox } from "../core/flexbox";
 import { CENTER, Vector, ZERO } from "../core/vector";
 import { PickupableInterface } from "../systems/interactable/interactable.types";
+import { fill } from "../utils/draw";
 import { gradient } from "../utils/gradient";
 
 export class Paper extends Flexbox implements PickupableInterface {
@@ -29,16 +30,17 @@ export class Paper extends Flexbox implements PickupableInterface {
 			drawSvg(ctx, {
 				path: "M2 6 0 2V0h22l2 4v2l-2 4 2 2v2l-2 4 2 2v2l-2 4H0v-2l2-2-2-4v-2l2-2-2-4V8l2-2Z",
 			});
-			ctx.fillStyle = "#00000088";
-			ctx.fill();
+			fill(ctx, "#00000088");
 		}
 		drawSvg(ctx, {
 			path: "M22 0H0l2 4-2 4 2 4-2 4 2 4-2 4h22l2-4-2-4 2-4-2-4 2-4-2-4Z",
 		});
-		ctx.fillStyle = gradient(ctx, ZERO, Vector(0, this.size.y), [
-			[0, "#F9F4F0"],
-			[1, "#F3EAE2"],
-		]);
-		ctx.fill();
+		fill(
+			ctx,
+			gradient(ctx, ZERO, Vector(0, this.size.y), [
+				[0, "#F9F4F0"],
+				[1, "#F3EAE2"],
+			])
+		);
 	}
 }

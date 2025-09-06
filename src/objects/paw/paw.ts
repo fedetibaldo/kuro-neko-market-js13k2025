@@ -1,7 +1,7 @@
 import { diContainer } from "../../core/di-container";
 import { drawSvg } from "../../core/draw-svg";
 import { Game } from "../../core/game";
-import { GameObject } from "../../core/game-object";
+import { GameObject, GameObjectArgs } from "../../core/game-object";
 import { InputServer } from "../../core/input.server";
 import {
 	easeIn,
@@ -27,6 +27,7 @@ import {
 	PickupableInterface,
 	PressableInterface,
 } from "../../systems/interactable/interactable.types";
+import { fill, fillRect } from "../../utils/draw";
 import {
 	PAW_CARRY_ACTION,
 	PAW_DROP_ACTION,
@@ -47,8 +48,7 @@ class Nail extends GameObject {
 		drawSvg(ctx, {
 			path: "m11 15 5-14 5 13-10 1Z",
 		});
-		ctx.fillStyle = "#D58DE2";
-		ctx.fill();
+		fill(ctx, "#D58DE2");
 	}
 }
 
@@ -68,7 +68,6 @@ export class CatPawGraphic extends GameObject {
 		const drawCalls = [{}, { offsetX: viewBox.x - 1, flipH: true }];
 		for (const { offsetX, flipH } of drawCalls) {
 			ctx.save();
-			ctx.fillStyle = "#19191A";
 			if (offsetX) {
 				ctx.translate(offsetX, 0);
 			}
@@ -77,7 +76,7 @@ export class CatPawGraphic extends GameObject {
 				viewBox,
 				flipH,
 			});
-			ctx.fill();
+			fill(ctx, "#19191A");
 			ctx.restore();
 		}
 		if (this.isFaceUp) {
@@ -86,30 +85,33 @@ export class CatPawGraphic extends GameObject {
 				if (offsetX) {
 					ctx.translate(offsetX, 0);
 				}
-				ctx.fillStyle = "#E6B9B9";
 				drawSvg(ctx, {
 					path: "M20 13c0 4.1-1.5 6.5-3.5 6.5-1.9 0-3.5-2.4-3.5-6.5s2.1-8 4-8c2 0 3 3.9 3 8Z",
 					viewBox,
 					flipH,
 				});
-				ctx.fill();
+				fill(ctx, "#E6B9B9");
 				drawSvg(ctx, {
 					path: "M11.7 22c.9 2.9-.2 4.4-2 5-1.9.6-3.8-.1-4.7-3-.9-2.9-.5-6.9 1.4-7.5 1.8-.5 4.4 2.6 5.3 5.5Z",
 					viewBox,
 					flipH,
 				});
-				ctx.fill();
+				fill(ctx);
 				drawSvg(ctx, {
 					path: "M16 28c2.5-2 3-6 6-6v15c-1.7 0-5.3 2-8 1.5-3.5-.6-5.4-3-4.5-5.5 1.1-3.4 4.2-3.1 6.5-5Z",
 					viewBox,
 					flipH,
 				});
-				ctx.fill();
+				fill(ctx);
 				ctx.restore();
 			}
 		}
-		ctx.fillStyle = "#19191A";
-		ctx.fillRect(4, viewBox.y - 1, viewBox.x * 2 - 9, 1000);
+		fillRect(
+			ctx,
+			Vector(4, viewBox.y - 1),
+			Vector(viewBox.x * 2 - 9, 1000),
+			"#19191A"
+		);
 	}
 }
 
@@ -117,11 +119,6 @@ export class Paw extends GameObject {
 	game = diContainer.get(Game);
 	input = diContainer.get(InputServer);
 	interactable = diContainer.get(InteractableServer);
-
-	paw = this.getChild("paw")!;
-	graphic = this.getChild("graphic") as CatPawGraphic;
-	nail = this.getChild("nail") as Nail;
-	stagingArea = this.getChild("staging")!;
 
 	_state = new StateMachine(pawStateMachine, PAW_IDLING_STATE);
 
@@ -134,22 +131,18 @@ export class Paw extends GameObject {
 	offsetLerp: IncrementalLerp<Vector> | undefined;
 	scaleLerp: IncrementalLerp<number> | undefined;
 
-	createChildren(): GameObject[] {
-		const nail = new Nail({
-			id: "nail",
-		});
-		const graphic = new CatPawGraphic({
-			id: "graphic",
-		});
-		graphic.pos = graphic.center.mul(-1);
-		nail.pos = graphic.pos;
-		return [
-			new GameObject({
-				id: "paw",
-				children: [nail, graphic],
-			}),
-			new GameObject({ id: "staging" }),
-		];
+	graphic = new CatPawGraphic();
+	nail = new Nail();
+	paw = new GameObject({
+		children: [this.nail, this.graphic],
+	});
+	stagingArea = new GameObject();
+
+	constructor(args: GameObjectArgs) {
+		super(args);
+		this.graphic.pos = this.graphic.center.mul(-1);
+		this.nail.pos = this.graphic.pos;
+		this.addChildren([this.paw, this.stagingArea]);
 	}
 
 	baseLayer = 1;

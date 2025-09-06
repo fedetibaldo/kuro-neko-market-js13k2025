@@ -7,10 +7,13 @@ import { FishEye } from "./fish-eye";
 import { Svg } from "../svg";
 import { LevelSystem } from "../../systems/level/level.system";
 import { VariedFish } from "../../data/fish-types";
+import { fill, stroke } from "../../utils/draw";
 
 type FishGraphicArgs = GameObjectArgs & {
 	flipH?: boolean;
 	type: VariedFish;
+	overrideColor?: string;
+	isShadowHidden?: boolean;
 };
 
 export class FishGraphic extends GameObject {
@@ -22,15 +25,25 @@ export class FishGraphic extends GameObject {
 	center: Vector;
 	texture: Viewport;
 
-	isShadowHidden = false;
+	isShadowHidden: boolean;
+	overrideColor: string | undefined;
 
-	constructor({ flipH = false, type, size, ...rest }: FishGraphicArgs) {
+	constructor({
+		flipH = false,
+		type,
+		overrideColor,
+		size,
+		isShadowHidden = false,
+		...rest
+	}: FishGraphicArgs) {
 		super(rest);
 
 		this.flipH = flipH;
 		this.type = type;
 		this.size = size ?? this.type.size;
 		this.origin = CENTER;
+		this.overrideColor = overrideColor;
+		this.isShadowHidden = isShadowHidden;
 
 		const createEye = (pos: Vector, diameter: number, size: Vector) => {
 			const eyeXPolar = pos.x - size.x / 2;
@@ -51,12 +64,13 @@ export class FishGraphic extends GameObject {
 			children: [new Svg({ path: type.pattern, size: Vector(16, 16) })],
 		});
 
-		this.addChildren([
-			...type.eyes.map(([diameter, pos]) =>
-				createEye(pos, diameter, type.size)
-			),
-			this.texture,
-		]);
+		if (!this.overrideColor) {
+			this.addChildren(
+				type.eyes.map(([diameter, pos]) => createEye(pos, diameter, type.size))
+			);
+		}
+
+		this.addChild(this.texture);
 	}
 
 	render(ctx: OffscreenCanvasRenderingContext2D) {
@@ -66,45 +80,46 @@ export class FishGraphic extends GameObject {
 				viewBox: this.size,
 				flipH: this.flipH,
 			});
-			ctx.fillStyle = "#00000044";
-			ctx.fill();
+			fill(ctx, "#00000044");
 		}
 		drawSvg(ctx, {
 			path: this.type.tail,
 			viewBox: this.size,
 			flipH: this.flipH,
 		});
-		ctx.fillStyle = gradient(ctx, Vector(0, 0), Vector(0, this.size.y + 10), [
-			[0.85, this.type.tailFill1],
-			[0.95, this.type.tailFill2],
-		]);
-		ctx.fill();
+		fill(
+			ctx,
+			this.overrideColor ??
+				gradient(ctx, Vector(0, 0), Vector(0, this.size.y + 10), [
+					[0.85, this.type.tailFill1],
+					[0.95, this.type.tailFill2],
+				])
+		);
 		drawSvg(ctx, {
 			path: this.type.body,
 			viewBox: this.size,
 			flipH: this.flipH,
 		});
-		ctx.fillStyle = gradient(
+		fill(
 			ctx,
-			ZERO,
-			Vector(this.size.x, 0),
-			[
-				[0.2, this.type.bodyFill2],
-				[0.8, this.type.bodyFill1],
-			],
-			{ flipH: this.flipH }
+			this.overrideColor ??
+				gradient(
+					ctx,
+					ZERO,
+					Vector(this.size.x, 0),
+					[
+						[0.2, this.type.bodyFill2],
+						[0.8, this.type.bodyFill1],
+					],
+					{ flipH: this.flipH }
+				)
 		);
-		ctx.fill();
-		const pattern = ctx.createPattern(this.texture.canvas, "repeat");
-		ctx.fillStyle = pattern!;
-		ctx.fill();
+		fill(ctx, ctx.createPattern(this.texture.canvas, "repeat")!);
 		drawSvg(ctx, {
 			path: this.type.details,
 			viewBox: this.size,
 			flipH: this.flipH,
 		});
-		ctx.lineCap = "round";
-		ctx.strokeStyle = "#3A1141";
-		ctx.stroke();
+		stroke(ctx, this.overrideColor ?? "#3A1141");
 	}
 }

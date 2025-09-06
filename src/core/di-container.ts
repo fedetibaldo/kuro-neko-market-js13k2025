@@ -8,8 +8,7 @@ class DiContainer {
 
 	get<T>(Class: { new (...args: any[]): T }): T {
 		const instance = this.instances.get(Class);
-		if (!instance)
-			throw new Error(/* `Class "${Class.name}" was not provided.` */);
+		if (!instance) throw ""; // new Error(`Class "${Class.name}" was not provided.`);
 		return instance;
 	}
 }

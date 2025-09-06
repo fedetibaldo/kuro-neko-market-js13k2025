@@ -55,7 +55,6 @@ export class ScreenSystem extends Observable {
 				this._state.act(SCREEN_WAIT_ACTION);
 			}
 			if (this.prog == 2) {
-				console.log("ready");
 				this._state.act(SCREEN_READY_ACTION);
 			}
 		} else if (this._state.hasTag(SCREEN_WAITING_TAG)) {

@@ -11,6 +11,7 @@ import {
 import { BOTTOM, BOTTOM_LEFT, CENTER, Vector, ZERO } from "../core/vector";
 import { PressableInterface } from "../systems/interactable/interactable.types";
 import { LevelSystem } from "../systems/level/level.system";
+import { fillCircle, fillRoundRect } from "../utils/draw";
 import { gradient } from "../utils/gradient";
 import { range } from "../utils/range";
 import { CurrencySign } from "./currency-sign";
@@ -250,17 +251,17 @@ export class Notebook extends GameObject implements PressableInterface {
 
 class Page extends GameObject {
 	render(ctx: OffscreenCanvasRenderingContext2D): void {
-		ctx.beginPath();
-		ctx.roundRect(0, 0, this.size.x, this.size.y + 3, 1);
-		ctx.fillStyle = "#00000088";
-		ctx.fill();
-		ctx.beginPath();
-		ctx.roundRect(0, 0, this.size.x, this.size.y, 1);
-		ctx.fillStyle = gradient(ctx, ZERO, this.size.mulv(BOTTOM_LEFT), [
-			[0, "#F9F4F0"],
-			[1, "#F3EAE2"],
-		]);
-		ctx.fill();
+		fillRoundRect(ctx, ZERO, this.size.add(Vector(0, 3)), 1, "#00000088");
+		fillRoundRect(
+			ctx,
+			ZERO,
+			this.size,
+			1,
+			gradient(ctx, ZERO, this.size.mulv(BOTTOM_LEFT), [
+				[0, "#F9F4F0"],
+				[1, "#F3EAE2"],
+			])
+		);
 	}
 }
 
@@ -300,32 +301,22 @@ class FishSilhouette extends GameObject {
 
 class Ring extends GameObject {
 	render(ctx: OffscreenCanvasRenderingContext2D): void {
-		ctx.beginPath();
-		ctx.roundRect(0, 2, this.size.x, this.size.y, 1);
-		ctx.fillStyle = "#00000088";
-		ctx.fill();
-		ctx.beginPath();
-		ctx.roundRect(0, 0, this.size.x, this.size.y, 1);
-		ctx.fillStyle = gradient(ctx, ZERO, this.size.mulv(BOTTOM_LEFT), [
-			[0, "white"],
-			[0.4, "#BEADB8"],
-		]);
-		ctx.fill();
+		fillRoundRect(ctx, Vector(0, 2), this.size, 1, "#00000088");
+		fillRoundRect(
+			ctx,
+			ZERO,
+			this.size,
+			1,
+			gradient(ctx, ZERO, this.size.mulv(BOTTOM_LEFT), [
+				[0, "white"],
+				[0.4, "#BEADB8"],
+			])
+		);
 	}
 }
 
 class Circle extends GameObject {
 	render(ctx: OffscreenCanvasRenderingContext2D): void {
-		ctx.beginPath();
-		ctx.arc(
-			this.size.x / 2,
-			this.size.x / 2,
-			this.size.x / 2,
-			0,
-			Math.PI * 2,
-			true
-		);
-		ctx.fillStyle = this.color as string;
-		ctx.fill();
+		fillCircle(ctx, this.size.x / 2, this.color as string);
 	}
 }

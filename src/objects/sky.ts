@@ -10,6 +10,7 @@ import {
 	LEVEL_TICK_EVENT,
 	LevelSystem,
 } from "../systems/level/level.system";
+import { fill, fillRect } from "../utils/draw";
 import { gradient } from "../utils/gradient";
 import { rotateAroundOrigin } from "../utils/origin-helper";
 
@@ -30,17 +31,20 @@ export class Sky extends GameObject {
 	};
 
 	render(ctx: OffscreenCanvasRenderingContext2D): void {
-		ctx.fillStyle = gradient(ctx, ZERO, Vector(0, this.size.y), [
-			[0, "#EA9D50"],
-			[1, "#E5B993"],
-		]);
-		ctx.fillRect(0, 0, this.size.x, this.size.y);
+		fillRect(
+			ctx,
+			ZERO,
+			this.size,
+			gradient(ctx, ZERO, Vector(0, this.size.y), [
+				[0, "#EA9D50"],
+				[1, "#E5B993"],
+			])
+		);
 
 		const sunOrigin = this.size.mulv(BOTTOM);
 		const sunPos = Vector(this.size.x / 2 / 4, this.size.y);
 		const { x, y } = rotateAroundOrigin(sunPos, this.sunAngle, sunOrigin);
 
-		ctx.fillStyle = "#F9F3EF";
 		ctx.beginPath();
 		ctx.arc(
 			x,
@@ -50,6 +54,6 @@ export class Sky extends GameObject {
 			Math.PI * 2,
 			true
 		);
-		ctx.fill();
+		fill(ctx, "#F9F3EF");
 	}
 }

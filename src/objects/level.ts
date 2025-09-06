@@ -14,6 +14,7 @@ import {
 } from "../systems/level/level.system";
 import { ScreenSystem } from "../systems/screen/screen.system";
 import { clamp } from "../utils/clamp";
+import { fillRoundRect } from "../utils/draw";
 import { chance } from "../utils/random";
 import { BeltColor } from "./belt/belt-color";
 import { BeltShadow } from "./belt/belt-shadow";
@@ -162,11 +163,13 @@ class CounterCountainer extends Flexbox {
 	}
 
 	render(ctx: OffscreenCanvasRenderingContext2D) {
-		ctx.beginPath();
-		ctx.roundRect(-4, -4, this.size.x + 8, this.size.y + 8, 8);
-		ctx.fillStyle = "#E4B4B4";
-		ctx.globalAlpha = 0.8;
-		ctx.fill();
+		fillRoundRect(
+			ctx,
+			Vector(-4, -4),
+			this.size.add(Vector(8, 8)),
+			8,
+			"#E4B4B4"
+		);
 	}
 }
 

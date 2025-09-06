@@ -1,6 +1,7 @@
 import { drawSvg } from "../../core/draw-svg";
 import { GameObject } from "../../core/game-object";
 import { Vector } from "../../core/vector";
+import { fill } from "../../utils/draw";
 import { gradient } from "../../utils/gradient";
 import { range } from "../../utils/range";
 
@@ -22,8 +23,7 @@ class BeltBackground extends GameObject {
 				Math.PI * 2,
 				true
 			);
-			ctx.fillStyle = "#807D7D";
-			ctx.fill();
+			fill(ctx, "#807D7D");
 		}
 	}
 }

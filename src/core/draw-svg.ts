@@ -185,14 +185,14 @@ const commands: Record<string, Command<number>> = {
 	["z"]: z,
 };
 
-export function drawSvg(
+export const drawSvg = (
 	ctx: OffscreenCanvasRenderingContext2D,
 	{
 		path,
 		viewBox,
 		flipH = false,
 	}: { path: string; viewBox?: Vector; flipH?: boolean }
-) {
+) => {
 	const getNextCommand = () => {
 		let nextCommandIndex = path.search(/[A-Za-z]/);
 		if (nextCommandIndex < 0) return;
@@ -201,7 +201,7 @@ export function drawSvg(
 		path = path.slice(nextCommandIndex + 1).trim();
 
 		if (!(name in commands)) {
-			throw new Error(/* `Unknown command: ${name}` */);
+			throw ""; // new Error(`Unknown command: ${name}`);
 		}
 
 		return commands[name]!;
@@ -221,7 +221,7 @@ export function drawSvg(
 	while (command) {
 		const { isRelative, args, prepareArgs, execute } = command;
 
-		function popArg(path: string) {
+		const popArg = (path: string) => {
 			let arg = "";
 
 			const isValidNextChar = (char: string) => {
@@ -238,7 +238,7 @@ export function drawSvg(
 			}
 
 			return [arg, path] as const;
-		}
+		};
 
 		let parsedArgs = args.map((argType) => {
 			const [arg, slicedPath] = popArg(path);
@@ -278,4 +278,4 @@ export function drawSvg(
 			}
 		}
 	}
-}
+};

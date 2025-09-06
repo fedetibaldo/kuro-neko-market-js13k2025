@@ -58,6 +58,7 @@ export const Vector = (x: number = 0, y: number = 0) => {
 export type Vector = ReturnType<typeof Vector>;
 
 export const ZERO = Vector();
+export const ONE = Vector(1, 1);
 export const TOP_LEFT = Vector();
 export const TOP_RIGHT = Vector(1, 0);
 export const BOTTOM_LEFT = Vector(0, 1);

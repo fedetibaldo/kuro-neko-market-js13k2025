@@ -1,7 +1,7 @@
 import { diContainer } from "../../core/di-container";
 import { Game, GAME_TICK_EVENT } from "../../core/game";
 import { Observable } from "../../core/observable";
-import { FishType, VariedFish } from "../../data/fish-types";
+import { FishType, fishTypes, VariedFish } from "../../data/fish-types";
 import { chooseVariants, ScoringVariants } from "./choose-variants";
 import {
 	chaosStrategy,
@@ -14,8 +14,15 @@ import {
 import { scoreFish } from "./score-fish";
 import { unique } from "../../core/unique";
 
+export type FishTypeIndex = 0 | 1 | 2;
 export type LevelSpawnFrequency = 0 | 1 | 2;
 export type LevelDifficulty = 0 | 1 | 2 | 3;
+
+export type LevelAttributes = [
+	FishTypeIndex[],
+	LevelSpawnFrequency,
+	LevelDifficulty
+];
 
 export const LEVEL_DURATION = 120;
 const PADDING = 5;
@@ -52,15 +59,15 @@ export class LevelSystem extends Observable {
 	}
 
 	init(
-		fishTypes: FishType[],
+		fishTypeIndices: FishTypeIndex[],
 		freq: LevelSpawnFrequency,
 		difficulty: LevelDifficulty
 	) {
-		this.fishTypes = fishTypes;
+		this.fishTypes = fishTypeIndices.map((idx) => fishTypes[idx]!);
 		this.freq = freq;
 		this.difficulty = difficulty;
 
-		this.scoringVariants = chooseVariants(fishTypes);
+		this.scoringVariants = chooseVariants(this.fishTypes);
 
 		this.strategy = (
 			[easyStrategy, mediumStrategy, hardStrategy, chaosStrategy] as const

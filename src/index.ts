@@ -17,8 +17,11 @@ import { LEVEL_SCREEN, RESULTS_SCREEN } from "./data/screens";
 import { ScreenSystem } from "./systems/screen/screen.system";
 import { ScreenTransitionContainer } from "./systems/screen/screen-transition-container";
 import { LevelSelect } from "./objects/level-select";
+import { diamondPattern } from "./objects/patterns/diamond";
+import { wavePattern } from "./objects/patterns/wave";
+import { woodPattern } from "./objects/patterns/wood";
 
-const canvas = document.getElementById("game") as HTMLCanvasElement;
+const canvas = document.getElementById("g") as HTMLCanvasElement;
 const viewRes = Vector(360, 240);
 
 const game = diContainer.set(Game, new Game({ viewRes }));
@@ -39,6 +42,9 @@ diContainer.set(
 );
 
 game.root.addChildren([
+	woodPattern,
+	diamondPattern,
+	wavePattern,
 	new ScreenTransitionContainer({
 		children: [new LevelSelect()],
 	}),
