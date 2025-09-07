@@ -72,17 +72,22 @@ export class RenderServer extends Observable {
 		const { pos, scale, rotation, opacity } = obj;
 
 		ctx.save();
-		ctx.translate(pos.x, pos.y);
+		// ctx.translate(pos.x, pos.y);
 
 		const origin = obj.size.mulv(obj.origin);
 
-		const scaleDiff = scaleFromOrigin(ZERO, scale, origin);
-		ctx.translate(scaleDiff.x, scaleDiff.y);
-		ctx.scale(scale, scale);
+		const scaleDiff = pos.add(scaleFromOrigin(ZERO, scale, origin));
 
-		const rotationDiff = rotateAroundOrigin(ZERO, rotation, origin);
-		ctx.translate(rotationDiff.x, rotationDiff.y);
-		ctx.rotate(rotation);
+		ctx.translate(scaleDiff.x, scaleDiff.y);
+		if (scale != 1) {
+			ctx.scale(scale, scale);
+		}
+
+		if (rotation != 0) {
+			const rotationDiff = rotateAroundOrigin(ZERO, rotation, origin);
+			ctx.translate(rotationDiff.x, rotationDiff.y);
+			ctx.rotate(rotation);
+		}
 
 		ctx.globalAlpha = ctx.globalAlpha * opacity;
 		// ctx.strokeStyle = "red";
