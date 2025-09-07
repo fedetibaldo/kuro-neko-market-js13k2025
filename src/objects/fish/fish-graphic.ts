@@ -1,7 +1,7 @@
 import { Viewport } from "../../core/viewport";
 import { drawSvg } from "../../core/draw-svg";
 import { GameObject, GameObjectArgs } from "../../core/game-object";
-import { CENTER, Vector, ZERO } from "../../core/vector";
+import { CENTER, TOP_LEFT, Vector, ZERO } from "../../core/vector";
 import { gradient } from "../../utils/gradient";
 import { FishEye } from "./fish-eye";
 import { Svg } from "../svg";
@@ -25,14 +25,17 @@ export class FishGraphic extends GameObject {
 	center: Vector;
 	texture: Viewport;
 
+	eyes: GameObject[];
+
 	isShadowHidden: boolean;
-	overrideColor: string | undefined;
+	overrideColor: string | null;
 
 	constructor({
 		flipH = false,
 		type,
 		overrideColor,
 		size,
+		origin,
 		isShadowHidden = false,
 		...rest
 	}: FishGraphicArgs) {
@@ -41,8 +44,9 @@ export class FishGraphic extends GameObject {
 		this.flipH = flipH;
 		this.type = type;
 		this.size = size ?? this.type.size;
-		this.origin = CENTER;
-		this.overrideColor = overrideColor;
+		// Uknown bug: when child of flex, only TOP_LEFT results in correct global computations
+		this.origin = origin ?? CENTER;
+		this.overrideColor = overrideColor ?? null;
 		this.isShadowHidden = isShadowHidden;
 
 		const createEye = (pos: Vector, diameter: number, size: Vector) => {
@@ -64,13 +68,23 @@ export class FishGraphic extends GameObject {
 			children: [new Svg({ path: type.pattern, size: Vector(16, 16) })],
 		});
 
-		if (!this.overrideColor) {
-			this.addChildren(
-				type.eyes.map(([diameter, pos]) => createEye(pos, diameter, type.size))
-			);
-		}
+		this.eyes = type.eyes.map(([diameter, pos]) =>
+			createEye(pos, diameter, type.size)
+		);
 
-		this.addChild(this.texture);
+		this.addChildren([...this.eyes, this.texture]);
+	}
+
+	kill() {
+		super.kill();
+		this.eyes = [];
+		this.texture = null as any;
+	}
+
+	update(): void {
+		for (const eye of this.eyes) {
+			eye.opacity = this.overrideColor ? 0 : 1;
+		}
 	}
 
 	render(ctx: OffscreenCanvasRenderingContext2D) {
