@@ -7,11 +7,7 @@ import {
 	INPUT_SCROLL_EVENT,
 	InputServer,
 } from "../core/input.server";
-import {
-	easeLinear,
-	IncrementalLerp,
-	makeFixedTimeIncrementalLerp,
-} from "../core/lerp";
+import { IncrementalLerp, makeFixedTimeIncrementalLerp } from "../core/lerp";
 import { OffFunction } from "../core/observable";
 import { TOP_LEFT, Vector, ZERO } from "../core/vector";
 import { fishTypes } from "../data/fish-types";
@@ -25,7 +21,6 @@ import { ScreenSystem } from "../systems/screen/screen.system";
 import { clamp } from "../utils/clamp";
 import { fillRect, fillRoundRect, stroke } from "../utils/draw";
 import { makePattern } from "../utils/pattern";
-import { range } from "../utils/range";
 import { getStored, setStored } from "../utils/storage";
 import { Digit, DigitValue } from "./digit";
 import { FishGraphic } from "./fish/fish-graphic";
@@ -34,7 +29,7 @@ import { WAVE_ID } from "./patterns/wave";
 
 const buttonSize = Vector(36, 24);
 
-const baseLevels: (LevelInfo | null)[] = [
+const levels: LevelInfo[] = [
 	[[0], 0, 0, 0],
 	[[0, 1], 1, 1, 0],
 	[[0, 1, 2], 2, 2, 0],
@@ -46,97 +41,64 @@ export class LevelSelect extends GameObject {
 	game = diContainer.get(Game);
 	input = diContainer.get(InputServer);
 	scrollLerp: IncrementalLerp<Vector> | undefined;
-	container: Flexbox | null;
-	addButton: ActiveSurface | null;
+	container: Flexbox;
 
 	constructor() {
 		super();
-		this.recreateContainer();
-	}
 
-	onInputMouseDown = ({ pos }: { pos: Vector }) => {
-		if (this.addButton!.isPointWithinObject(pos)) {
-			setStored("l", (getStored<number>("l") ?? baseLevels.length) + 1);
-			this.recreateContainer();
-		}
-	};
+		(getStored<number[]>("s") ?? []).map((score, idx) => {
+			levels[idx]![3] = score;
+		});
+
+		this.container = new Flexbox({
+			pos: Vector(32, 24),
+			direction: "col",
+			spaceBetween: 12,
+			justify: "start",
+			mode: "hug",
+			children: [
+				...levels.map(
+					(level, index) =>
+						new Card({
+							levelNumber: index,
+							level,
+						})
+				),
+				new Card({
+					level: getStored<LevelInfo>("c") ?? [[], 0, 0, 0],
+					isEditable: true,
+				}),
+			],
+		});
+		this.addChild(this.container);
+	}
 
 	onScroll = (delta: Vector) => {
 		const clampedPos = Vector(
 			32,
 			clamp(
-				this.container!.pos.add(delta).y,
-				-this.container!.size.y + this.game.root.size.y - 24,
+				this.container.pos.add(delta).y,
+				-this.container.size.y + this.game.root.size.y - 24,
 				24
 			)
 		);
 		this.scrollLerp = makeFixedTimeIncrementalLerp(
-			this.container!.pos,
+			this.container.pos,
 			clampedPos,
 			100
 		);
 	};
 
-	listeners = [
-		this.input.on(INPUT_SCROLL_EVENT, this.onScroll),
-		this.input.on(INPUT_MOUSEDOWN_EVENT, this.onInputMouseDown),
-	];
+	scrollListener = this.input.on(INPUT_SCROLL_EVENT, this.onScroll);
 
 	kill() {
 		super.kill();
-		this.listeners.map((off) => off());
-	}
-
-	recreateContainer() {
-		const prevPos = this.container?.pos || Vector(32, 24);
-		if (this.container) {
-			this.container.kill();
-			this.addButton = null;
-		}
-
-		const levels = [...baseLevels];
-
-		range(Math.max(levels.length, getStored("l"))).map((idx) => {
-			const existingInfo = levels[idx];
-			const additionalInfo = getStored(idx) as LevelInfo | null;
-			if (existingInfo) {
-				if (additionalInfo) {
-					existingInfo[3] = additionalInfo?.[3];
-				}
-			} else {
-				levels.push(additionalInfo);
-			}
-		});
-
-		let isAdding = false;
-
-		const containerChildren: GameObject[] = levels.map((level, index) => {
-			return new Card({
-				levelNumber: index,
-				isEditable: (isAdding = !level),
-				level: level ?? [[], 0, 0, 0],
-			});
-		});
-
-		this.addButton = new ActiveSurface({ radius: 12, size: buttonSize });
-		if (!isAdding) {
-			containerChildren.push(this.addButton);
-		}
-
-		this.container = new Flexbox({
-			pos: prevPos,
-			direction: "col",
-			spaceBetween: 12,
-			justify: "start",
-			mode: "hug",
-			children: containerChildren,
-		});
-		this.addChild(this.container);
+		this.scrollListener();
 	}
 
 	update(deltaT: number): void {
 		if (this.scrollLerp) {
-			this.container!.pos = this.scrollLerp(deltaT);
+			this.container.pos = this.scrollLerp(deltaT);
 		}
 	}
 
@@ -178,20 +140,19 @@ class ActiveSurface extends InactiveSurface {
 
 type CardArgs = GameObjectArgs & {
 	isEditable?: boolean;
-	levelNumber: number;
+	levelNumber?: number;
 	level: LevelInfo;
 };
 
 class Card extends GameObject {
 	size = Vector(296, 32);
 	isEditable: boolean;
-	levelNumber: number;
+	levelNumber?: number;
 
 	fishes: FishGraphic[];
 	difficultyGraphic: Digit;
 	speedGraphic: Digit;
 	actionButton: ActiveSurface;
-	disabledActionButton: InactiveSurface;
 	fishTypeIndices: FishTypeIndex[] = [];
 
 	mouseDownListener: OffFunction;
@@ -202,6 +163,7 @@ class Card extends GameObject {
 		this.fishes = [];
 		this.difficultyGraphic = null as any;
 		this.speedGraphic = null as any;
+		this.actionButton = null as any;
 	}
 
 	getLevelAttributes(): LevelAttributes {
@@ -217,11 +179,6 @@ class Card extends GameObject {
 		diContainer.get(ScreenSystem).to(LEVEL_SCREEN);
 	}
 
-	saveLevel() {
-		setStored(this.levelNumber, [...this.getLevelAttributes(), 0]);
-		(this as any).parent.parent.recreateContainer();
-	}
-
 	toggleFishTypeIndex(idx: FishTypeIndex) {
 		const isNextEnabled = !this.fishTypeIndices.includes(idx);
 		if (isNextEnabled) {
@@ -235,8 +192,7 @@ class Card extends GameObject {
 		fish.overrideColor = isNextEnabled ? null : "#3A1141";
 		fish.isShadowHidden = !isNextEnabled;
 		const isValid = this.fishTypeIndices.length != 0;
-		this.actionButton.opacity = isValid ? 1 : 0;
-		this.disabledActionButton.opacity = isValid ? 0 : 1;
+		this.actionButton.opacity = isValid ? 1 : 0.5;
 	}
 
 	cycleSpeed() {
@@ -290,13 +246,7 @@ class Card extends GameObject {
 			radius: 12,
 			size: buttonSize,
 			children: [],
-			opacity: isEditable ? 0 : 1,
-		});
-		this.disabledActionButton = new InactiveSurface({
-			radius: 12,
-			size: buttonSize,
-			children: [],
-			opacity: isEditable ? 1 : 0,
+			opacity: 0.5,
 		});
 
 		for (const enabledIdx of level[0]) {
@@ -310,7 +260,7 @@ class Card extends GameObject {
 					this.actionButton.opacity == 1 &&
 					this.actionButton.isPointWithinObject(pos)
 				) {
-					isEditable ? this.saveLevel() : this.playLevel();
+					this.playLevel();
 				}
 				if (isEditable) {
 					this.fishes.map((fish, idx) => {
@@ -324,6 +274,8 @@ class Card extends GameObject {
 					if (speedButton.isPointWithinObject(pos)) {
 						this.cycleSpeed();
 					}
+					// Save level
+					setStored("c", [...this.getLevelAttributes(), 0]);
 				}
 			});
 
@@ -359,10 +311,7 @@ class Card extends GameObject {
 						}),
 						speedButton,
 						difficultyButton,
-						new GameObject({
-							size: buttonSize,
-							children: [this.actionButton, this.disabledActionButton],
-						}),
+						this.actionButton,
 					],
 				}),
 			],
