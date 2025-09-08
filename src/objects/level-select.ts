@@ -1,5 +1,5 @@
 import { diContainer } from "../core/di-container";
-import { Flexbox } from "../core/flexbox";
+import { Flexbox, FlexboxArgs } from "../core/flexbox";
 import { Game } from "../core/game";
 import { GameObject, GameObjectArgs } from "../core/game-object";
 import {
@@ -9,8 +9,9 @@ import {
 } from "../core/input.server";
 import { IncrementalLerp, makeFixedTimeIncrementalLerp } from "../core/lerp";
 import { OffFunction } from "../core/observable";
-import { TOP_LEFT, Vector, ZERO } from "../core/vector";
+import { TOP_LEFT, TOP_RIGHT, Vector, ZERO } from "../core/vector";
 import { fishTypes } from "../data/fish-types";
+import { GLYPH_PLAY } from "../data/glyphs";
 import { LEVEL_SCREEN } from "../data/screens";
 import {
 	FishTypeIndex,
@@ -21,9 +22,11 @@ import { ScreenSystem } from "../systems/screen/screen.system";
 import { clamp } from "../utils/clamp";
 import { fillRect, fillRoundRect, stroke } from "../utils/draw";
 import { makePattern } from "../utils/pattern";
+import { range } from "../utils/range";
 import { getStored, setStored } from "../utils/storage";
 import { Digit, DigitValue } from "./digit";
 import { FishGraphic } from "./fish/fish-graphic";
+import { Glyph } from "./glyph";
 import { DIAMOND_ID } from "./patterns/diamond";
 import { WAVE_ID } from "./patterns/wave";
 
@@ -60,7 +63,7 @@ export class LevelSelect extends GameObject {
 				...levels.map(
 					(level, index) =>
 						new Card({
-							levelNumber: index,
+							levelNumber: index + 1,
 							level,
 						})
 				),
@@ -151,7 +154,7 @@ class Card extends GameObject {
 
 	fishes: FishGraphic[];
 	difficultyGraphic: Digit;
-	speedGraphic: Digit;
+	speedGraphic: SpeedGraphic;
 	actionButton: ActiveSurface;
 	fishTypeIndices: FishTypeIndex[] = [];
 
@@ -233,7 +236,8 @@ class Card extends GameObject {
 			],
 		});
 
-		this.speedGraphic = new Digit({ value: level[1] });
+		this.speedGraphic = new SpeedGraphic();
+		this.speedGraphic.setValue(level[1]);
 		const speedButton = new DynamicSurface({
 			radius: 4,
 			size: buttonSize,
@@ -245,7 +249,19 @@ class Card extends GameObject {
 		this.actionButton = new ActiveSurface({
 			radius: 12,
 			size: buttonSize,
-			children: [],
+			children: [
+				new Flexbox({
+					size: buttonSize,
+					children: [
+						new Glyph({
+							path: GLYPH_PLAY,
+							svgStrokeColor: "#FEE2E2",
+							svgFillColor: "#FEE2E2",
+							size: Vector(5, 9),
+						}),
+					],
+				}),
+			],
 			opacity: 0.5,
 		});
 
@@ -291,6 +307,19 @@ class Card extends GameObject {
 							pos: Vector(6, 4),
 							radius: 12,
 							size: Vector(40, 24),
+							children: [
+								new Flexbox({
+									size: Vector(40, 24),
+									children: levelNumber
+										? [
+												new Digit({
+													value: levelNumber as DigitValue,
+													svgStrokeColor: "#FEE2E2",
+												}),
+										  ]
+										: [],
+								}),
+							],
 						}),
 						new DynamicSurface({
 							radius: 4,
@@ -318,5 +347,36 @@ class Card extends GameObject {
 		});
 
 		this.addChildren([container]);
+	}
+}
+
+type SpeedGraphicArgs = FlexboxArgs;
+
+const playGlyphSize = Vector(5, 9);
+
+class SpeedGraphic extends Flexbox {
+	value = 0;
+
+	constructor(args?: SpeedGraphicArgs) {
+		super(args);
+		this.size = playGlyphSize.mulv(TOP_RIGHT.mul(3));
+		this.addChildren(
+			range(3).map(
+				() =>
+					new Glyph({
+						size: playGlyphSize,
+						path: GLYPH_PLAY,
+						svgStrokeColor: "#FEE2E2",
+					})
+			)
+		);
+	}
+
+	setValue(value: number) {
+		this.value = value;
+		(this.children as Glyph[]).map(
+			(child, idx) =>
+				(child.svgFillColor = idx <= this.value ? "#10A11A" : "#3A1141")
+		);
 	}
 }

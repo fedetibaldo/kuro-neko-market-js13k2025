@@ -67,9 +67,9 @@ export class ButtonGroup extends GameObject {
 			size: lastRowButtonSize,
 			children: [
 				new Glyph({
-					color: "#8B2325",
+					svgStrokeColor: "#8B2325",
 					path: GLYPH_CROSS,
-					fontSize,
+					glyphFontSize: fontSize,
 					pos: Vector(3, 2.5),
 					origin: CENTER,
 				}),
@@ -83,9 +83,9 @@ export class ButtonGroup extends GameObject {
 			size: lastRowButtonSize.add(Vector(10, 0)),
 			children: [
 				new Glyph({
-					color: "#10A11A",
+					svgStrokeColor: "#10A11A",
 					path: GLYPH_TICK,
-					fontSize,
+					glyphFontSize: fontSize,
 					pos: Vector(3, 2.5),
 					origin: CENTER,
 				}),

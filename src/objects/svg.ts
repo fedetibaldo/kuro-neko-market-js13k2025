@@ -1,30 +1,37 @@
 import { drawSvg } from "../core/draw-svg";
 import { GameObject, GameObjectArgs } from "../core/game-object";
+import { fill, stroke } from "../utils/draw";
 
 export type SvgArgs = GameObjectArgs & {
-	color?: string;
+	svgStrokeColor?: string;
+	svgFillColor?: string;
 	path: string;
-	lineWidth?: number;
+	svgLineWidth?: number;
 };
 
 export class Svg extends GameObject {
-	color: string;
+	svgStrokeColor: string;
+	svgFillColor?: string;
 	path: string;
-	lineWidth: number;
+	svgLineWidth: number;
 
-	constructor({ color = "#3A1141", lineWidth = 1, path, ...rest }: SvgArgs) {
+	constructor({
+		svgStrokeColor = "#3A1141",
+		svgFillColor,
+		svgLineWidth = 1,
+		path,
+		...rest
+	}: SvgArgs) {
 		super(rest);
 		this.path = path;
-		this.color = color;
-		this.lineWidth = lineWidth;
+		this.svgStrokeColor = svgStrokeColor;
+		this.svgFillColor = svgFillColor;
+		this.svgLineWidth = svgLineWidth;
 	}
 
 	render(ctx: OffscreenCanvasRenderingContext2D): void {
 		drawSvg(ctx, { path: this.path });
-		ctx.lineWidth = this.lineWidth;
-		ctx.lineCap = "round";
-		ctx.lineJoin = "round";
-		ctx.strokeStyle = this.color;
-		ctx.stroke();
+		stroke(ctx, this.svgStrokeColor, this.svgLineWidth);
+		this.svgFillColor && fill(ctx, this.svgFillColor);
 	}
 }

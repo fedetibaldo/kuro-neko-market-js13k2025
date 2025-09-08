@@ -184,8 +184,8 @@ export class Printer extends GameObject {
 		const rightColor =
 			leftDigitValue || rightDigitValue ? activeColor : inactiveColor;
 		this.leftDigit.setValue(leftDigitValue);
-		this.leftDigit.color = leftColor;
+		this.leftDigit.svgStrokeColor = leftColor;
 		this.rightDigit.setValue(rightDigitValue);
-		this.rightDigit.color = rightColor;
+		this.rightDigit.svgStrokeColor = rightColor;
 	}
 }

@@ -88,7 +88,7 @@ export class Notebook extends GameObject implements PressableInterface {
 							new Flexbox({
 								size: Vector(24, 24),
 								children: [
-									new CurrencySign({ color: "#9C5FA7" }),
+									new CurrencySign({ svgStrokeColor: "#9C5FA7" }),
 									new Digit({ value: fishType.basePrice }),
 								],
 							}),
@@ -109,15 +109,15 @@ export class Notebook extends GameObject implements PressableInterface {
 					// }),
 					new Svg({
 						pos: Vector(33, 7),
-						lineWidth: 8,
-						color: fishType.bodyFill2,
+						svgLineWidth: 8,
+						svgStrokeColor: fishType.bodyFill2,
 						path: "M5 20 6 4l11 16 3-16 11 14",
 						opacity: 0.3,
 					}),
 					new Svg({
 						pos: Vector(33, 7),
-						lineWidth: 8,
-						color: fishType.tailFill1,
+						svgLineWidth: 8,
+						svgStrokeColor: fishType.tailFill1,
 						path: "M40 17 35 6",
 						opacity: 0.3,
 					}),
@@ -229,7 +229,7 @@ export class Notebook extends GameObject implements PressableInterface {
 										children: [
 											new MathSign({
 												origin: BOTTOM,
-												fontSize: 10,
+												glyphFontSize: 10,
 												value: modifier,
 											}),
 											new Digit({

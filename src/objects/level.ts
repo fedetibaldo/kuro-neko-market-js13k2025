@@ -131,8 +131,8 @@ export class Level extends GameObject {
 					new Counter({ id: "timer" }),
 					new Glyph({
 						size: Vector(8, 8),
-						color: "#9C5FA7",
-						fontSize: 14,
+						svgStrokeColor: "#9C5FA7",
+						glyphFontSize: 14,
 						path: "M5 1.8c-1.4-1-3.1-.6-3.4.5-.2.6-.2 1.9 2.1 2.3 2.8.5 2 3.4-.4 3.4-.4 0-1.2-.2-2-1",
 					}),
 				],
@@ -142,7 +142,7 @@ export class Level extends GameObject {
 				pos: game.root.size.mulv(TOP_RIGHT).diff(Vector(8, -8)),
 				origin: TOP_RIGHT,
 				children: [
-					new CurrencySign({ fontSize: 28, color: "#9C5FA7" }),
+					new CurrencySign({ glyphFontSize: 28, svgStrokeColor: "#9C5FA7" }),
 					new Counter({ id: "score" }),
 				],
 			}),

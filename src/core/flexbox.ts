@@ -24,7 +24,7 @@ export class Flexbox extends GameObject {
 		align = "center",
 		justify = "center",
 		...rest
-	}: FlexboxArgs) {
+	}: FlexboxArgs = {}) {
 		super(rest);
 		this.direction = direction;
 		this.spaceBetween = spaceBetween;

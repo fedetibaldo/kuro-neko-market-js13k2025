@@ -2,15 +2,15 @@ import { NewOmit } from "../utils/new-omit";
 import { Svg, SvgArgs } from "./svg";
 
 export type GlyphArgs = NewOmit<SvgArgs, "lineWidth"> & {
-	fontSize?: number;
+	glyphFontSize?: number;
 };
 
 export class Glyph extends Svg {
-	fontSize: number;
+	glyphFontSize: number;
 
-	constructor({ fontSize = 12, ...rest }: GlyphArgs) {
-		super({ ...rest, lineWidth: 2 });
-		this.fontSize = fontSize;
-		this.scale = fontSize / 12;
+	constructor({ glyphFontSize = 12, ...rest }: GlyphArgs) {
+		super({ ...rest, svgLineWidth: 2 });
+		this.glyphFontSize = glyphFontSize;
+		this.scale = glyphFontSize / 12;
 	}
 }
