@@ -50,7 +50,7 @@ export class ButtonGroup extends GameObject {
 				children: [
 					new Digit({
 						color: activeColor,
-						fontSize,
+						glyphFontSize: fontSize,
 						value,
 						pos: Vector(3, 2.5),
 						origin: CENTER,

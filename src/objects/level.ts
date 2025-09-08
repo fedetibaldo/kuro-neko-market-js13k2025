@@ -206,7 +206,7 @@ class Counter extends Flexbox {
 					id,
 					value: digitValue,
 					opacity: 0,
-					fontSize: 28,
+					glyphFontSize: 28,
 				});
 				this.addChild(digitObject);
 			}

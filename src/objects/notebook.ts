@@ -234,7 +234,7 @@ export class Notebook extends GameObject implements PressableInterface {
 											}),
 											new Digit({
 												origin: BOTTOM,
-												fontSize: 10,
+												glyphFontSize: 10,
 												value: Math.abs(modifier) as DigitValue,
 											}),
 										],

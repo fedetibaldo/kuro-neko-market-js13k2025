@@ -93,13 +93,13 @@ export class Printer extends GameObject {
 
 		this.leftDigit = new Digit({
 			color: inactiveColor,
-			fontSize: 10,
+			glyphFontSize: 10,
 			value: 0,
 			origin: CENTER,
 		});
 		this.rightDigit = new Digit({
 			color: inactiveColor,
-			fontSize: 10,
+			glyphFontSize: 10,
 			value: 0,
 			origin: CENTER,
 		});

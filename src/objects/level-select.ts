@@ -22,6 +22,7 @@ import { ScreenSystem } from "../systems/screen/screen.system";
 import { clamp } from "../utils/clamp";
 import { fillRect, fillRoundRect, stroke } from "../utils/draw";
 import { makePattern } from "../utils/pattern";
+import { randomFloat } from "../utils/random";
 import { range } from "../utils/range";
 import { getStored, setStored } from "../utils/storage";
 import { Digit, DigitValue } from "./digit";
@@ -153,7 +154,7 @@ class Card extends GameObject {
 	levelNumber?: number;
 
 	fishes: FishGraphic[];
-	difficultyGraphic: Digit;
+	difficultyGraphic: DifficultyGraphic;
 	speedGraphic: SpeedGraphic;
 	actionButton: ActiveSurface;
 	fishTypeIndices: FishTypeIndex[] = [];
@@ -227,7 +228,8 @@ class Card extends GameObject {
 			});
 		});
 
-		this.difficultyGraphic = new Digit({ value: level[2] });
+		this.difficultyGraphic = new DifficultyGraphic();
+		this.difficultyGraphic.setValue(level[2]);
 		const difficultyButton = new DynamicSurface({
 			radius: 4,
 			size: buttonSize,
@@ -236,14 +238,12 @@ class Card extends GameObject {
 			],
 		});
 
-		this.speedGraphic = new SpeedGraphic();
+		this.speedGraphic = new SpeedGraphic({ size: buttonSize });
 		this.speedGraphic.setValue(level[1]);
 		const speedButton = new DynamicSurface({
 			radius: 4,
 			size: buttonSize,
-			children: [
-				new Flexbox({ size: buttonSize, children: [this.speedGraphic] }),
-			],
+			children: [this.speedGraphic],
 		});
 
 		this.actionButton = new ActiveSurface({
@@ -355,11 +355,10 @@ type SpeedGraphicArgs = FlexboxArgs;
 const playGlyphSize = Vector(5, 9);
 
 class SpeedGraphic extends Flexbox {
-	value = 0;
+	value: number;
 
 	constructor(args?: SpeedGraphicArgs) {
 		super(args);
-		this.size = playGlyphSize.mulv(TOP_RIGHT.mul(3));
 		this.addChildren(
 			range(3).map(
 				() =>
@@ -378,5 +377,47 @@ class SpeedGraphic extends Flexbox {
 			(child, idx) =>
 				(child.svgFillColor = idx <= this.value ? "#10A11A" : "#3A1141")
 		);
+	}
+}
+
+class DifficultyGraphic extends GameObject {
+	value: number;
+	color: string;
+	size = Vector(18, 8);
+
+	setValue(value: number) {
+		this.value = value;
+		this.color = ["#10A11A", "#B27242", "#B44141", "#AD64BA"][value]!;
+	}
+
+	render(ctx: OffscreenCanvasRenderingContext2D): void {
+		const vibration =
+			this.value == 3
+				? Vector(randomFloat(-0.5, 0.5), randomFloat(-0.5, 0.5))
+				: ZERO;
+		fillRoundRect(
+			ctx,
+			Vector(0, 8).add(vibration),
+			Vector(5, -4).add(vibration),
+			1,
+			this.color
+		);
+		stroke(ctx, "#FEE2E2");
+		fillRoundRect(
+			ctx,
+			Vector(6.5, 8).add(vibration),
+			Vector(5, -6).add(vibration),
+			1,
+			this.value > 0 ? this.color : "#3A1141"
+		);
+		stroke(ctx, "#FEE2E2");
+		fillRoundRect(
+			ctx,
+			Vector(13, 8).add(vibration),
+			Vector(5, -8).add(vibration),
+			1,
+			this.value > 1 ? this.color : "#3A1141"
+		);
+		stroke(ctx, "#FEE2E2");
 	}
 }

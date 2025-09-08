@@ -1,7 +1,11 @@
 export const chance = (n: number) => Math.random() < n;
 
+export const randomFloat = (minIncl: number, maxExcl: number) => {
+	return Math.random() * (maxExcl - minIncl) + minIncl;
+};
+
 export const randomInt = (minIncl: number, maxExcl: number) => {
-	return Math.floor(Math.random() * (maxExcl - minIncl)) + minIncl;
+	return Math.floor(randomFloat(minIncl, maxExcl));
 };
 
 export const pickRandom = <T>(arr: T[]) => {
