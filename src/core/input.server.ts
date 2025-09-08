@@ -1,17 +1,17 @@
 import { diContainer } from "./di-container";
 import { DisplayServer } from "./display.server";
-import { Game, GAME_TICK_EVENT } from "./game";
+import { Game } from "./game";
 import { Observable } from "./observable";
 import { unique } from "./unique";
 import { Vector, ZERO } from "./vector";
 
-export type NormalizedTouchEvent = TouchEvent & {
-	clientX: number;
-	clientY: number;
-	isTouchEvent: true;
-};
+// export type NormalizedTouchEvent = TouchEvent & {
+// 	clientX: number;
+// 	clientY: number;
+// 	isTouchEvent: true;
+// };
 
-export const INPUT_SCROLL_EVENT = unique();
+// export const INPUT_SCROLL_EVENT = unique();
 export const INPUT_MOUSEDOWN_EVENT = unique();
 export const INPUT_MOUSEUP_EVENT = unique();
 export const INPUT_MOUSEMOVE_EVENT = unique();
@@ -48,7 +48,7 @@ export class InputServer extends Observable {
 		// canvas.ontouchend = (e) => this.onCanvasTouchEnd(e);
 		// canvas.ontouchmove = (e) => this.onCanvasTouchMove(e);
 
-		canvas.onwheel = (e) => this.onCanvasWheel(e);
+		// canvas.onwheel = (e) => this.onCanvasWheel(e);
 	}
 
 	// onCanvasTouchStart(e: TouchEvent) {
@@ -73,7 +73,7 @@ export class InputServer extends Observable {
 	// 	};
 	// }
 
-	onCanvasMouseDown(e: MouseEvent | NormalizedTouchEvent) {
+	onCanvasMouseDown(e: MouseEvent /*  | NormalizedTouchEvent */) {
 		this.isMouseDown = true;
 		// this.lastDragPoint = this.initialDragPoint = this.projectPosition(
 		// 	this.eventToVector(e)
@@ -82,7 +82,7 @@ export class InputServer extends Observable {
 		this.triggerMouseEvent(INPUT_MOUSEDOWN_EVENT, e);
 	}
 
-	onCanvasMouseUp(e: MouseEvent | NormalizedTouchEvent) {
+	onCanvasMouseUp(e: MouseEvent /*  | NormalizedTouchEvent */) {
 		this.isMouseDown = false;
 		this.triggerMouseEvent(INPUT_MOUSEUP_EVENT, e);
 		// if (this.isScrolling) {
@@ -99,7 +99,7 @@ export class InputServer extends Observable {
 		// this.isScrolling = false;
 	}
 
-	onCanvasMouseMove(e: MouseEvent | NormalizedTouchEvent) {
+	onCanvasMouseMove(e: MouseEvent /*  | NormalizedTouchEvent */) {
 		this.triggerMouseEvent(INPUT_MOUSEMOVE_EVENT, e);
 		// if (this.isMouseDown) {
 		// 	const newDragPoint = this.projectPosition(this.eventToVector(e));
@@ -118,15 +118,15 @@ export class InputServer extends Observable {
 		// }
 	}
 
-	onCanvasWheel(e: WheelEvent) {
-		const delta = (e.shiftKey ? Vector(e.deltaY, 0) : Vector(0, e.deltaY))
-			.mul(this.scrollVelocity)
-			.mul(-1);
-		// const delta = dir.mul(this.scrollVelocity)
-		this.trigger(INPUT_SCROLL_EVENT, delta);
-	}
+	// onCanvasWheel(e: WheelEvent) {
+	// 	const delta = (e.shiftKey ? Vector(e.deltaY, 0) : Vector(0, e.deltaY))
+	// 		.mul(this.scrollVelocity)
+	// 		.mul(-1);
+	// 	// const delta = dir.mul(this.scrollVelocity)
+	// 	this.trigger(INPUT_SCROLL_EVENT, delta);
+	// }
 
-	triggerMouseEvent(name: symbol, e: MouseEvent | NormalizedTouchEvent) {
+	triggerMouseEvent(name: symbol, e: MouseEvent /*  | NormalizedTouchEvent */) {
 		// if (!("isTouchEvent" in e) && this.isTouchDevice) {
 		// 	return;
 		// }

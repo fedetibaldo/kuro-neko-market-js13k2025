@@ -2,14 +2,9 @@ import { diContainer } from "../core/di-container";
 import { Flexbox, FlexboxArgs } from "../core/flexbox";
 import { Game } from "../core/game";
 import { GameObject, GameObjectArgs } from "../core/game-object";
-import {
-	INPUT_MOUSEDOWN_EVENT,
-	INPUT_SCROLL_EVENT,
-	InputServer,
-} from "../core/input.server";
-import { IncrementalLerp, makeFixedTimeIncrementalLerp } from "../core/lerp";
+import { INPUT_MOUSEDOWN_EVENT, InputServer } from "../core/input.server";
 import { OffFunction } from "../core/observable";
-import { TOP_LEFT, TOP_RIGHT, Vector, ZERO } from "../core/vector";
+import { TOP_LEFT, Vector, ZERO } from "../core/vector";
 import { fishTypes } from "../data/fish-types";
 import { GLYPH_PLAY } from "../data/glyphs";
 import { LEVEL_SCREEN } from "../data/screens";
@@ -19,8 +14,7 @@ import {
 	LevelSystem,
 } from "../systems/level/level.system";
 import { ScreenSystem } from "../systems/screen/screen.system";
-import { clamp } from "../utils/clamp";
-import { fillRect, fillRoundRect, stroke } from "../utils/draw";
+import { fillCircle, fillRect, fillRoundRect, stroke } from "../utils/draw";
 import { makePattern } from "../utils/pattern";
 import { randomFloat } from "../utils/random";
 import { range } from "../utils/range";
@@ -43,9 +37,6 @@ type LevelInfo = [...LevelAttributes, number];
 
 export class LevelSelect extends GameObject {
 	game = diContainer.get(Game);
-	input = diContainer.get(InputServer);
-	scrollLerp: IncrementalLerp<Vector> | undefined;
-	container: Flexbox;
 
 	constructor() {
 		super();
@@ -54,61 +45,30 @@ export class LevelSelect extends GameObject {
 			levels[idx]![3] = score;
 		});
 
-		this.container = new Flexbox({
-			pos: Vector(32, 24),
-			direction: "col",
-			spaceBetween: 12,
-			justify: "start",
-			mode: "hug",
-			children: [
-				...levels.map(
-					(level, index) =>
-						new Card({
-							levelNumber: index + 1,
-							level,
-						})
-				),
-				new Card({
-					level: getStored<LevelInfo>("c") ?? [[], 0, 0, 0],
-					isEditable: true,
-				}),
-			],
-		});
-		this.addChild(this.container);
-	}
-
-	onScroll = (delta: Vector) => {
-		const clampedPos = Vector(
-			32,
-			clamp(
-				this.container.pos.add(delta).y,
-				-this.container.size.y + this.game.root.size.y - 24,
-				24
-			)
+		this.addChild(
+			new Flexbox({
+				size: this.game.root.size,
+				direction: "col",
+				spaceBetween: 12,
+				children: [
+					...levels.map(
+						(level, index) =>
+							new Card({
+								levelNumber: index + 1,
+								level,
+							})
+					),
+					new Card({
+						level: getStored<LevelInfo>("c") ?? [[], 0, 0, 0],
+						isEditable: true,
+					}),
+				],
+			})
 		);
-		this.scrollLerp = makeFixedTimeIncrementalLerp(
-			this.container.pos,
-			clampedPos,
-			100
-		);
-	};
-
-	scrollListener = this.input.on(INPUT_SCROLL_EVENT, this.onScroll);
-
-	kill() {
-		super.kill();
-		this.scrollListener();
-	}
-
-	update(deltaT: number): void {
-		if (this.scrollLerp) {
-			this.container.pos = this.scrollLerp(deltaT);
-		}
 	}
 
 	render(ctx: OffscreenCanvasRenderingContext2D) {
-		const game = diContainer.get(Game);
-		fillRect(ctx, ZERO, game.root.size, makePattern(ctx, WAVE_ID));
+		fillRect(ctx, ZERO, this.game.root.size, makePattern(ctx, WAVE_ID));
 	}
 }
 
@@ -317,7 +277,7 @@ class Card extends GameObject {
 													svgStrokeColor: "#FEE2E2",
 												}),
 										  ]
-										: [],
+										: [new NumberLevelPlaceholder()],
 								}),
 							],
 						}),
@@ -419,5 +379,15 @@ class DifficultyGraphic extends GameObject {
 			this.value > 1 ? this.color : "#3A1141"
 		);
 		stroke(ctx, "#FEE2E2");
+	}
+}
+
+class NumberLevelPlaceholder extends GameObject {
+	size = Vector(16, 4);
+
+	render(ctx: OffscreenCanvasRenderingContext2D): void {
+		fillCircle(ctx, ZERO, 2, "#FEE2E2");
+		fillCircle(ctx, Vector(6, 0), 2);
+		fillCircle(ctx, Vector(12, 0), 2);
 	}
 }

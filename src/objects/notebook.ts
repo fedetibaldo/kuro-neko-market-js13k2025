@@ -317,6 +317,6 @@ class Ring extends GameObject {
 
 class Circle extends GameObject {
 	render(ctx: OffscreenCanvasRenderingContext2D): void {
-		fillCircle(ctx, this.size.x / 2, this.color as string);
+		fillCircle(ctx, ZERO, this.size.x / 2, this.color as string);
 	}
 }

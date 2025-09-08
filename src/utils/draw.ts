@@ -1,4 +1,4 @@
-import { Vector } from "../core/vector";
+import { ONE, Vector } from "../core/vector";
 
 export const fillRoundRect = (
 	ctx: OffscreenCanvasRenderingContext2D,
@@ -25,10 +25,12 @@ export const fillRect = (
 
 export const traceCircle = (
 	ctx: OffscreenCanvasRenderingContext2D,
+	pos: Vector,
 	radius: number
 ) => {
 	ctx.beginPath();
-	ctx.arc(radius, radius, radius, 0, Math.PI * 2, true);
+	const { x, y } = pos.add(ONE.mul(radius));
+	ctx.arc(x, y, radius, 0, Math.PI * 2, true);
 };
 
 export const stroke = (
@@ -53,9 +55,10 @@ export const fill = (
 
 export const fillCircle = (
 	ctx: OffscreenCanvasRenderingContext2D,
+	pos: Vector,
 	radius: number,
 	fillStyle?: string | CanvasGradient | CanvasPattern
 ) => {
-	traceCircle(ctx, radius);
+	traceCircle(ctx, pos, radius);
 	fill(ctx, fillStyle);
 };
