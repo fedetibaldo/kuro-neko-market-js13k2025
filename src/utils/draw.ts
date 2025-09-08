@@ -18,6 +18,7 @@ export const fillRect = (
 	to: Vector,
 	fillStyle?: string | CanvasGradient | CanvasPattern
 ) => {
+	ctx.beginPath();
 	ctx.rect(from.x, from.y, to.x, to.y);
 	fill(ctx, fillStyle);
 };

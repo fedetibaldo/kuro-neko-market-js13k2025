@@ -13,6 +13,7 @@ import { LevelSystem } from "../../systems/level/level.system";
 import { diContainer } from "../../core/di-container";
 import { Paper } from "../paper";
 import { FishGraphic } from "./fish-graphic";
+import { TICKET_ID } from "../printer/printer";
 
 type FishArgs = GameObjectArgs & {
 	flipH?: boolean;
@@ -57,7 +58,7 @@ export class Fish
 
 	attemptScore() {
 		if (this.parent?.id != "belt") return;
-		const ticket = this.getChild<Paper>("ticket");
+		const ticket = this.getChild<Paper>(TICKET_ID);
 		if (!ticket) return;
 		const value = ticket.value;
 		if (!this.level.verifyScore(this.fishIndex, value)) {
@@ -71,11 +72,11 @@ export class Fish
 	}
 
 	canHost: boolean | ((obj: GameObject) => boolean) = (obj: GameObject) => {
-		return obj.id == "ticket";
+		return obj.id == TICKET_ID;
 	};
 
 	host(obj: PickupableInterface) {
-		this.getChild("ticket")?.kill();
+		this.getChild(TICKET_ID)?.kill();
 		obj.canBePickedUp = false;
 	}
 	getDropPoint(point: Vector): Vector {

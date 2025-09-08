@@ -5,8 +5,10 @@ export const PAW_IDLING_STATE = unique();
 export const PAW_POINTING_STATE = unique();
 export const PAW_PRESSING_STATE = unique();
 export const PAW_PICKING_UP_STATE = unique();
+export const PAW_PICKING_UP_CANCELLABLE_STATE = unique();
 export const PAW_CARRYING_STATE = unique();
 export const PAW_DROPPING_STATE = unique();
+export const PAW_DROPPING_CANCELLABLE_STATE = unique();
 
 export const PAW_DROP_ACTION = unique();
 export const PAW_POINT_ACTION = unique();

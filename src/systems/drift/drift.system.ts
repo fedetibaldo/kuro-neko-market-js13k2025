@@ -23,10 +23,10 @@ export class DriftSystem extends Observable {
 
 	drift(deltaT: number) {
 		walk<GameObject>(this.game.root, (obj) => {
+			if (obj.frozen) {
+				return [];
+			}
 			if (canDrift(obj)) {
-				if (obj.frozen) {
-					return [];
-				}
 				if (!obj.still) {
 					obj.pos = obj.pos.add(Vector(1, 0).mul((obj.vel * deltaT) / 1000));
 					if (obj.pos.x > this.game.root.size.x) {

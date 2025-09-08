@@ -5,8 +5,8 @@ import {
 	GameObject,
 	GameObjectArgs,
 } from "../../core/game-object";
-import { IncrementalLerp, makeFixedTimeIncrementalLerp } from "../../core/lerp";
 import { OffFunction } from "../../core/observable";
+import { unique } from "../../core/unique";
 import { CENTER, ONE, Vector, ZERO } from "../../core/vector";
 import { fill, fillRoundRect, stroke } from "../../utils/draw";
 import { gradient } from "../../utils/gradient";
@@ -19,6 +19,8 @@ import {
 	ButtonGroup,
 } from "./button-group";
 import { activeColor, inactiveColor } from "./colors";
+
+export const TICKET_ID = unique();
 
 class PrinterMiddleLayer extends GameObject {
 	render(ctx: OffscreenCanvasRenderingContext2D): void {
@@ -77,8 +79,6 @@ export class Printer extends GameObject {
 	ticket: Paper;
 	listeners: OffFunction[];
 
-	ticketLerp: IncrementalLerp<Vector> | null = null;
-
 	constructor(args: GameObjectArgs) {
 		super(args);
 
@@ -86,19 +86,19 @@ export class Printer extends GameObject {
 			pos: Vector(25, 0),
 		});
 
-		this.ticket = new Paper({ id: "ticket", pos: Vector(-2, 29) });
+		this.ticket = new Paper({ id: TICKET_ID, pos: Vector(-2, 29) });
 		this.tickets = new GameObject({
 			children: [this.ticket],
 		});
 
 		this.leftDigit = new Digit({
-			color: inactiveColor,
+			svgStrokeColor: inactiveColor,
 			glyphFontSize: 10,
 			value: 0,
 			origin: CENTER,
 		});
 		this.rightDigit = new Digit({
-			color: inactiveColor,
+			svgStrokeColor: inactiveColor,
 			glyphFontSize: 10,
 			value: 0,
 			origin: CENTER,
@@ -143,12 +143,6 @@ export class Printer extends GameObject {
 		this.pushValue(0);
 	}
 
-	update(deltaT: number): void {
-		if (this.ticketLerp) {
-			this.ticket.pos = this.ticketLerp(deltaT);
-		}
-	}
-
 	async onSubmit() {
 		if (this.ticketLerp) return;
 		const [left, right] = this.value;
@@ -158,20 +152,17 @@ export class Printer extends GameObject {
 		}
 		this.ticket.addChild(new Digit({ value: right }));
 		this.ticket.value = left * 10 + right;
-		this.ticketLerp = makeFixedTimeIncrementalLerp(
-			this.ticket.pos,
-			this.ticket.pos.add(Vector(-21, 0)),
-			500
-		);
+		this.ticket.vel = -21 / 0.5;
+		this.ticket.canBePickedUp = true;
 
 		await new Promise((resolve) => setTimeout(resolve, 500));
 
-		const nextTicket = new Paper({ id: "ticket", pos: Vector(-2, 29) });
+		const ticket = this.getChild(TICKET_ID);
+		if (ticket) {
+			this.ticket.vel = 0;
+		}
+		const nextTicket = new Paper({ id: TICKET_ID, pos: Vector(-2, 29) });
 		this.tickets.addChild(nextTicket);
-
-		this.ticket.canBePickedUp = true;
-		this.ticketLerp = null;
-
 		this.ticket = nextTicket;
 
 		this.reset();

@@ -15,6 +15,7 @@ export type GameObjectArgs = {
 	size?: Vector;
 	frozen?: boolean;
 	children?: GameObject[];
+	pointCheckTolerance?: Vector;
 	[k: string]: unknown;
 };
 
@@ -39,6 +40,7 @@ export class GameObject
 	size: Vector;
 	frozen: boolean;
 	children: GameObject[];
+	pointCheckTolerance: Vector;
 
 	constructor({
 		pos = Vector(),
@@ -49,6 +51,7 @@ export class GameObject
 		rotation = 0,
 		frozen = false,
 		children = [],
+		pointCheckTolerance = ZERO,
 		...unknownOptions
 	}: GameObjectArgs = {}) {
 		super();
@@ -60,6 +63,7 @@ export class GameObject
 		this.origin = origin;
 		this.size = size;
 		this.frozen = frozen;
+		this.pointCheckTolerance = pointCheckTolerance;
 
 		/**
 		 * @type {GameObject[]}
@@ -215,6 +219,9 @@ export class GameObject
 
 	isPointWithinObject(point: Vector) {
 		const localPoint = this.toLocal(point);
-		return localPoint.gt(ZERO) && localPoint.lt(this.size);
+		return (
+			localPoint.gt(ZERO.diff(this.pointCheckTolerance)) &&
+			localPoint.lt(this.size.add(this.pointCheckTolerance))
+		);
 	}
 }

@@ -72,7 +72,7 @@ export class CatPawGraphic extends GameObject {
 				ctx.translate(offsetX, 0);
 			}
 			drawSvg(ctx, {
-				path: "M22 1C12-2 10 5 8 11c-11.5 3-7 11.5-6.5 16 .228 2.049 0 4 .5 6 3.024 12.096 2 28.592 2 38h18V1Z",
+				path: "M22 1C12-2 10 5 8 11c-11.5 3-7 11.5-6.5 16 0 2 0 4 .5 6 3 12.1 2 28.6 2 38h18V1Z",
 				viewBox,
 				flipH,
 			});
@@ -196,7 +196,7 @@ export class Paw extends GameObject {
 
 	seek(point: Vector) {
 		if (!this._state.hasTag(PAW_MOVING_TAG)) return;
-		const moveDuration = 200;
+		const moveDuration = 100;
 		this.moveLerp = makeFixedTimeIncrementalLerp(
 			this.moveLerp ? this.moveLerp() : ZERO,
 			point,
@@ -278,7 +278,7 @@ export class Paw extends GameObject {
 			);
 		}
 		this.nailLerp = makeFixedTimeIncrementalLerp(
-			Vector(0, -7.5),
+			this.nailLerp ? this.nailLerp() : Vector(0, -7.5),
 			ZERO,
 			resetDuration,
 			easeIn
@@ -295,9 +295,9 @@ export class Paw extends GameObject {
 		if (!this._state.can(PAW_POINT_ACTION)) return;
 		this._state.act(PAW_POINT_ACTION);
 
-		const pointDuration = 200;
-		const nailDelay = 150;
-		const nailDuration = 150;
+		const pointDuration = 125;
+		const nailDelay = 75;
+		const nailDuration = 75;
 
 		this.offsetLerp = makeFixedTimeIncrementalLerp(
 			this.offsetLerp ? this.offsetLerp() : ZERO,
@@ -325,9 +325,9 @@ export class Paw extends GameObject {
 
 		this.heldItem = null;
 
-		const dropStage1Duration = 100;
-		const dropStage2Duration = 100;
-		const dropStage3Duration = 200;
+		const dropStage1Duration = 75;
+		const dropStage2Duration = 75;
+		const dropStage3Duration = 150;
 
 		let target = dropTarget.getDropPoint(point);
 		if (canDrift(dropTarget)) {
@@ -403,9 +403,9 @@ export class Paw extends GameObject {
 
 		this.heldItem = item;
 
-		const pickupStage1Duration = 100;
-		const pickupStage2Duration = 100;
-		const pickupStage3Duration = 200;
+		const pickupStage1Duration = 75;
+		const pickupStage2Duration = 75;
+		const pickupStage3Duration = 150;
 
 		let target = item.toGlobal(item.center);
 		if (canDrift(item)) {
