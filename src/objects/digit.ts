@@ -1,4 +1,5 @@
 import { Vector } from "../core/vector";
+import { NewOmit } from "../utils/new-omit";
 import { Glyph, GlyphArgs } from "./glyph";
 
 const digits = {
@@ -16,7 +17,7 @@ const digits = {
 
 export type DigitValue = keyof typeof digits;
 
-export type DigitArgs = Omit<GlyphArgs, "path"> & {
+export type DigitArgs = NewOmit<GlyphArgs, "path" | "svgFillColor"> & {
 	value: DigitValue;
 };
 

@@ -19,8 +19,8 @@ import { chance } from "../utils/random";
 import { BeltColor } from "./belt/belt-color";
 import { BeltShadow } from "./belt/belt-shadow";
 import { MovingBelt } from "./belt/moving-belt";
+import { Counter } from "./counter";
 import { CurrencySign } from "./currency-sign";
-import { Digit, DigitValue } from "./digit";
 import { Fish } from "./fish/fish";
 import { Glyph } from "./glyph";
 import { Notebook } from "./notebook";
@@ -128,7 +128,7 @@ export class Level extends GameObject {
 			new CounterCountainer({
 				pos: Vector(8, 9),
 				children: [
-					new Counter({ id: "timer" }),
+					new Counter({ id: "timer", glyphFontSize: 28 }),
 					new Glyph({
 						size: Vector(8, 8),
 						svgStrokeColor: "#9C5FA7",
@@ -143,7 +143,7 @@ export class Level extends GameObject {
 				origin: TOP_RIGHT,
 				children: [
 					new CurrencySign({ glyphFontSize: 28, svgStrokeColor: "#9C5FA7" }),
-					new Counter({ id: "score" }),
+					new Counter({ id: "score", glyphFontSize: 28 }),
 				],
 			}),
 
@@ -170,48 +170,5 @@ class CounterCountainer extends Flexbox {
 			8,
 			"#E4B4B4"
 		);
-	}
-}
-
-class Counter extends Flexbox {
-	longestLength = 1;
-
-	constructor(args: GameObjectArgs = {}) {
-		super({
-			...args,
-			mode: "hug",
-			align: "end",
-			justify: "start",
-			spaceBetween: -2,
-		});
-		this.setValue(0);
-	}
-
-	setValue(value: number) {
-		const stringValue = `${value}`;
-		this.longestLength = Math.max(stringValue.length, this.longestLength);
-		let opacity = 0;
-		for (const [index, digit] of stringValue
-			.padStart(this.longestLength, "0")
-			.split("")
-			.entries()) {
-			const digitValue = Number(digit) as DigitValue;
-			if (digitValue != 0 || index == stringValue.length - 1) {
-				opacity = 1;
-			}
-			const id = `${index}`;
-			let digitObject = this.getChild(id) as Digit | undefined;
-			if (!digitObject) {
-				digitObject = new Digit({
-					id,
-					value: digitValue,
-					opacity: 0,
-					glyphFontSize: 28,
-				});
-				this.addChild(digitObject);
-			}
-			digitObject.setValue(digitValue);
-			digitObject.opacity = opacity;
-		}
 	}
 }

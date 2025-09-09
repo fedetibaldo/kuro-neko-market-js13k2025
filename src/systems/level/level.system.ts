@@ -13,6 +13,7 @@ import {
 } from "./choose-fish";
 import { scoreFish } from "./score-fish";
 import { unique } from "../../core/unique";
+import { range } from "../../utils/range";
 
 export type FishTypeIndex = 0 | 1 | 2;
 export type LevelSpawnFrequency = 0 | 1 | 2;
@@ -81,6 +82,15 @@ export class LevelSystem extends Observable {
 		this.t = 0;
 		this.totT = 0;
 		this.spawnedFishes = [];
+
+		// range(spawnAmount).map(() => {
+		// 	this.spawnFish(
+		// 		chooseFish(this.fishTypes, this.scoringVariants, this.strategy)
+		// 	);
+		// });
+		// range(spawnAmount).map((idx) => {
+		// 	this.verifyScore(idx, 6);
+		// });
 	}
 
 	spawnFish(fish: VariedFish) {
@@ -129,10 +139,15 @@ export class LevelSystem extends Observable {
 		return this.spawnedFishes[fishIndex]![0];
 	}
 
+	getMaximumScore() {
+		return this.spawnedFishes.reduce((sum, [, value]) => sum + value, 0);
+	}
+
 	getScore() {
-		return this.spawnedFishes.reduce((sum, [, value, isCorrect]) => {
-			return isCorrect ? sum + value : sum;
-		}, 0);
+		return this.spawnedFishes.reduce(
+			(sum, [, value, isCorrect]) => (isCorrect ? sum + value : sum),
+			0
+		);
 	}
 
 	verifyScore(fishIndex: number, userScore: number) {
