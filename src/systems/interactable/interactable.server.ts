@@ -25,11 +25,11 @@ export type ClickEvent = {
 };
 
 export const isPressable = (obj: object): obj is PressableInterface =>
-	typeof (obj as any).canBePressed != "undefined";
+	(obj as any).canBePressed !== void 0;
 export const isPickupable = (obj: object): obj is PickupableInterface =>
-	typeof (obj as any).canBePickedUp != "undefined";
+	(obj as any).canBePickedUp !== void 0;
 export const isDropTarget = (obj: object): obj is DropTargetInterface =>
-	typeof (obj as any).canHost != "undefined";
+	(obj as any).canHost !== void 0;
 
 export const INTERACTABLE_CLICK_EVENT = unique();
 export const INTERACTABLE_MOVE_EVENT = unique();

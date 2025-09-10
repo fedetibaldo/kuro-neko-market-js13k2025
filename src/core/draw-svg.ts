@@ -232,7 +232,7 @@ export const drawSvg = (
 				);
 			};
 
-			while (typeof path[0] != "undefined" && isValidNextChar(path[0])) {
+			while (path[0] !== void 0 && isValidNextChar(path[0])) {
 				arg += path[0];
 				path = path.slice(1);
 			}

@@ -4,7 +4,7 @@ import {
 	GameObject,
 	GameObjectArgs,
 } from "../../core/game-object";
-import { CENTER, Vector } from "../../core/vector";
+import { CENTER, LEFT, Vector } from "../../core/vector";
 import {
 	DropTargetInterface,
 	PickupableInterface,
@@ -14,6 +14,15 @@ import { diContainer } from "../../core/di-container";
 import { Paper } from "../paper";
 import { FishGraphic } from "./fish-graphic";
 import { TICKET_ID } from "../printer/printer";
+import { easeOut, makeFixedTimeIncrementalLerp } from "../../core/lerp";
+import { clamp } from "../../utils/clamp";
+import { drawSvg } from "../../core/draw-svg";
+import { stroke } from "../../utils/draw";
+import { ParticleSystem } from "../../systems/particle/particle.system";
+import { Particle } from "../../systems/particle/particle";
+import { GLYPH_CROSS, GLYPH_TICK } from "../../data/glyphs";
+import { Ray } from "../particles/ray";
+import { Cross } from "../particles/cross";
 
 type FishArgs = GameObjectArgs & {
 	flipH?: boolean;
@@ -61,14 +70,19 @@ export class Fish
 		const ticket = this.getChild<Paper>(TICKET_ID);
 		if (!ticket) return;
 		const value = ticket.value;
-		if (!this.level.verifyScore(this.fishIndex, value)) {
-			// TODO: Show X
-			return;
+		const isCorrect = this.level.verifyScore(this.fishIndex, value);
+		const particle = diContainer.get(ParticleSystem);
+		particle.spawnRadial(
+			this.toGlobal(this.center),
+			isCorrect ? Ray : Cross,
+			isCorrect ? 8 : 4
+		);
+		if (isCorrect) {
+			particle.spawn(this.toGlobal(this.center), Check);
+			this.canHost = false;
+			this.opacity = 0.5;
+			this.canBePickedUp = false;
 		}
-		// TODO: Show v
-		this.canHost = false;
-		this.opacity = 0.5;
-		this.canBePickedUp = false;
 	}
 
 	canHost: boolean | ((obj: GameObject) => boolean) = (obj: GameObject) => {
@@ -88,5 +102,20 @@ export class Fish
 	drop(target: DropTargetInterface) {
 		this.graphic.isShadowHidden = false;
 		this.layer = target.layer;
+	}
+}
+
+class Check extends Particle {
+	origin = CENTER;
+	size = Vector(9, 9);
+	update(deltaT: number): void {
+		super.update(deltaT);
+		this.scale = this._progress * 4;
+	}
+	render(ctx: OffscreenCanvasRenderingContext2D): void {
+		drawSvg(ctx, {
+			path: GLYPH_TICK,
+		});
+		stroke(ctx, "#FEE2E2", 2);
 	}
 }

@@ -20,6 +20,7 @@ import { LevelSelect } from "./objects/level-select";
 import { diamondPattern } from "./objects/patterns/diamond";
 import { wavePattern } from "./objects/patterns/wave";
 import { woodPattern } from "./objects/patterns/wood";
+import { ParticleSystem } from "./systems/particle/particle.system";
 
 const canvas = document.getElementById("g") as HTMLCanvasElement;
 const viewRes = Vector(360, 240);
@@ -40,6 +41,7 @@ diContainer.set(
 		[RESULTS_SCREEN]: Results,
 	})
 );
+diContainer.set(ParticleSystem, new ParticleSystem());
 
 game.root.addChildren([
 	woodPattern,

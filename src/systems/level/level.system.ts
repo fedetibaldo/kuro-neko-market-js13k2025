@@ -89,7 +89,14 @@ export class LevelSystem extends Observable {
 		// 	);
 		// });
 		// range(spawnAmount).map((idx) => {
+		// 	this.verifyScore(idx, 7);
 		// 	this.verifyScore(idx, 6);
+		// 	this.verifyScore(idx, 5);
+		// 	// this.verifyScore(idx, 4);
+		// 	this.verifyScore(idx, 3);
+		// 	this.verifyScore(idx, 2);
+		// 	this.verifyScore(idx, 8);
+		// 	this.verifyScore(idx, 9);
 		// });
 	}
 

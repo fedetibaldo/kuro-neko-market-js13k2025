@@ -318,7 +318,7 @@ export class ZZFXSound {
 		this.zzfxSound = zzfxSound;
 
 		// extract randomness parameter from zzfxSound
-		this.randomness = zzfxSound[1] != undefined ? zzfxSound[1] : 0.05;
+		this.randomness = zzfxSound[1] != void 0 ? zzfxSound[1] : 0.05;
 		zzfxSound[1] = 0; // generate without frequency randomness
 
 		// cache the sound samples

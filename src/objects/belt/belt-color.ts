@@ -1,22 +1,26 @@
 import { drawSvg } from "../../core/draw-svg";
 import { GameObject } from "../../core/game-object";
-import { Vector } from "../../core/vector";
-import { fill } from "../../utils/draw";
+import { Vector, ZERO } from "../../core/vector";
+import { fill, fillRect } from "../../utils/draw";
 import { gradient } from "../../utils/gradient";
 import { range } from "../../utils/range";
 
 class BeltBackground extends GameObject {
 	render(ctx: OffscreenCanvasRenderingContext2D) {
-		ctx.fillStyle = gradient(ctx, Vector(0, 0), Vector(0, this.size.y / 2), [
-			[0, "#282828"],
-			[1, "#5B5B5B"],
-		]);
-		ctx.fillRect(0, 0, this.size.x, this.size.y);
+		fillRect(
+			ctx,
+			ZERO,
+			this.size,
+			gradient(ctx, Vector(0, 0), Vector(0, this.size.y / 2), [
+				[0, "#282828"],
+				[1, "#5B5B5B"],
+			])
+		);
 		const radius = this.size.y / 2;
-		for (const index of range(5)) {
+		range(5).map((idx) => {
 			ctx.beginPath();
 			ctx.arc(
-				(this.size.x / 4) * index,
+				(this.size.x / 4) * idx,
 				this.size.y / 2,
 				radius,
 				0,
@@ -24,7 +28,7 @@ class BeltBackground extends GameObject {
 				true
 			);
 			fill(ctx, "#807D7D");
-		}
+		});
 	}
 }
 

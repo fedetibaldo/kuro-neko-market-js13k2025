@@ -16,17 +16,19 @@ export class Game extends Observable {
 	}
 
 	loop(newT: number) {
-		window.requestAnimationFrame((newT) => this.loop(newT));
+		requestAnimationFrame((newT) => this.loop(newT));
 		if (this.root) {
 			if (this.oldT) {
 				const deltaT = newT - this.oldT;
 				this.trigger(GAME_TICK_EVENT, deltaT);
 			}
-			this.oldT = newT;
+			if (newT) {
+				this.oldT = newT;
+			}
 		}
 	}
 
 	play() {
-		window.requestAnimationFrame((newT) => this.loop(newT));
+		this.loop(0);
 	}
 }
