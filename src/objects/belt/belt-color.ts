@@ -1,7 +1,7 @@
 import { drawSvg } from "../../core/draw-svg";
 import { GameObject } from "../../core/game-object";
 import { Vector, ZERO } from "../../core/vector";
-import { fill, fillRect } from "../../utils/draw";
+import { fill, fillRect, stroke } from "../../utils/draw";
 import { gradient } from "../../utils/gradient";
 import { range } from "../../utils/range";
 
@@ -41,10 +41,7 @@ class BeltMiddleLayer extends GameObject {
 	}
 
 	render(ctx: OffscreenCanvasRenderingContext2D): void {
-		ctx.fillStyle = "#B44141";
-		ctx.fillRect(0, 0, this.size.x, this.size.y + 5);
-
-		ctx.strokeStyle = "#3A1141";
+		fillRect(ctx, ZERO, Vector(this.size.x, this.size.y + 5), "#B44141");
 
 		const lineAmount = 14;
 		for (const idx of range(lineAmount)) {
@@ -56,15 +53,14 @@ class BeltMiddleLayer extends GameObject {
 					this.size.y + 5
 				}v-5L${this.size.x / 2} -70`,
 			});
-			ctx.stroke();
+			stroke(ctx, "#3A1141");
 		}
 
 		drawSvg(ctx, { path: `M0 ${this.size.y}h${this.size.x}` });
-		ctx.stroke();
+		stroke(ctx);
 
-		ctx.strokeStyle = "#E4B4B4";
 		drawSvg(ctx, { path: `M0 0h${this.size.x}` });
-		ctx.stroke();
+		stroke(ctx, "#E4B4B4");
 	}
 }
 

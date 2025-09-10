@@ -11,7 +11,7 @@ import {
 import { BOTTOM, BOTTOM_LEFT, CENTER, Vector, ZERO } from "../core/vector";
 import { PressableInterface } from "../systems/interactable/interactable.types";
 import { LevelSystem } from "../systems/level/level.system";
-import { fillCircle, fillRoundRect } from "../utils/draw";
+import { fillCircle, fillRoundRect, stroke, traceCircle } from "../utils/draw";
 import { gradient } from "../utils/gradient";
 import { range } from "../utils/range";
 import { CurrencySign } from "./currency-sign";
@@ -284,17 +284,14 @@ class FishSilhouette extends GameObject {
 	}
 
 	render(ctx: OffscreenCanvasRenderingContext2D): void {
-		ctx.lineWidth = 2;
-		ctx.strokeStyle = "#3A1141";
 		drawSvg(ctx, { path: this.body });
-		ctx.stroke();
+		stroke(ctx, "#3A1141", 2);
 		drawSvg(ctx, { path: this.tail });
-		ctx.stroke();
+		stroke(ctx);
 		for (const [diameter, pos] of this.eyes) {
 			const radius = (diameter + 2) / 2;
-			ctx.beginPath();
-			ctx.arc(pos.x + radius, pos.y + radius, radius, 0, Math.PI * 2, true);
-			ctx.stroke();
+			traceCircle(ctx, pos, radius);
+			stroke(ctx);
 		}
 	}
 }

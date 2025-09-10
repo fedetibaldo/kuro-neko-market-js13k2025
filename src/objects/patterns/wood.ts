@@ -1,103 +1,92 @@
 import { drawSvg } from "../../core/draw-svg";
 import { GameObject } from "../../core/game-object";
 import { unique } from "../../core/unique";
-import { Vector } from "../../core/vector";
+import { TOP_LEFT, Vector, ZERO } from "../../core/vector";
 import { Viewport } from "../../core/viewport";
-import { fill } from "../../utils/draw";
+import { fill, fillRect, stroke } from "../../utils/draw";
 import { gradient } from "../../utils/gradient";
 
 export const WOOD_ID = unique();
 
+const shadeDarkViewBox = Vector(9, 13);
+const shadeLightViewBox = Vector(14, 11);
+const shadeDarkPath = "M0 13c3.9 0 9-3 9-6.5C9 2.9 3.9 0 0 0v13Z";
+const shadeLightPath = "M0 11c7.7 0 14-2.5 14-5.5S7.7 0 0 0v11Z";
+
+const shadeDarkGradient = (
+	ctx: OffscreenCanvasRenderingContext2D,
+	flipH = false
+) =>
+	gradient(ctx, ZERO, shadeDarkViewBox.mulv(TOP_LEFT), [
+		[0, flipH ? "#956037" : "#A3683C"],
+		[1, flipH ? "#A3683C" : "#956037"],
+	]);
+
+const shadeLightGradient = (
+	ctx: OffscreenCanvasRenderingContext2D,
+	flipH = false
+) =>
+	gradient(ctx, ZERO, shadeLightViewBox.mulv(TOP_LEFT), [
+		[0, flipH ? "#B37342" : "#A3683C"],
+		[1, flipH ? "#A3683C" : "#B37342"],
+	]);
+
+const shadeDarkPos: ([Vector, boolean] | [Vector])[] = [
+	[Vector(21, -5), true],
+	[Vector(34, 10), true],
+	[Vector(10, 20)],
+	[Vector(23, 36)],
+	[Vector(7, 43), true],
+	[Vector(21, 55), true],
+];
+const shadeLightPos: ([Vector, boolean] | [Vector])[] = [
+	[Vector(1, 0)],
+	[Vector(17, 10)],
+	[Vector(45, 22)],
+	[Vector(-10, 38)],
+	[Vector(50, 38)],
+	[Vector(35, 32)],
+];
+
 class Wood extends GameObject {
-	shadeDarkViewBox = Vector(9, 13);
-	shadeLightViewBox = Vector(14, 11);
-	shadeDarkPath = "M0 13c3.9 0 9-3 9-6.5C9 2.9 3.9 0 0 0v13Z";
-	shadeLightPath = "M0 11c7.7 0 14-2.5 14-5.5S7.7 0 0 0v11Z";
-
-	shadeDarkGradient = (
-		ctx: OffscreenCanvasRenderingContext2D,
-		flipH = false
-	) => {
-		const gradient = ctx.createLinearGradient(0, 0, this.shadeDarkViewBox.x, 0);
-		gradient.addColorStop(flipH ? 1 : 0, "#A3683C");
-		gradient.addColorStop(flipH ? 0 : 1, "#956037");
-		return gradient;
-	};
-
-	shadeLightGradient = (
-		ctx: OffscreenCanvasRenderingContext2D,
-		flipH = false
-	) => {
-		const gradient = ctx.createLinearGradient(
-			0,
-			0,
-			this.shadeLightViewBox.x,
-			0
-		);
-		gradient.addColorStop(flipH ? 1 : 0, "#A3683C");
-		gradient.addColorStop(flipH ? 0 : 1, "#B37342");
-		return gradient;
-	};
-	shadeDarkPos: { pos: Vector; flipH?: boolean }[] = [
-		{ pos: Vector(21, -5), flipH: true },
-		{ pos: Vector(34, 10), flipH: true },
-		{ pos: Vector(10, 20) },
-		{ pos: Vector(23, 36) },
-		{ pos: Vector(7, 43), flipH: true },
-		{ pos: Vector(21, 55), flipH: true },
-	];
-	shadeLightPos: { pos: Vector; flipH?: boolean }[] = [
-		{ pos: Vector(1, 0) },
-		{ pos: Vector(17, 10) },
-		{ pos: Vector(45, 22) },
-		{ pos: Vector(-10, 38) },
-		{ pos: Vector(50, 38) },
-		{ pos: Vector(35, 32) },
-	];
-
 	constructor(args = {}) {
 		super(args);
 		this.size = Vector(60, 60);
 	}
 
 	render(ctx: OffscreenCanvasRenderingContext2D) {
-		ctx.fillStyle = "#A3683C";
-		ctx.fillRect(0, 0, this.size.x, this.size.y);
+		fillRect(ctx, ZERO, this.size, "#A3683C");
 
 		const shades = [
 			{
-				gradient: this.shadeDarkGradient,
-				positions: this.shadeDarkPos,
-				viewBox: this.shadeDarkViewBox,
-				path: this.shadeDarkPath,
+				gradient: shadeDarkGradient,
+				positions: shadeDarkPos,
+				viewBox: shadeDarkViewBox,
+				path: shadeDarkPath,
 			},
 			{
-				gradient: this.shadeLightGradient,
-				positions: this.shadeLightPos,
-				viewBox: this.shadeLightViewBox,
-				path: this.shadeLightPath,
+				gradient: shadeLightGradient,
+				positions: shadeLightPos,
+				viewBox: shadeLightViewBox,
+				path: shadeLightPath,
 			},
 		];
 
-		for (const { gradient, positions, viewBox, path } of shades) {
-			for (const { pos, flipH } of positions) {
+		shades.map(({ gradient, positions, viewBox, path }) =>
+			positions.map(([pos, flipH]) => {
 				ctx.save();
 				ctx.translate(pos.x, pos.y);
 				drawSvg(ctx, { path, viewBox, flipH });
 				fill(ctx, gradient(ctx, flipH));
 				ctx.restore();
-			}
-		}
+			})
+		);
 
 		const linePosY = [10.5, 32.5, 54.5];
-		ctx.strokeStyle = "#3B2616";
-		ctx.lineWidth = 2;
-		for (const y of linePosY) {
-			ctx.beginPath();
-			ctx.moveTo(0, y);
-			ctx.lineTo(this.size.x, y);
-			ctx.stroke();
-		}
+		linePosY.map((y) => {
+			drawSvg(ctx, { path: `M0 ${y}L${this.size.x} ${y}` });
+			stroke(ctx, "#3B2616", 2);
+		});
 
 		const veins = [
 			{
@@ -146,12 +135,10 @@ class Wood extends GameObject {
 			},
 		];
 
-		for (const { gradient, path } of veins) {
-			ctx.strokeStyle = gradient;
-			ctx.lineWidth = 2;
+		veins.map(({ gradient, path }) => {
 			drawSvg(ctx, { path });
-			ctx.stroke();
-		}
+			stroke(ctx, gradient, 2);
+		});
 	}
 }
 

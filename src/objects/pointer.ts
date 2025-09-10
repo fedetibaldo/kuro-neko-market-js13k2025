@@ -1,6 +1,8 @@
 import { diContainer } from "../core/di-container";
 import { GameObject } from "../core/game-object";
 import { InputServer } from "../core/input.server";
+import { ONE } from "../core/vector";
+import { stroke, traceCircle } from "../utils/draw";
 
 export class Pointer extends GameObject {
 	radius = 2;
@@ -11,9 +13,7 @@ export class Pointer extends GameObject {
 	}
 
 	override render(ctx: OffscreenCanvasRenderingContext2D) {
-		ctx.beginPath();
-		ctx.arc(0, 0, this.radius, 0, Math.PI * 2, true);
-		ctx.strokeStyle = "white";
-		ctx.stroke();
+		traceCircle(ctx, ONE.mul(-this.radius), this.radius);
+		stroke(ctx, "white");
 	}
 }

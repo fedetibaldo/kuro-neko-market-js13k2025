@@ -29,11 +29,11 @@ export class DisplayServer {
 
 		this.fitScreen();
 
-		window.onresize = () => this.fitScreen();
-		this.renderServer.on(RENDER_RENDER_EVENT, () => this.draw());
+		window.onresize = this.fitScreen;
+		this.renderServer.on(RENDER_RENDER_EVENT, this.draw);
 	}
 
-	fitScreen() {
+	fitScreen = () => {
 		const computedStyle = getComputedStyle(this.canvas);
 
 		this.canvasSize = Vector(
@@ -60,9 +60,9 @@ export class DisplayServer {
 		);
 
 		this.viewPos = this.canvasSize.diff(this.viewSize).mul(1 / 2);
-	}
+	};
 
-	draw() {
+	draw = () => {
 		const rootViewport = this.game.root;
 		this.ctx.drawImage(
 			rootViewport.canvas,
@@ -75,5 +75,5 @@ export class DisplayServer {
 			this.viewSize.x,
 			this.viewSize.y
 		);
-	}
+	};
 }

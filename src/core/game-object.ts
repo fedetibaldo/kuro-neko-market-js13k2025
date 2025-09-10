@@ -127,14 +127,6 @@ export class GameObject
 
 	render(ctx: OffscreenCanvasRenderingContext2D) {}
 
-	isFrozen(): boolean {
-		const frozen = this.frozen;
-		if (this.parent && !frozen) {
-			return this.parent.isFrozen();
-		}
-		return frozen;
-	}
-
 	getGlobalRotation(): number {
 		if (this.parent) {
 			return this.rotation + this.parent.getGlobalRotation();

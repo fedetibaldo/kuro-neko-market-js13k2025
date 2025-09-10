@@ -39,13 +39,15 @@ type LerpValue = (typeof lerpStrategies)[number] extends LerpStrategy<infer T>
 	? T
 	: never;
 
+// @ts-ignore
 export function lerp<T extends LerpValue>(from: T, to: T, progress: number): T {
 	for (const strategy of lerpStrategies as LerpStrategy<any>[]) {
 		if (strategy.is(from) && strategy.is(to)) {
 			return strategy.lerp(from, to, progress);
 		}
 	}
-	throw ""; // new Error("Lerp value did not match any strategy");
+	// yolo
+	// throw ""; // new Error("Lerp value did not match any strategy");
 }
 
 export function makeFixedTimeIncrementalLerp<T extends LerpValue>(

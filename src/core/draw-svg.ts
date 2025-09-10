@@ -200,9 +200,10 @@ export const drawSvg = (
 		const name = path.at(nextCommandIndex)!;
 		path = path.slice(nextCommandIndex + 1).trim();
 
-		if (!(name in commands)) {
-			throw ""; // new Error(`Unknown command: ${name}`);
-		}
+		// yolo
+		// if (!(name in commands)) {
+		// 	throw ""; // new Error(`Unknown command: ${name}`);
+		// }
 
 		return commands[name]!;
 	};

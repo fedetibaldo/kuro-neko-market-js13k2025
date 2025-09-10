@@ -15,8 +15,8 @@ export class Game extends Observable {
 		this.root = new Viewport({ size: viewRes });
 	}
 
-	loop(newT: number) {
-		requestAnimationFrame((newT) => this.loop(newT));
+	_loop = (newT: number) => {
+		requestAnimationFrame(this._loop);
 		if (this.root) {
 			if (this.oldT) {
 				const deltaT = newT - this.oldT;
@@ -26,9 +26,9 @@ export class Game extends Observable {
 				this.oldT = newT;
 			}
 		}
-	}
+	};
 
-	play() {
-		this.loop(0);
+	_play() {
+		this._loop(0);
 	}
 }

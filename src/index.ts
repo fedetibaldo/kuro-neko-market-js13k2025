@@ -54,6 +54,6 @@ game.root.addChildren([
 ]);
 
 // start game
-game.play();
+game._play();
 
 playMeow();
