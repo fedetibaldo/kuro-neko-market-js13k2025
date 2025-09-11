@@ -78,7 +78,7 @@ export class LevelSystem extends Observable {
 			[easyStrategy, mediumStrategy, hardStrategy, chaosStrategy] as const
 		)[difficulty];
 
-		const spawnAmount = 12 + this.freq * 3;
+		const spawnAmount = 10 + this.freq * 3;
 		this.tToSpawn = (LEVEL_DURATION - PADDING) / spawnAmount;
 
 		this.hasStarted = false;
