@@ -23,7 +23,7 @@ type NotebookArgs = GameObjectArgs;
 const size = Vector(80, 63);
 
 export class Notebook extends GameObject implements PressableInterface {
-	level: LevelSystem;
+	level = diContainer.get(LevelSystem);
 	page: number;
 	size = size;
 	origin = CENTER;
@@ -60,7 +60,6 @@ export class Notebook extends GameObject implements PressableInterface {
 
 	constructor(args: NotebookArgs) {
 		super(args);
-		this.level = diContainer.get(LevelSystem);
 		this.onPageChange(0);
 	}
 

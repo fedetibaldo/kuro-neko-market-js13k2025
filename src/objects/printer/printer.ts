@@ -1,11 +1,6 @@
 import { drawSvg } from "../../core/draw-svg";
 import { Flexbox } from "../../core/flexbox";
-import {
-	GAME_OBJECT_KILL_EVENT,
-	GameObject,
-	GameObjectArgs,
-} from "../../core/game-object";
-import { OffFunction } from "../../core/observable";
+import { GameObject, GameObjectArgs } from "../../core/game-object";
 import { unique } from "../../core/unique";
 import { CENTER, ONE, Vector, ZERO } from "../../core/vector";
 import { fill, fillRoundRect, stroke } from "../../utils/draw";
@@ -77,7 +72,6 @@ export class Printer extends GameObject {
 	rightDigit: Digit;
 	tickets: GameObject;
 	ticket: Paper;
-	listeners: OffFunction[];
 
 	constructor(args: GameObjectArgs) {
 		super(args);
@@ -119,19 +113,13 @@ export class Printer extends GameObject {
 			buttons,
 		]);
 
-		this.listeners = [
-			buttons.on(BUTTON_GROUP_VALUE_EVENT, (e: DigitValue) =>
-				this.pushValue(e)
-			),
-			buttons.on(BUTTON_GROUP_CLEAR_EVENT, () => this.reset()),
-			buttons.on(BUTTON_GROUP_SUBMIT_EVENT, () => this.onSubmit()),
-		];
-
-		this.on(GAME_OBJECT_KILL_EVENT, () => this.onKill());
+		buttons.on(BUTTON_GROUP_VALUE_EVENT, (e: DigitValue) => this.pushValue(e));
+		buttons.on(BUTTON_GROUP_CLEAR_EVENT, () => this.reset());
+		buttons.on(BUTTON_GROUP_SUBMIT_EVENT, () => this.onSubmit());
 	}
 
-	onKill() {
-		this.listeners.forEach((off) => off());
+	kill() {
+		super.kill();
 		this.leftDigit = null as any;
 		this.rightDigit = null as any;
 		this.tickets = null as any;

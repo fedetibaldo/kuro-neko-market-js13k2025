@@ -4,7 +4,7 @@ import {
 	GameObject,
 	GameObjectArgs,
 } from "../../core/game-object";
-import { CENTER, LEFT, Vector } from "../../core/vector";
+import { CENTER, Vector } from "../../core/vector";
 import {
 	DropTargetInterface,
 	PickupableInterface,
@@ -14,13 +14,11 @@ import { diContainer } from "../../core/di-container";
 import { Paper } from "../paper";
 import { FishGraphic } from "./fish-graphic";
 import { TICKET_ID } from "../printer/printer";
-import { easeOut, makeFixedTimeIncrementalLerp } from "../../core/lerp";
-import { clamp } from "../../utils/clamp";
 import { drawSvg } from "../../core/draw-svg";
 import { stroke } from "../../utils/draw";
 import { ParticleSystem } from "../../systems/particle/particle.system";
 import { Particle } from "../../systems/particle/particle";
-import { GLYPH_CROSS, GLYPH_TICK } from "../../data/glyphs";
+import { GLYPH_TICK } from "../../data/glyphs";
 import { Ray } from "../particles/ray";
 import { Cross } from "../particles/cross";
 
@@ -45,6 +43,11 @@ export class Fish
 	canBePickedUp = true;
 	origin = CENTER;
 	center: Vector;
+
+	kill() {
+		super.kill();
+		this.graphic = null as any;
+	}
 
 	constructor({ flipH = false, fishIndex, ...rest }: FishArgs) {
 		super(rest);

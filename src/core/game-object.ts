@@ -20,7 +20,6 @@ export type GameObjectArgs = {
 };
 
 export const GAME_OBJECT_MOUNT_EVENT = unique();
-export const GAME_OBJECT_KILL_EVENT = unique();
 export const GAME_OBJECT_CHILDREN_CHANGE_EVENT = unique();
 
 export class GameObject
@@ -85,7 +84,6 @@ export class GameObject
 		const children = this.children;
 		children.forEach((child) => child.kill());
 		this.children = [];
-		this.trigger(GAME_OBJECT_KILL_EVENT);
 	}
 
 	createChildren(): GameObject[] {

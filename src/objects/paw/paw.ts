@@ -147,7 +147,7 @@ export class Paw extends GameObject {
 
 	baseLayer = 1;
 
-	listeners = [
+	toDestroy = [
 		this.interactable.on(INTERACTABLE_MOVE_EVENT, (e: MoveEvent) =>
 			this.move(e)
 		),
@@ -155,6 +155,16 @@ export class Paw extends GameObject {
 			this.click(e)
 		),
 	];
+
+	kill(): void {
+		super.kill();
+		this.toDestroy.map((off) => off());
+		this.heldItem = null;
+		this.graphic = null as any;
+		this.nail = null as any;
+		this.paw = null as any;
+		this.stagingArea = null as any;
+	}
 
 	move({ hoveredItem, point }: MoveEvent) {
 		this.latestMoveArgs = { hoveredItem, point };

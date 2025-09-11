@@ -2,6 +2,7 @@ import { diContainer } from "../core/di-container";
 import { Flexbox } from "../core/flexbox";
 import { Game } from "../core/game";
 import { GameObject, GameObjectArgs } from "../core/game-object";
+import { OffFunction } from "../core/observable";
 import { TOP_RIGHT, Vector } from "../core/vector";
 import { RESULTS_SCREEN } from "../data/screens";
 import { DropTargetInterface } from "../systems/interactable/interactable.types";
@@ -50,6 +51,13 @@ export class Level extends GameObject {
 		belt.addChild(fish);
 	}
 
+	toDestroy: OffFunction[];
+
+	kill() {
+		super.kill();
+		this.toDestroy.map((off) => off());
+	}
+
 	constructor() {
 		super();
 
@@ -57,16 +65,18 @@ export class Level extends GameObject {
 		this.level = diContainer.get(LevelSystem);
 		this.level.start();
 
-		this.level.on(LEVEL_END_EVENT, () =>
-			diContainer.get(ScreenSystem).to(RESULTS_SCREEN)
-		);
-		this.level.on(LEVEL_SPAWN_EVENT, (idx: number) => this.onSpawn(idx));
-		this.level.on(LEVEL_TICK_EVENT, (time: number) =>
-			(this.getChild("timer") as Counter).setValue(Math.floor(time))
-		);
-		this.level.on(LEVEL_SCORE_EVENT, (score: number) =>
-			(this.getChild("score") as Counter).setValue(score)
-		);
+		this.toDestroy = [
+			this.level.on(LEVEL_END_EVENT, () =>
+				diContainer.get(ScreenSystem).to(RESULTS_SCREEN)
+			),
+			this.level.on(LEVEL_SPAWN_EVENT, (idx: number) => this.onSpawn(idx)),
+			this.level.on(LEVEL_TICK_EVENT, (time: number) =>
+				(this.getChild("timer") as Counter).setValue(Math.floor(time))
+			),
+			this.level.on(LEVEL_SCORE_EVENT, (score: number) =>
+				(this.getChild("score") as Counter).setValue(score)
+			),
+		];
 
 		const beltSize = Vector(game.root.size.x, 40);
 		const beltPosition = Vector(0, 110);

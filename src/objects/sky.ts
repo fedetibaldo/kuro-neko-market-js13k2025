@@ -1,9 +1,5 @@
 import { diContainer } from "../core/di-container";
-import {
-	GAME_OBJECT_KILL_EVENT,
-	GameObject,
-	GameObjectArgs,
-} from "../core/game-object";
+import { GameObject } from "../core/game-object";
 import { BOTTOM, Vector, ZERO } from "../core/vector";
 import {
 	LEVEL_DURATION,
@@ -17,18 +13,16 @@ import { rotateAroundOrigin } from "../utils/origin-helper";
 export class Sky extends GameObject {
 	sunAngle = Math.PI;
 
-	constructor(args: GameObjectArgs) {
-		super(args);
-		const level = diContainer.get(LevelSystem);
-		this.on(
-			GAME_OBJECT_KILL_EVENT,
-			level.on(LEVEL_TICK_EVENT, this.onLevelTick)
-		);
-	}
-
 	onLevelTick = (t: number): void => {
 		this.sunAngle = Math.PI - (Math.PI / LEVEL_DURATION) * t;
 	};
+
+	toKill = diContainer.get(LevelSystem).on(LEVEL_TICK_EVENT, this.onLevelTick);
+
+	kill() {
+		super.kill();
+		this.toKill();
+	}
 
 	render(ctx: OffscreenCanvasRenderingContext2D): void {
 		fillRect(
