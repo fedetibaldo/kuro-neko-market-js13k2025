@@ -30,7 +30,6 @@ export class Results extends GameObject {
 	moneyLine: Flexbox;
 	percentLine: Flexbox;
 	fishes: GameObject[];
-	maxScoreCounter: Counter;
 	scoreCounter: Counter;
 
 	revealLerp: IncrementalLerp<number>;
@@ -46,11 +45,6 @@ export class Results extends GameObject {
 		const rows = Math.ceil(spawnedFish.length / fishPerRow);
 		const monoSpacedSize = Vector(50, 80);
 		const rowHeight = monoSpacedSize.y;
-
-		this.maxScoreCounter = new Counter({
-			glyphFontSize: 32,
-			svgStrokeColor: "#301802",
-		});
 
 		this.scoreCounter = new Counter({
 			glyphFontSize: 32,
@@ -72,7 +66,11 @@ export class Results extends GameObject {
 					size: Vector(9, 9),
 					svgStrokeColor: "#AA590F",
 				}),
-				this.maxScoreCounter,
+				new Counter({
+					glyphFontSize: 32,
+					value: this.level.getMaximumScore(),
+					svgStrokeColor: "#301802",
+				}),
 				new CurrencySign({
 					glyphFontSize: 32,
 					svgStrokeColor: "#AA590F",
@@ -175,9 +173,6 @@ export class Results extends GameObject {
 
 	update(deltaT: number): void {
 		const progress = this.revealLerp(deltaT);
-		this.maxScoreCounter.setValue(
-			Math.floor(this.level.getMaximumScore() * progress)
-		);
 		let correctFishes = 0;
 		this.fishes.map((fish, idx, arr) => {
 			fish.scale = clamp(progress * arr.length - idx, 0, 1);

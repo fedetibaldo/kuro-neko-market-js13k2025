@@ -5,15 +5,12 @@ import { ONE } from "../core/vector";
 import { stroke, traceCircle } from "../utils/draw";
 
 export class Pointer extends GameObject {
-	radius = 2;
-	input = diContainer.get(InputServer);
-
 	override update(deltaT: number): void {
-		this.pos = this.input.mousePos;
+		this.pos = diContainer.get(InputServer).mousePos;
 	}
 
 	override render(ctx: OffscreenCanvasRenderingContext2D) {
-		traceCircle(ctx, ONE.mul(-this.radius), this.radius);
+		traceCircle(ctx, ONE.mul(-2), 2);
 		stroke(ctx, "white");
 	}
 }

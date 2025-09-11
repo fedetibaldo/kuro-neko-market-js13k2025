@@ -13,7 +13,11 @@ import { playMeow } from "./utils/play-meow";
 import { DriftSystem } from "./systems/drift/drift.system";
 import { LevelSystem } from "./systems/level/level.system";
 import { Results } from "./objects/results/results";
-import { LEVEL_SCREEN, RESULTS_SCREEN } from "./data/screens";
+import {
+	LEVEL_SCREEN,
+	LEVEL_SELECT_SCREEN,
+	RESULTS_SCREEN,
+} from "./data/screens";
 import { ScreenSystem } from "./systems/screen/screen.system";
 import { ScreenTransitionContainer } from "./systems/screen/screen-transition-container";
 import { LevelSelect } from "./objects/level-select";
@@ -37,6 +41,7 @@ diContainer.set(LevelSystem, new LevelSystem());
 diContainer.set(
 	ScreenSystem,
 	new ScreenSystem({
+		[LEVEL_SELECT_SCREEN]: LevelSelect,
 		[LEVEL_SCREEN]: Level,
 		[RESULTS_SCREEN]: Results,
 	})

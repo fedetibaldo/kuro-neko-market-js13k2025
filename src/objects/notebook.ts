@@ -288,11 +288,11 @@ class FishSilhouette extends GameObject {
 		stroke(ctx, "#3A1141", 2);
 		drawSvg(ctx, { path: this.tail });
 		stroke(ctx);
-		for (const [diameter, pos] of this.eyes) {
+		this.eyes.map(([diameter, pos]) => {
 			const radius = (diameter + 2) / 2;
 			traceCircle(ctx, pos, radius);
 			stroke(ctx);
-		}
+		});
 	}
 }
 

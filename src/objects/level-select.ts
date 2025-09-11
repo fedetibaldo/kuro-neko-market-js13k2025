@@ -6,7 +6,7 @@ import { INPUT_MOUSEDOWN_EVENT, InputServer } from "../core/input.server";
 import { OffFunction } from "../core/observable";
 import { TOP_LEFT, Vector, ZERO } from "../core/vector";
 import { fishTypes } from "../data/fish-types";
-import { GLYPH_PLAY } from "../data/glyphs";
+import { GLYPH_PERCENT, GLYPH_PLAY } from "../data/glyphs";
 import { LEVEL_SCREEN } from "../data/screens";
 import {
 	FishTypeIndex,
@@ -19,6 +19,7 @@ import { makePattern } from "../utils/pattern";
 import { randomFloat } from "../utils/random";
 import { range } from "../utils/range";
 import { getStored, setStored } from "../utils/storage";
+import { Counter } from "./counter";
 import { Digit, DigitValue } from "./digit";
 import { FishGraphic } from "./fish/fish-graphic";
 import { Glyph } from "./glyph";
@@ -49,12 +50,12 @@ export class LevelSelect extends GameObject {
 			new Flexbox({
 				size: this.game.root.size,
 				direction: "col",
-				spaceBetween: 12,
+				spaceBetween: 16,
 				children: [
 					...levels.map(
 						(level, index) =>
 							new Card({
-								levelNumber: index + 1,
+								levelIndex: index,
 								level,
 							})
 					),
@@ -104,14 +105,14 @@ class ActiveSurface extends InactiveSurface {
 
 type CardArgs = GameObjectArgs & {
 	isEditable?: boolean;
-	levelNumber?: number;
+	levelIndex?: number;
 	level: LevelInfo;
 };
 
 class Card extends GameObject {
 	size = Vector(296, 32);
 	isEditable: boolean;
-	levelNumber?: number;
+	levelIndex?: number;
 
 	fishes: FishGraphic[];
 	difficultyGraphic: DifficultyGraphic;
@@ -139,7 +140,9 @@ class Card extends GameObject {
 	}
 
 	playLevel() {
-		diContainer.get(LevelSystem).init(...this.getLevelAttributes());
+		diContainer
+			.get(LevelSystem)
+			.init(...this.getLevelAttributes(), this.levelIndex);
 		diContainer.get(ScreenSystem).to(LEVEL_SCREEN);
 	}
 
@@ -171,9 +174,9 @@ class Card extends GameObject {
 		);
 	}
 
-	constructor({ isEditable = false, levelNumber, level, ...rest }: CardArgs) {
+	constructor({ isEditable = false, levelIndex, level, ...rest }: CardArgs) {
 		super(rest);
-		this.levelNumber = levelNumber;
+		this.levelIndex = levelIndex;
 		this.isEditable = isEditable;
 
 		const DynamicSurface = isEditable ? ActiveSurface : InactiveSurface;
@@ -270,14 +273,15 @@ class Card extends GameObject {
 							children: [
 								new Flexbox({
 									size: Vector(40, 24),
-									children: levelNumber
-										? [
-												new Digit({
-													value: levelNumber as DigitValue,
-													svgStrokeColor: "#FEE2E2",
-												}),
-										  ]
-										: [new NumberLevelPlaceholder()],
+									children:
+										levelIndex != void 0
+											? [
+													new Digit({
+														value: (levelIndex + 1) as DigitValue,
+														svgStrokeColor: "#FEE2E2",
+													}),
+											  ]
+											: [new NumberLevelPlaceholder()],
 								}),
 							],
 						}),
@@ -307,6 +311,29 @@ class Card extends GameObject {
 		});
 
 		this.addChildren([container]);
+
+		if (levelIndex != void 0) {
+			this.addChild(
+				new BestScore({
+					size: Vector(40, 13),
+					pos: Vector(6, 26),
+					// spaceBetween: -1,
+					children: [
+						new Counter({
+							// glyphFontSize: 10,
+							value: Math.floor(
+								(getStored<number[]>("s")[levelIndex] ?? 0) * 100
+							),
+						}),
+						new Glyph({
+							// glyphFontSize: 10,
+							path: GLYPH_PERCENT,
+							size: Vector(10, 9),
+						}),
+					],
+				})
+			);
+		}
 	}
 }
 
@@ -389,5 +416,11 @@ class NumberLevelPlaceholder extends GameObject {
 		fillCircle(ctx, ZERO, 2, "#FEE2E2");
 		fillCircle(ctx, Vector(6, 0), 2);
 		fillCircle(ctx, Vector(12, 0), 2);
+	}
+}
+
+class BestScore extends Flexbox {
+	render(ctx: OffscreenCanvasRenderingContext2D): void {
+		fillRoundRect(ctx, ZERO, this.size, 2, "#FEE2E2");
 	}
 }

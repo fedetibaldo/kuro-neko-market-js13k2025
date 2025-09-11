@@ -14,6 +14,7 @@ import {
 import { scoreFish } from "./score-fish";
 import { unique } from "../../core/unique";
 import { range } from "../../utils/range";
+import { getStored, setStored } from "../../utils/storage";
 
 export type FishTypeIndex = 0 | 1 | 2;
 export type LevelSpawnFrequency = 0 | 1 | 2;
@@ -40,6 +41,7 @@ export class LevelSystem extends Observable {
 	fishTypes: FishType[];
 	freq: LevelSpawnFrequency;
 	difficulty: LevelDifficulty;
+	levelIndex: number | undefined;
 
 	// Computed from init args
 	scoringVariants: ScoringVariants[];
@@ -62,11 +64,13 @@ export class LevelSystem extends Observable {
 	init(
 		fishTypeIndices: FishTypeIndex[],
 		freq: LevelSpawnFrequency,
-		difficulty: LevelDifficulty
+		difficulty: LevelDifficulty,
+		levelIndex?: number
 	) {
 		this.fishTypes = fishTypeIndices.map((idx) => fishTypes[idx]!);
 		this.freq = freq;
 		this.difficulty = difficulty;
+		this.levelIndex = levelIndex;
 
 		this.scoringVariants = chooseVariants(this.fishTypes);
 
@@ -74,7 +78,7 @@ export class LevelSystem extends Observable {
 			[easyStrategy, mediumStrategy, hardStrategy, chaosStrategy] as const
 		)[difficulty];
 
-		const spawnAmount = 8 + this.freq * 4;
+		const spawnAmount = 12 + this.freq * 3;
 		this.tToSpawn = (LEVEL_DURATION - PADDING) / spawnAmount;
 
 		this.hasStarted = false;
@@ -117,6 +121,14 @@ export class LevelSystem extends Observable {
 
 		if (this.totT > LEVEL_DURATION) {
 			this.hasEnded = true;
+			if (this.levelIndex != void 0) {
+				const scores = getStored<number[]>("s") ?? [];
+				scores[this.levelIndex] = Math.max(
+					this.getScore() / this.getMaximumScore(),
+					scores[this.levelIndex] ?? 0
+				);
+				setStored("s", scores);
+			}
 			this.trigger(LEVEL_END_EVENT);
 			return;
 		}
