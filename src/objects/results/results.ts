@@ -7,10 +7,12 @@ import {
 	IncrementalLerp,
 	makeFixedTimeIncrementalLerp,
 } from "../../core/lerp";
-import { BOTTOM, CENTER, TOP, Vector, ZERO } from "../../core/vector";
+import { BOTTOM, CENTER, ONE, TOP, Vector, ZERO } from "../../core/vector";
 import { GLYPH_PERCENT, GLYPH_SLASH, GLYPH_TICK } from "../../data/glyphs";
+import { LEVEL_SELECT_SCREEN } from "../../data/screens";
 import { LevelSystem } from "../../systems/level/level.system";
 import { ParticleSystem } from "../../systems/particle/particle.system";
+import { ScreenSystem } from "../../systems/screen/screen.system";
 import { clamp } from "../../utils/clamp";
 import { fillRect } from "../../utils/draw";
 import { makePattern } from "../../utils/pattern";
@@ -22,6 +24,8 @@ import { FishGraphic } from "../fish/fish-graphic";
 import { Glyph } from "../glyph";
 import { Ray } from "../particles/ray";
 import { DIAMOND_ID } from "../patterns/diamond";
+import { ActiveSurface, SURFACE_CLICK } from "../surface";
+import { Svg } from "../svg";
 
 export class Results extends GameObject {
 	game: Game;
@@ -34,6 +38,14 @@ export class Results extends GameObject {
 
 	revealLerp: IncrementalLerp<number>;
 	percentLerp: IncrementalLerp<number> | undefined;
+
+	kill() {
+		super.kill();
+		this.moneyLine = null as any;
+		this.percentLine = null as any;
+		this.fishes = [];
+		this.scoreCounter = null as any;
+	}
 
 	constructor() {
 		super();
@@ -166,6 +178,29 @@ export class Results extends GameObject {
 				],
 			}),
 		]);
+
+		const backButtonSize = Vector(40, 40);
+		const backButton = new ActiveSurface({
+			pos: Vector(160, 188),
+			radius: 20,
+			size: backButtonSize,
+			children: [
+				new Flexbox({
+					size: backButtonSize,
+					children: [
+						new Svg({
+							size: Vector(20, 16),
+							path: "M7 2h11M7 8h11M7 14h11M3 8H1.5M3 14H1.5M3 2H1.5",
+							svgLineWidth: 3,
+						}),
+					],
+				}),
+			],
+		});
+		backButton.on(SURFACE_CLICK, () =>
+			diContainer.get(ScreenSystem).to(LEVEL_SELECT_SCREEN)
+		);
+		this.addChild(backButton);
 	}
 
 	waitT = 0;

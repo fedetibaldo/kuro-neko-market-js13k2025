@@ -25,6 +25,7 @@ import { FishGraphic } from "./fish/fish-graphic";
 import { Glyph } from "./glyph";
 import { DIAMOND_ID } from "./patterns/diamond";
 import { WAVE_ID } from "./patterns/wave";
+import { ActiveSurface, InactiveSurface, SURFACE_CLICK } from "./surface";
 
 const buttonSize = Vector(36, 24);
 
@@ -79,30 +80,6 @@ class Bg extends GameObject {
 	}
 }
 
-type InactiveSurfaceArgs = GameObjectArgs & {
-	radius: number;
-};
-
-class InactiveSurface extends GameObject {
-	radius: number;
-
-	constructor({ radius, ...rest }: InactiveSurfaceArgs) {
-		super(rest);
-		this.radius = radius;
-	}
-	render(ctx: OffscreenCanvasRenderingContext2D): void {
-		fillRoundRect(ctx, ZERO, this.size, this.radius, "#560A0A55");
-	}
-}
-
-class ActiveSurface extends InactiveSurface {
-	render(ctx: OffscreenCanvasRenderingContext2D): void {
-		fillRoundRect(ctx, Vector(0, 2), this.size, this.radius, "#000000dd");
-		fillRoundRect(ctx, ZERO, this.size, this.radius, "#FF9838DD");
-		stroke(ctx, "white");
-	}
-}
-
 type CardArgs = GameObjectArgs & {
 	isEditable?: boolean;
 	levelIndex?: number;
@@ -111,8 +88,6 @@ type CardArgs = GameObjectArgs & {
 
 class Card extends GameObject {
 	size = Vector(296, 32);
-	isEditable: boolean;
-	levelIndex?: number;
 
 	fishes: FishGraphic[];
 	difficultyGraphic: DifficultyGraphic;
@@ -139,13 +114,6 @@ class Card extends GameObject {
 		] as LevelAttributes;
 	}
 
-	playLevel() {
-		diContainer
-			.get(LevelSystem)
-			.init(...this.getLevelAttributes(), this.levelIndex);
-		diContainer.get(ScreenSystem).to(LEVEL_SCREEN);
-	}
-
 	toggleFishTypeIndex(idx: FishTypeIndex) {
 		const isNextEnabled = !this.fishTypeIndices.includes(idx);
 		if (isNextEnabled) {
@@ -162,22 +130,20 @@ class Card extends GameObject {
 		this.actionButton.opacity = isValid ? 1 : 0.5;
 	}
 
-	cycleSpeed() {
+	cycleSpeed = () => {
 		this.speedGraphic.setValue(
 			((this.speedGraphic.value + 1) % 3) as DigitValue
 		);
-	}
+	};
 
-	cycleDifficulty() {
+	cycleDifficulty = () => {
 		this.difficultyGraphic.setValue(
 			((this.difficultyGraphic.value + 1) % 4) as DigitValue
 		);
-	}
+	};
 
 	constructor({ isEditable = false, levelIndex, level, ...rest }: CardArgs) {
 		super(rest);
-		this.levelIndex = levelIndex;
-		this.isEditable = isEditable;
 
 		const DynamicSurface = isEditable ? ActiveSurface : InactiveSurface;
 
@@ -200,6 +166,7 @@ class Card extends GameObject {
 				new Flexbox({ size: buttonSize, children: [this.difficultyGraphic] }),
 			],
 		});
+		difficultyButton.on(SURFACE_CLICK, this.cycleDifficulty);
 
 		this.speedGraphic = new SpeedGraphic({ size: buttonSize });
 		this.speedGraphic.setValue(level[1]);
@@ -208,6 +175,7 @@ class Card extends GameObject {
 			size: buttonSize,
 			children: [this.speedGraphic],
 		});
+		difficultyButton.on(SURFACE_CLICK, this.cycleSpeed);
 
 		this.actionButton = new ActiveSurface({
 			radius: 12,
@@ -227,6 +195,14 @@ class Card extends GameObject {
 			],
 			opacity: 0.5,
 		});
+		this.actionButton.on(SURFACE_CLICK, () => {
+			if (this.actionButton.opacity == 1) {
+				diContainer
+					.get(LevelSystem)
+					.init(...this.getLevelAttributes(), levelIndex);
+				diContainer.get(ScreenSystem).to(LEVEL_SCREEN);
+			}
+		});
 
 		for (const enabledIdx of level[0]) {
 			this.toggleFishTypeIndex(enabledIdx);
@@ -235,24 +211,12 @@ class Card extends GameObject {
 		this.mouseDownListener = diContainer
 			.get(InputServer)
 			.on(INPUT_MOUSEDOWN_EVENT, ({ pos }) => {
-				if (
-					this.actionButton.opacity == 1 &&
-					this.actionButton.isPointWithinObject(pos)
-				) {
-					this.playLevel();
-				}
 				if (isEditable) {
 					this.fishes.map((fish, idx) => {
 						if (fish.isPointWithinObject(pos)) {
 							this.toggleFishTypeIndex(idx as FishTypeIndex);
 						}
 					});
-					if (difficultyButton.isPointWithinObject(pos)) {
-						this.cycleDifficulty();
-					}
-					if (speedButton.isPointWithinObject(pos)) {
-						this.cycleSpeed();
-					}
 					// Save level
 					setStored("c", [...this.getLevelAttributes(), 0]);
 				}

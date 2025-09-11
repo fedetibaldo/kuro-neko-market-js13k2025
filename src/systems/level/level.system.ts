@@ -13,8 +13,8 @@ import {
 } from "./choose-fish";
 import { scoreFish } from "./score-fish";
 import { unique } from "../../core/unique";
-import { range } from "../../utils/range";
 import { getStored, setStored } from "../../utils/storage";
+import { range } from "../../utils/range";
 
 export type FishTypeIndex = 0 | 1 | 2;
 export type LevelSpawnFrequency = 0 | 1 | 2;
