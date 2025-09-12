@@ -108,7 +108,7 @@ class Card extends GameObject {
 
 	getLevelAttributes(): LevelAttributes {
 		return [
-			this.fishTypeIndices,
+			this.fishTypeIndices.sort(),
 			this.speedGraphic.value,
 			this.difficultyGraphic.value,
 		] as LevelAttributes;
@@ -175,7 +175,7 @@ class Card extends GameObject {
 			size: buttonSize,
 			children: [this.speedGraphic],
 		});
-		difficultyButton.on(SURFACE_CLICK, this.cycleSpeed);
+		speedButton.on(SURFACE_CLICK, this.cycleSpeed);
 
 		this.actionButton = new ActiveSurface({
 			radius: 12,
@@ -286,7 +286,7 @@ class Card extends GameObject {
 						new Counter({
 							// glyphFontSize: 10,
 							value: Math.floor(
-								(getStored<number[]>("s")[levelIndex] ?? 0) * 100
+								((getStored<number[]>("s") ?? [])[levelIndex] ?? 0) * 100
 							),
 						}),
 						new Glyph({
