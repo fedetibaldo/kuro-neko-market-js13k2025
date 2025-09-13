@@ -72,7 +72,7 @@ export class Fish
 	}
 
 	attemptScore() {
-		if (this.parent?.id != BELT_ID) return;
+		if (this.father?.id != BELT_ID) return;
 		const ticket = this.getChild<Paper>(TICKET_ID);
 		if (!ticket) return;
 		const value = ticket.value;

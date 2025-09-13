@@ -1,13 +1,16 @@
-import { GAME_OBJECT_CHILDREN_CHANGE_EVENT, GameObject } from "./game-object";
+import {
+	GAME_OBJECT_CHILDREN_CHANGE_EVENT,
+	GameObject,
+	GameObjectArgs,
+} from "./game-object";
 import { Vector } from "./vector";
 
-export type FlexboxArgs = {
+export type FlexboxArgs = GameObjectArgs & {
 	direction?: "row" | "col";
 	mode?: "fixed" | "hug";
 	spaceBetween?: number;
 	align?: "start" | "center" | "end";
 	justify?: "start" | "center" | "end";
-	[x: string]: any;
 };
 
 export class Flexbox extends GameObject {
@@ -41,14 +44,14 @@ export class Flexbox extends GameObject {
 		const direction = Vector(mainAxis == "x" ? 1 : 0, mainAxis == "y" ? 1 : 0);
 		let maxSecondarySize = 0;
 
-		const childrenCumulativeSize = this.children.reduce((size, child) => {
+		const childrenCumulativeSize = this.heirs.reduce((size, child) => {
 			const childSize = child.size.mul(child.scale);
 			maxSecondarySize = Math.max(maxSecondarySize, childSize[secondaryAxis]);
 			return size.add(childSize);
 		}, Vector());
 		const spaceBetweenVector = direction.mul(this.spaceBetween);
 		const childrenTotalSize = childrenCumulativeSize.add(
-			spaceBetweenVector.mul(this.children.length - 1)
+			spaceBetweenVector.mul(this.heirs.length - 1)
 		);
 		if (this.mode == "hug") {
 			const newSize = Vector(
@@ -60,7 +63,7 @@ export class Flexbox extends GameObject {
 				.diff(newSize.mulv(this.origin));
 			this.size = newSize;
 			// Dirty, but works
-			this.parent?.trigger(GAME_OBJECT_CHILDREN_CHANGE_EVENT);
+			this.father?.trigger(GAME_OBJECT_CHILDREN_CHANGE_EVENT);
 		}
 
 		let mainOffset = 0;
@@ -77,7 +80,7 @@ export class Flexbox extends GameObject {
 			mainOffset = this.size.diff(childrenTotalSize)[mainAxis];
 		}
 
-		this.children.map((child) => {
+		this.heirs.map((child) => {
 			/* The secondary axis offset is local and child-dependent */
 
 			// align == 'start' -> offset[secondaryAxis] = 0 (already is)

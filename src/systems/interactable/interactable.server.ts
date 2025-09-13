@@ -75,7 +75,7 @@ export class InteractableServer extends Observable {
 				if (isDropTarget(obj) && obj.canHost) {
 					passiveItems.push(obj);
 				}
-				return obj.children;
+				return obj.heirs;
 			});
 
 			this.hoveredItem =

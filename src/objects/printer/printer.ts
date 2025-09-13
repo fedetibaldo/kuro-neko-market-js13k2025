@@ -85,7 +85,7 @@ export class Printer extends GameObject {
 
 		this.ticket = new Paper({ id: TICKET_ID, pos: Vector(-2, 29) });
 		this.tickets = new GameObject({
-			children: [this.ticket],
+			heirs: [this.ticket],
 		});
 
 		this.leftDigit = new Digit({
@@ -111,7 +111,7 @@ export class Printer extends GameObject {
 				direction: "row",
 				align: "start",
 				justify: "center",
-				children: [this.leftDigit, this.rightDigit],
+				heirs: [this.leftDigit, this.rightDigit],
 			}),
 			buttons,
 		]);

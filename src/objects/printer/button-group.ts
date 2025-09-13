@@ -30,7 +30,7 @@ export class ButtonGroupButton
 	}
 
 	press() {
-		const [child] = this.children;
+		const [child] = this.heirs;
 		if (child instanceof Digit) {
 			this.trigger(BUTTON_VALUE_EVENT, child.value);
 		}
@@ -51,7 +51,7 @@ export class ButtonGroup extends GameObject {
 			const value = idx as DigitValue;
 			const button = new ButtonGroupButton({
 				size: buttonSize,
-				children: [
+				heirs: [
 					new Digit({
 						color: activeColor,
 						glyphFontSize: fontSize,
@@ -69,7 +69,7 @@ export class ButtonGroup extends GameObject {
 
 		const clearButton = new ButtonGroupButton({
 			size: lastRowButtonSize,
-			children: [
+			heirs: [
 				new Glyph({
 					svgStrokeColor: "#8B2325",
 					path: GLYPH_CROSS,
@@ -85,7 +85,7 @@ export class ButtonGroup extends GameObject {
 
 		const submitButton = new ButtonGroupButton({
 			size: lastRowButtonSize.add(Vector(10, 0)),
-			children: [
+			heirs: [
 				new Glyph({
 					svgStrokeColor: "#10A11A",
 					path: GLYPH_TICK,
@@ -106,7 +106,7 @@ export class ButtonGroup extends GameObject {
 				direction: "col",
 				justify: "start",
 				spaceBetween,
-				children: [
+				heirs: [
 					...range(3).map(
 						(row) =>
 							new Flexbox({
@@ -115,7 +115,7 @@ export class ButtonGroup extends GameObject {
 								direction: "row",
 								justify: "start",
 								spaceBetween,
-								children: buttons.slice(1 + row * 3, 1 + row * 3 + 3),
+								heirs: buttons.slice(1 + row * 3, 1 + row * 3 + 3),
 							})
 					),
 					new Flexbox({
@@ -124,7 +124,7 @@ export class ButtonGroup extends GameObject {
 						direction: "row",
 						justify: "start",
 						spaceBetween,
-						children: [clearButton, buttons[0]!, submitButton],
+						heirs: [clearButton, buttons[0]!, submitButton],
 					}),
 				],
 			}),

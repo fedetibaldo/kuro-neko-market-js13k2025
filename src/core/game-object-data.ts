@@ -1,12 +1,12 @@
 import { Vector } from "./vector";
 
 export type GameObjectData = {
-	parent: GameObjectData | undefined;
+	father: GameObjectData | undefined;
 	pos: Vector;
 	size: Vector;
 	scale: number;
 	rotation: number;
-	children: GameObjectData[];
+	heirs: GameObjectData[];
 	origin: Vector;
 	opacity: number;
 };

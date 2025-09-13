@@ -1,5 +1,5 @@
 // prettier-ignore
-export const SEAGULL_SOUND = [.2,,1e3,,,,1,4,1.2,,-100,.06,,,1,,.19,,.02,,1e3];
+export const SEAGULL_SOUND = [.2,,1.5e3,,,,1,4,1.2,,-100,.06,,,1,,.19,,.02,,1e3];
 // prettier-ignore
 export const WAVE_SOUND = [.1,,,2,,3,4,,,,,,,20,,,,.8,.2,,1e3];
 // prettier-ignore

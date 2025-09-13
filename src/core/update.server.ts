@@ -24,7 +24,7 @@ export class UpdateServer {
 					}
 					obj.update(deltaT);
 				}
-				return obj.children;
+				return obj.heirs;
 			});
 	}
 }

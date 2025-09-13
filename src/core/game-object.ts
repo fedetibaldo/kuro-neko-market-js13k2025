@@ -14,7 +14,7 @@ export type GameObjectArgs = {
 	origin?: Vector;
 	size?: Vector;
 	frozen?: boolean;
-	children?: GameObject[];
+	heirs?: GameObject[];
 	pointCheckTolerance?: Vector;
 	[k: string]: unknown;
 };
@@ -28,7 +28,7 @@ export class GameObject
 {
 	[k: string]: unknown;
 
-	parent: GameObject | undefined;
+	father: GameObject | undefined;
 
 	id: string | symbol;
 	pos: Vector;
@@ -38,7 +38,7 @@ export class GameObject
 	origin: Vector;
 	size: Vector;
 	frozen: boolean;
-	children: GameObject[];
+	heirs: GameObject[];
 	pointCheckTolerance: Vector;
 
 	constructor({
@@ -49,7 +49,7 @@ export class GameObject
 		origin = TOP_LEFT,
 		rotation = 0,
 		frozen = false,
-		children = [],
+		heirs = [],
 		pointCheckTolerance = ZERO,
 		...unknownOptions
 	}: GameObjectArgs = {}) {
@@ -67,41 +67,41 @@ export class GameObject
 		/**
 		 * @type {GameObject[]}
 		 */
-		this.children = [];
+		this.heirs = [];
 
 		for (let key in unknownOptions) {
 			this[key] = unknownOptions[key];
 		}
 
-		this.addChildren(children || []);
+		this.addChildren(heirs || []);
 	}
 
 	kill() {
 		super.kill();
-		if (this.parent) {
-			this.parent.removeChild(this);
+		if (this.father) {
+			this.father.removeChild(this);
 		}
-		const children = this.children;
+		const children = this.heirs;
 		children.map((child) => child.kill());
-		this.children = [];
+		this.heirs = [];
 	}
 
-	addChildren(children: GameObject[]) {
-		children.map((child) => this.addChild(child));
+	addChildren(heirs: GameObject[]) {
+		heirs.map((child) => this.addChild(child));
 	}
 
-	addChild(child: GameObject, index = this.children.length) {
-		if (child.parent) {
-			child.parent.removeChild(child);
+	addChild(child: GameObject, index = this.heirs.length) {
+		if (child.father) {
+			child.father.removeChild(child);
 		}
-		child.parent = this;
-		this.children.splice(index, 0, child);
+		child.father = this;
+		this.heirs.splice(index, 0, child);
 		child.trigger(GAME_OBJECT_MOUNT_EVENT);
 		this.trigger(GAME_OBJECT_CHILDREN_CHANGE_EVENT);
 	}
 
 	getChild<T extends GameObject>(id: string | symbol): T | undefined {
-		for (const child of this.children) {
+		for (const child of this.heirs) {
 			if (child.id === id) {
 				return child as T;
 			}
@@ -113,7 +113,7 @@ export class GameObject
 	}
 
 	removeChild(toRemove: GameObject) {
-		this.children = this.children.filter((child) => child !== toRemove);
+		this.heirs = this.heirs.filter((child) => child !== toRemove);
 		this.trigger(GAME_OBJECT_CHILDREN_CHANGE_EVENT);
 	}
 
@@ -122,16 +122,16 @@ export class GameObject
 	render(ctx: OffscreenCanvasRenderingContext2D) {}
 
 	getGlobalRotation(): number {
-		if (this.parent) {
-			return this.rotation + this.parent.getGlobalRotation();
+		if (this.father) {
+			return this.rotation + this.father.getGlobalRotation();
 		} else {
 			return this.rotation;
 		}
 	}
 
 	getGlobalScale(): number {
-		if (this.parent) {
-			return this.scale * this.parent.getGlobalScale();
+		if (this.father) {
+			return this.scale * this.father.getGlobalScale();
 		} else {
 			return this.scale;
 		}
@@ -140,18 +140,18 @@ export class GameObject
 	getGlobalPosition(): Vector {
 		const pos = this.pos;
 
-		if (!this.parent) {
+		if (!this.father) {
 			return pos;
 		}
 
-		const parentOrigin = this.parent.size.mulv(this.parent.origin);
+		const parentOrigin = this.father.size.mulv(this.father.origin);
 		const positionInParent = rotateAroundOrigin(
-			scaleFromOrigin(pos, this.parent.getGlobalScale(), parentOrigin),
-			this.parent.getGlobalRotation(),
+			scaleFromOrigin(pos, this.father.getGlobalScale(), parentOrigin),
+			this.father.getGlobalRotation(),
 			parentOrigin
 		);
 
-		return positionInParent.add(this.parent.getGlobalPosition());
+		return positionInParent.add(this.father.getGlobalPosition());
 	}
 
 	project(obj: GameObject) {

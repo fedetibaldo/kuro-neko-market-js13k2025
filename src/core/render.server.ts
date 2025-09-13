@@ -26,7 +26,7 @@ export class RenderServer extends Observable {
 	}
 
 	renderViewport(viewport: RendererInterface) {
-		viewport.children.map((child) => {
+		viewport.heirs.map((child) => {
 			this.renderObject(viewport.ctx, child);
 		});
 
@@ -97,7 +97,7 @@ export class RenderServer extends Observable {
 			obj.render(ctx);
 		}
 
-		obj.children.map((child) => {
+		obj.heirs.map((child) => {
 			this.renderObject(ctx, child);
 		});
 

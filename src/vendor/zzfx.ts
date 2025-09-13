@@ -89,7 +89,7 @@ export const ZZFX = {
 };
 
 // play an array of samples
-const playSamples = (
+export const playSamples = (
 	sampleChannels: [number[]],
 	volumeScale = 1,
 	rate = 1,
@@ -127,7 +127,7 @@ const playSamples = (
 };
 
 // build an array of samples
-const buildSamples = (
+export const buildSamples = (
 	volume = 1,
 	randomness = 0.05,
 	frequency = 220,

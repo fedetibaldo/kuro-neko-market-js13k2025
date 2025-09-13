@@ -20,5 +20,5 @@ class Wave extends GameObject {
 export const wavePattern = new Viewport({
 	id: WAVE_ID,
 	size: Vector(16, 16),
-	children: [new Wave()],
+	heirs: [new Wave()],
 });

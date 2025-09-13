@@ -145,5 +145,5 @@ class Wood extends GameObject {
 export const woodPattern = new Viewport({
 	id: WOOD_ID,
 	size: Vector(60, 60),
-	children: [new Wood()],
+	heirs: [new Wood()],
 });

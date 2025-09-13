@@ -16,7 +16,6 @@ import {
 import { ScreenSystem } from "../systems/screen/screen.system";
 import { fillCircle, fillRect, fillRoundRect, stroke } from "../utils/draw";
 import { makePattern } from "../utils/pattern";
-import { playMeow } from "../utils/play-meow";
 import { randomFloat } from "../utils/random";
 import { range } from "../utils/range";
 import { getStored, setStored } from "../utils/storage";
@@ -53,7 +52,7 @@ export class LevelSelect extends GameObject {
 				size: this.game.root.size,
 				direction: "col",
 				spaceBetween: 16,
-				children: [
+				heirs: [
 					...levels.map(
 						(level, index) =>
 							new Card({
@@ -163,8 +162,8 @@ class Card extends GameObject {
 		const difficultyButton = new DynamicSurface({
 			radius: 4,
 			size: buttonSize,
-			children: [
-				new Flexbox({ size: buttonSize, children: [this.difficultyGraphic] }),
+			heirs: [
+				new Flexbox({ size: buttonSize, heirs: [this.difficultyGraphic] }),
 			],
 		});
 		difficultyButton.on(SURFACE_CLICK, this.cycleDifficulty);
@@ -174,17 +173,17 @@ class Card extends GameObject {
 		const speedButton = new DynamicSurface({
 			radius: 4,
 			size: buttonSize,
-			children: [this.speedGraphic],
+			heirs: [this.speedGraphic],
 		});
 		speedButton.on(SURFACE_CLICK, this.cycleSpeed);
 
 		this.actionButton = new ActiveSurface({
 			radius: 12,
 			size: buttonSize,
-			children: [
+			heirs: [
 				new Flexbox({
 					size: buttonSize,
-					children: [
+					heirs: [
 						new Glyph({
 							path: GLYPH_PLAY,
 							svgStrokeColor: "#FEE2E2",
@@ -226,20 +225,20 @@ class Card extends GameObject {
 
 		const container = new Bg({
 			size: this.size,
-			children: [
+			heirs: [
 				new Flexbox({
 					size: this.size.diff(Vector(12, 8)),
 					pos: Vector(6, 4),
 					spaceBetween: 8,
-					children: [
+					heirs: [
 						new InactiveSurface({
 							pos: Vector(6, 4),
 							radius: 12,
 							size: Vector(40, 24),
-							children: [
+							heirs: [
 								new Flexbox({
 									size: Vector(40, 24),
-									children:
+									heirs:
 										levelIndex != void 0
 											? [
 													new Digit({
@@ -254,7 +253,7 @@ class Card extends GameObject {
 						new DynamicSurface({
 							radius: 4,
 							size: Vector(106, 24),
-							children: [
+							heirs: [
 								new Flexbox({
 									pos: Vector(4, 12),
 									direction: "col",
@@ -264,7 +263,7 @@ class Card extends GameObject {
 									rotation: -Math.PI / 2,
 									spaceBetween: (4 * 1) / 0.375,
 									scale: 0.375,
-									children: this.fishes,
+									heirs: this.fishes,
 								}),
 							],
 						}),
@@ -284,7 +283,7 @@ class Card extends GameObject {
 					size: Vector(40, 13),
 					pos: Vector(6, 26),
 					// spaceBetween: -1,
-					children: [
+					heirs: [
 						new Counter({
 							// glyphFontSize: 10,
 							value: Math.floor(
@@ -326,7 +325,7 @@ class SpeedGraphic extends Flexbox {
 
 	setValue(value: number) {
 		this.value = value;
-		(this.children as Glyph[]).map(
+		(this.heirs as Glyph[]).map(
 			(child, idx) =>
 				(child.svgFillColor = idx <= this.value ? "#10A11A" : "#3A1141")
 		);

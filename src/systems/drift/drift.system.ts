@@ -34,7 +34,7 @@ export class DriftSystem extends Observable {
 					}
 				}
 			}
-			return obj.children;
+			return obj.heirs;
 		});
 	}
 }

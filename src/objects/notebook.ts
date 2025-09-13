@@ -84,16 +84,16 @@ export class Notebook extends GameObject implements PressableInterface {
 			new GameObject({
 				id: PAGE_ID,
 				rotation: -Math.PI / 32,
-				children: [
+				heirs: [
 					new Page({ size }),
 					new Circle({
 						size: Vector(24, 24),
 						pos: Vector(4, 7),
 						color: "#F3DEF7",
-						children: [
+						heirs: [
 							new Flexbox({
 								size: Vector(24, 24),
-								children: [
+								heirs: [
 									new CurrencySign({ svgStrokeColor: "#9C5FA7" }),
 									new Digit({ value: fishType.basePrice }),
 								],
@@ -104,7 +104,7 @@ export class Notebook extends GameObject implements PressableInterface {
 						spaceBetween: 13,
 						pos: Vector(0, -3),
 						size: Vector(80, 6),
-						children: range(5).map(() => new Ring({ size: Vector(2, 6) })),
+						heirs: range(5).map(() => new Ring({ size: Vector(2, 6) })),
 					}),
 					// new Svg({
 					// 	pos: Vector(33, 7),
@@ -133,7 +133,7 @@ export class Notebook extends GameObject implements PressableInterface {
 						rotation: -Math.PI / 2,
 						scale: 0.5,
 						size: Vector(40, 20),
-						children: [
+						heirs: [
 							new FishSilhouette({
 								body: fishType.body,
 								tail: fishType.tail,
@@ -146,10 +146,10 @@ export class Notebook extends GameObject implements PressableInterface {
 						pos: Vector(0, 33),
 						size: Vector(80, 24),
 						spaceBetween: 5,
-						children: scoringVariants.map(([option, modifier]) => {
+						heirs: scoringVariants.map(([option, modifier]) => {
 							const makeColoredCircles = (color: string) => {
 								return new GameObject({
-									children: [
+									heirs: [
 										new Circle({
 											pos: Vector(10, 0),
 											opacity: 0.5,
@@ -176,7 +176,7 @@ export class Notebook extends GameObject implements PressableInterface {
 								? option.eyeColor
 									? new GameObject({
 											size: Vector(18, 16),
-											children: [
+											heirs: [
 												new Circle({
 													pos: Vector(9.5, 4.5),
 													size: Vector(6, 6),
@@ -190,7 +190,7 @@ export class Notebook extends GameObject implements PressableInterface {
 									: option.tailFill1 || option.tailFill2
 									? new GameObject({
 											size: Vector(18, 16),
-											children: [
+											heirs: [
 												new Svg({
 													path: fishType.tailPath,
 												}),
@@ -209,7 +209,7 @@ export class Notebook extends GameObject implements PressableInterface {
 									: option.bodyFill1 || option.bodyFill2
 									? new GameObject({
 											size: Vector(18, 16),
-											children: [
+											heirs: [
 												// new Svg({
 												// 	pos: Vector(1, 0),
 												// 	path: fishType.pattern,
@@ -227,12 +227,12 @@ export class Notebook extends GameObject implements PressableInterface {
 								spaceBetween: 0,
 								direction: "col",
 								justify: "start",
-								children: [
+								heirs: [
 									...(graphic ? [graphic] : []),
 									new Flexbox({
 										size: Vector(24, 0),
 										align: "start",
-										children: [
+										heirs: [
 											new MathSign({
 												origin: BOTTOM,
 												glyphFontSize: 10,

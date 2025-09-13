@@ -67,7 +67,7 @@ export class Results extends GameObject {
 		this.moneyLine = new Flexbox({
 			size: Vector(this.game.root.size.x, 32),
 			origin: TOP,
-			children: [
+			heirs: [
 				new CurrencySign({
 					glyphFontSize: 32,
 					svgStrokeColor: "#AA590F",
@@ -96,7 +96,7 @@ export class Results extends GameObject {
 			origin: BOTTOM,
 			spaceBetween: 4,
 			scale: 0,
-			children: [
+			heirs: [
 				new Counter({
 					glyphFontSize: 32,
 					value: Math.floor(
@@ -118,7 +118,7 @@ export class Results extends GameObject {
 				new GameObject({
 					size: monoSpacedSize,
 					origin: CENTER,
-					children: [
+					heirs: [
 						new FishGraphic({
 							type,
 							size: monoSpacedSize,
@@ -128,7 +128,7 @@ export class Results extends GameObject {
 							? [
 									new Flexbox({
 										size: monoSpacedSize,
-										children: [
+										heirs: [
 											new Glyph({
 												svgStrokeColor: "#FEE2E2",
 												size: Vector(8, 9),
@@ -154,21 +154,21 @@ export class Results extends GameObject {
 			new Flexbox({
 				size: this.game.root.size,
 				direction: "col",
-				children: [
+				heirs: [
 					new GameObject({
 						size: Vector(this.game.root.size.x, 32),
-						children: [this.moneyLine, this.percentLine],
+						heirs: [this.moneyLine, this.percentLine],
 					}),
 					new Flexbox({
 						size: Vector(this.game.root.size.x, rowHeight * rows),
 						direction: "col",
 						scale: 0.5,
-						children: [
+						heirs: [
 							...range(rows).map((row) => {
 								return new Flexbox({
 									size: Vector(this.game.root.size.x, rowHeight),
 									spaceBetween: 5,
-									children: this.fishes.slice(
+									heirs: this.fishes.slice(
 										fishPerRow * row,
 										fishPerRow * (row + 1)
 									),
@@ -185,10 +185,10 @@ export class Results extends GameObject {
 			pos: Vector(160, 188),
 			radius: 20,
 			size: backButtonSize,
-			children: [
+			heirs: [
 				new Flexbox({
 					size: backButtonSize,
-					children: [
+					heirs: [
 						new Svg({
 							size: Vector(20, 16),
 							path: "M7 2h11M7 8h11M7 14h11M3 8H1.5M3 14H1.5M3 2H1.5",

@@ -133,7 +133,7 @@ export class Paw extends GameObject {
 	graphic = new CatPawGraphic();
 	nail = new Nail();
 	paw = new GameObject({
-		children: [this.nail, this.graphic],
+		heirs: [this.nail, this.graphic],
 	});
 	stagingArea = new GameObject();
 

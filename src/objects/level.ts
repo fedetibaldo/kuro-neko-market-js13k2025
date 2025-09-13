@@ -69,7 +69,7 @@ export class Level extends GameObject {
 	}
 
 	playSeagull = () => {
-		this.waveTimeout = (setTimeout as Window["setTimeout"])(
+		this.seagullTimeout = (setTimeout as Window["setTimeout"])(
 			this.playSeagull,
 			randomInt(500, 3000)
 		);
@@ -129,7 +129,7 @@ export class Level extends GameObject {
 			new Table({
 				pos: Vector(0, game.root.size.y - 90),
 				size: tableSize,
-				children: [
+				heirs: [
 					new Notebook({
 						pos: Vector(5, 23),
 					}),
@@ -162,7 +162,7 @@ export class Level extends GameObject {
 
 			new CounterCountainer({
 				pos: Vector(8, 9),
-				children: [
+				heirs: [
 					new Counter({ id: TIMER_ID, glyphFontSize: 28 }),
 					new Glyph({
 						size: Vector(8, 8),
@@ -176,7 +176,7 @@ export class Level extends GameObject {
 			new CounterCountainer({
 				pos: game.root.size.mulv(TOP_RIGHT).diff(Vector(8, -8)),
 				origin: TOP_RIGHT,
-				children: [
+				heirs: [
 					new CurrencySign({ glyphFontSize: 28, svgStrokeColor: "#9C5FA7" }),
 					new Counter({ id: SCORE_ID, glyphFontSize: 28 }),
 				],

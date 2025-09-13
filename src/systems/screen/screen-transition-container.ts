@@ -19,7 +19,7 @@ export class ScreenTransitionContainer extends GameObject {
 	}
 
 	onEnter = async (nextScreen: GameObject) => {
-		const [child] = this.children;
+		const [child] = this.heirs;
 		if (child) {
 			child.kill();
 		}
@@ -28,7 +28,7 @@ export class ScreenTransitionContainer extends GameObject {
 	};
 
 	onExit = async () => {
-		const [child] = this.children;
+		const [child] = this.heirs;
 		if (child) {
 			child.frozen = true;
 		}

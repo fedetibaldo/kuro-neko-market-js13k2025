@@ -18,5 +18,5 @@ export class Diamond extends GameObject {
 export const diamondPattern = new Viewport({
 	id: DIAMOND_ID,
 	size: Vector(16, 16),
-	children: [new Diamond()],
+	heirs: [new Diamond()],
 });

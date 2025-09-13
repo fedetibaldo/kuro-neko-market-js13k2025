@@ -52,7 +52,7 @@ game.root.addChildren([
 	diamondPattern,
 	wavePattern,
 	new ScreenTransitionContainer({
-		children: [new LevelSelect()],
+		heirs: [new LevelSelect()],
 	}),
 	new Pointer(),
 ]);

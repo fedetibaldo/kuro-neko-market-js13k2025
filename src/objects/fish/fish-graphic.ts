@@ -65,7 +65,7 @@ export class FishGraphic extends GameObject {
 
 		this.texture = new Viewport({
 			size: Vector(16, 16),
-			children: [new Svg({ path: type.pattern, size: Vector(16, 16) })],
+			heirs: [new Svg({ path: type.pattern, size: Vector(16, 16) })],
 		});
 
 		this.eyes = type.eyes.map(([diameter, pos]) =>
