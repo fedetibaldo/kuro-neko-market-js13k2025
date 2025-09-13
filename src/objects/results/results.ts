@@ -230,7 +230,7 @@ export class Results extends GameObject {
 					);
 					zzfx(
 						...SCORE_SOUND.slice(0, 2),
-						SCORE_SOUND[2]! + 25 * idx,
+						SCORE_SOUND[2]! + 25 * correctFishes,
 						...SCORE_SOUND.slice(3)
 					);
 					this.scoreLerps.push(
@@ -259,7 +259,7 @@ export class Results extends GameObject {
 			if (this.waitT > 0.2) {
 				zzfx(
 					...SCORE_SOUND.slice(0, 2),
-					SCORE_SOUND[2]! + 25 * this.scoreLerps.length,
+					SCORE_SOUND[2]! + 25 * correctFishes + 1,
 					...SCORE_SOUND.slice(3)
 				);
 				this.percentLerp = makeFixedTimeIncrementalLerp(0, 1, 500, easeInOut);
