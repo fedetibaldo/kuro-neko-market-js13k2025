@@ -9,14 +9,25 @@ export type ChooseFishStrategy = (
 
 export const easyStrategy: ChooseFishStrategy = (fishType, variants) => {
 	if (chance(1 / 4)) return fishType;
-	return {
+	const shuffledVariants = shuffle(variants);
+	const firstVariant = shuffledVariants[0]!;
+
+	let fish = {
 		...fishType,
-		...pickRandom(variants),
+		...firstVariant,
 	};
+
+	const secondVariant = shuffledVariants[1]!;
+	return chance(1 / 3)
+		? {
+				...fish,
+				...secondVariant,
+		  }
+		: fish;
 };
 
 export const mediumStrategy: ChooseFishStrategy = (fishType, variants) => {
-	if (chance(1 / 4)) return fishType;
+	if (chance(1 / 5)) return fishType;
 	const shuffledVariants = shuffle(variants);
 	const firstVariant = shuffledVariants[0]!;
 
