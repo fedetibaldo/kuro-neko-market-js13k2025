@@ -19,7 +19,7 @@ import { ScreenSystem } from "../systems/screen/screen.system";
 import { clamp } from "../utils/clamp";
 import { fillRoundRect } from "../utils/draw";
 import { chance, randomInt } from "../utils/random";
-import { zzfx } from "../vendor/zzfx";
+import { buildSamples, playSamples, zzfx } from "../vendor/zzfx";
 import { BeltColor } from "./belt/belt-color";
 import { BeltShadow } from "./belt/belt-shadow";
 import { BELT_ID, MovingBelt } from "./belt/moving-belt";
@@ -36,6 +36,8 @@ import { Table } from "./table";
 
 const SCORE_ID = unique();
 const TIMER_ID = unique();
+
+const waveSamples = buildSamples(...WAVE_SOUND);
 
 export class Level extends GameObject {
 	level: LevelSystem;
@@ -71,7 +73,7 @@ export class Level extends GameObject {
 	playSeagull = () => {
 		this.seagullTimeout = (setTimeout as Window["setTimeout"])(
 			this.playSeagull,
-			randomInt(500, 3000)
+			randomInt(500, 3000) * (chance(1 / 5) ? 10 : 1)
 		);
 		zzfx(...SEAGULL_SOUND);
 	};
@@ -81,7 +83,7 @@ export class Level extends GameObject {
 			this.playWave,
 			randomInt(4000, 5000)
 		);
-		zzfx(...WAVE_SOUND);
+		playSamples([waveSamples]);
 	};
 
 	constructor() {

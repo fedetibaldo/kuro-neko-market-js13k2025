@@ -200,7 +200,6 @@ class Card extends GameObject {
 				diContainer
 					.get(LevelSystem)
 					.init(...this.getLevelAttributes(), levelIndex);
-				// playMeow();
 				diContainer.get(ScreenSystem).to(LEVEL_SCREEN);
 			}
 		});
