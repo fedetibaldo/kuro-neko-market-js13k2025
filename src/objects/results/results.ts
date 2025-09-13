@@ -7,9 +7,10 @@ import {
 	IncrementalLerp,
 	makeFixedTimeIncrementalLerp,
 } from "../../core/lerp";
-import { BOTTOM, CENTER, ONE, TOP, Vector, ZERO } from "../../core/vector";
+import { BOTTOM, CENTER, TOP, Vector, ZERO } from "../../core/vector";
 import { GLYPH_PERCENT, GLYPH_SLASH, GLYPH_TICK } from "../../data/glyphs";
 import { LEVEL_SELECT_SCREEN } from "../../data/screens";
+import { SCORE_SOUND } from "../../data/sounds";
 import { LevelSystem } from "../../systems/level/level.system";
 import { ParticleSystem } from "../../systems/particle/particle.system";
 import { ScreenSystem } from "../../systems/screen/screen.system";
@@ -18,6 +19,7 @@ import { fillRect } from "../../utils/draw";
 import { makePattern } from "../../utils/pattern";
 import { randomFloat } from "../../utils/random";
 import { range } from "../../utils/range";
+import { zzfx } from "../../vendor/zzfx";
 import { Counter } from "../counter";
 import { CurrencySign } from "../currency-sign";
 import { FishGraphic } from "../fish/fish-graphic";
@@ -226,6 +228,11 @@ export class Results extends GameObject {
 							.add(Vector(randomFloat(-12, 12), randomFloat(-12, 12))),
 						WhiteRay
 					);
+					zzfx(
+						...SCORE_SOUND.slice(0, 2),
+						SCORE_SOUND[2]! + 25 * idx,
+						...SCORE_SOUND.slice(3)
+					);
 					this.scoreLerps.push(
 						makeFixedTimeIncrementalLerp(0, value, 300, easeInOut)
 					);
@@ -250,6 +257,11 @@ export class Results extends GameObject {
 		if (progress == 1 && !this.percentLerp) {
 			this.waitT += deltaT / 1000;
 			if (this.waitT > 0.2) {
+				zzfx(
+					...SCORE_SOUND.slice(0, 2),
+					SCORE_SOUND[2]! + 25 * this.scoreLerps.length,
+					...SCORE_SOUND.slice(3)
+				);
 				this.percentLerp = makeFixedTimeIncrementalLerp(0, 1, 500, easeInOut);
 			}
 		}
