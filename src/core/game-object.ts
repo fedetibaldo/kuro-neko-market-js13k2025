@@ -73,25 +73,21 @@ export class GameObject
 			this[key] = unknownOptions[key];
 		}
 
-		this.addChildren(this.createChildren());
 		this.addChildren(children || []);
 	}
+
 	kill() {
 		super.kill();
 		if (this.parent) {
 			this.parent.removeChild(this);
 		}
 		const children = this.children;
-		children.forEach((child) => child.kill());
+		children.map((child) => child.kill());
 		this.children = [];
 	}
 
-	createChildren(): GameObject[] {
-		return [];
-	}
-
 	addChildren(children: GameObject[]) {
-		children.forEach((child) => this.addChild(child));
+		children.map((child) => this.addChild(child));
 	}
 
 	addChild(child: GameObject, index = this.children.length) {

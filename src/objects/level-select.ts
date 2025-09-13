@@ -16,6 +16,7 @@ import {
 import { ScreenSystem } from "../systems/screen/screen.system";
 import { fillCircle, fillRect, fillRoundRect, stroke } from "../utils/draw";
 import { makePattern } from "../utils/pattern";
+import { playMeow } from "../utils/play-meow";
 import { randomFloat } from "../utils/random";
 import { range } from "../utils/range";
 import { getStored, setStored } from "../utils/storage";
@@ -200,6 +201,7 @@ class Card extends GameObject {
 				diContainer
 					.get(LevelSystem)
 					.init(...this.getLevelAttributes(), levelIndex);
+				// playMeow();
 				diContainer.get(ScreenSystem).to(LEVEL_SCREEN);
 			}
 		});

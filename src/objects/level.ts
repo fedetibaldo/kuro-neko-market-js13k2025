@@ -3,8 +3,10 @@ import { Flexbox } from "../core/flexbox";
 import { Game } from "../core/game";
 import { GameObject, GameObjectArgs } from "../core/game-object";
 import { OffFunction } from "../core/observable";
+import { unique } from "../core/unique";
 import { TOP_RIGHT, Vector } from "../core/vector";
 import { RESULTS_SCREEN } from "../data/screens";
+import { SEAGULL_SOUND, WAVE_SOUND } from "../data/sounds";
 import { DropTargetInterface } from "../systems/interactable/interactable.types";
 import {
 	LEVEL_END_EVENT,
@@ -16,10 +18,11 @@ import {
 import { ScreenSystem } from "../systems/screen/screen.system";
 import { clamp } from "../utils/clamp";
 import { fillRoundRect } from "../utils/draw";
-import { chance } from "../utils/random";
+import { chance, randomInt } from "../utils/random";
+import { zzfx } from "../vendor/zzfx";
 import { BeltColor } from "./belt/belt-color";
 import { BeltShadow } from "./belt/belt-shadow";
-import { MovingBelt } from "./belt/moving-belt";
+import { BELT_ID, MovingBelt } from "./belt/moving-belt";
 import { Counter } from "./counter";
 import { CurrencySign } from "./currency-sign";
 import { Fish } from "./fish/fish";
@@ -31,12 +34,15 @@ import { Sea } from "./sea";
 import { Sky } from "./sky";
 import { Table } from "./table";
 
+const SCORE_ID = unique();
+const TIMER_ID = unique();
+
 export class Level extends GameObject {
 	level: LevelSystem;
 
 	onSpawn(index: number): void {
 		const flipH = chance(1 / 2);
-		const belt = this.getChild("belt")! as DropTargetInterface;
+		const belt = this.getChild(BELT_ID)! as DropTargetInterface;
 		const fish = new Fish({
 			flipH,
 			rotation: (-Math.PI / 4) * 3 * (flipH ? -1 : 1),
@@ -52,11 +58,31 @@ export class Level extends GameObject {
 	}
 
 	toDestroy: OffFunction[];
+	seagullTimeout: number;
+	waveTimeout: number;
 
 	kill() {
 		super.kill();
 		this.toDestroy.map((off) => off());
+		clearTimeout(this.seagullTimeout);
+		clearTimeout(this.waveTimeout);
 	}
+
+	playSeagull = () => {
+		this.waveTimeout = (setTimeout as Window["setTimeout"])(
+			this.playSeagull,
+			randomInt(500, 3000)
+		);
+		zzfx(...SEAGULL_SOUND);
+	};
+
+	playWave = () => {
+		this.waveTimeout = (setTimeout as Window["setTimeout"])(
+			this.playWave,
+			randomInt(4000, 5000)
+		);
+		zzfx(...WAVE_SOUND);
+	};
 
 	constructor() {
 		super();
@@ -64,6 +90,8 @@ export class Level extends GameObject {
 		const game = diContainer.get(Game);
 		this.level = diContainer.get(LevelSystem);
 		this.level.start();
+		this.playWave();
+		this.playSeagull();
 
 		this.toDestroy = [
 			this.level.on(LEVEL_END_EVENT, () =>
@@ -71,10 +99,10 @@ export class Level extends GameObject {
 			),
 			this.level.on(LEVEL_SPAWN_EVENT, (idx: number) => this.onSpawn(idx)),
 			this.level.on(LEVEL_TICK_EVENT, (time: number) =>
-				(this.getChild("timer") as Counter).setValue(Math.floor(time))
+				(this.getChild(TIMER_ID) as Counter).setValue(Math.floor(time))
 			),
 			this.level.on(LEVEL_SCORE_EVENT, (score: number) =>
-				(this.getChild("score") as Counter).setValue(score)
+				(this.getChild(SCORE_ID) as Counter).setValue(score)
 			),
 		];
 
@@ -99,7 +127,6 @@ export class Level extends GameObject {
 				size: seaSize,
 			}),
 			new Table({
-				id: "table",
 				pos: Vector(0, game.root.size.y - 90),
 				size: tableSize,
 				children: [
@@ -107,7 +134,6 @@ export class Level extends GameObject {
 						pos: Vector(5, 23),
 					}),
 					new Printer({
-						id: "printer",
 						pos: Vector(game.root.size.x - 90, 15),
 					}),
 					new GameObject({
@@ -128,7 +154,6 @@ export class Level extends GameObject {
 			}),
 
 			new MovingBelt({
-				id: "belt",
 				pos: beltPosition,
 				size: beltSize,
 			}),
@@ -138,7 +163,7 @@ export class Level extends GameObject {
 			new CounterCountainer({
 				pos: Vector(8, 9),
 				children: [
-					new Counter({ id: "timer", glyphFontSize: 28 }),
+					new Counter({ id: TIMER_ID, glyphFontSize: 28 }),
 					new Glyph({
 						size: Vector(8, 8),
 						svgStrokeColor: "#9C5FA7",
@@ -153,11 +178,11 @@ export class Level extends GameObject {
 				origin: TOP_RIGHT,
 				children: [
 					new CurrencySign({ glyphFontSize: 28, svgStrokeColor: "#9C5FA7" }),
-					new Counter({ id: "score", glyphFontSize: 28 }),
+					new Counter({ id: SCORE_ID, glyphFontSize: 28 }),
 				],
 			}),
 
-			new Paw({ id: "paw" }),
+			new Paw(),
 		]);
 	}
 }

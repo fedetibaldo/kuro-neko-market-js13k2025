@@ -13,7 +13,6 @@ export const PAW_DROPPING_CANCELLABLE_STATE = unique();
 export const PAW_DROP_ACTION = unique();
 export const PAW_POINT_ACTION = unique();
 export const PAW_PICKUP_ACTION = unique();
-export const PAW_TAP_ACTION = unique();
 export const PAW_PRESS_ACTION = unique();
 export const PAW_NEXT_ACTION = unique();
 export const PAW_CARRY_ACTION = unique();
@@ -32,7 +31,6 @@ type PawStateMachine = StateMachineDef<
 	| typeof PAW_DROP_ACTION
 	| typeof PAW_POINT_ACTION
 	| typeof PAW_PICKUP_ACTION
-	| typeof PAW_TAP_ACTION
 	| typeof PAW_PRESS_ACTION
 	| typeof PAW_NEXT_ACTION
 	| typeof PAW_CARRY_ACTION
@@ -44,7 +42,6 @@ export const pawStateMachine: PawStateMachine = {
 		{
 			[PAW_POINT_ACTION]: PAW_POINTING_STATE,
 			[PAW_PICKUP_ACTION]: PAW_PICKING_UP_STATE,
-			[PAW_TAP_ACTION]: PAW_IDLING_STATE,
 		},
 		[PAW_MOVING_TAG],
 	],

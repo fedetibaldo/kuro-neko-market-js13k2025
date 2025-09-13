@@ -9,7 +9,6 @@ import { DisplayServer } from "./core/display.server";
 import { InputServer } from "./core/input.server";
 import { InteractableServer } from "./systems/interactable/interactable.server";
 import { Pointer } from "./objects/pointer";
-import { playMeow } from "./utils/play-meow";
 import { DriftSystem } from "./systems/drift/drift.system";
 import { LevelSystem } from "./systems/level/level.system";
 import { Results } from "./objects/results/results";
@@ -60,5 +59,3 @@ game.root.addChildren([
 
 // start game
 game._play();
-
-playMeow();

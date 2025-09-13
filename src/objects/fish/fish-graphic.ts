@@ -82,9 +82,7 @@ export class FishGraphic extends GameObject {
 	}
 
 	update(): void {
-		for (const eye of this.eyes) {
-			eye.opacity = this.overrideColor ? 0 : 1;
-		}
+		this.eyes.map((eye) => (eye.opacity = this.overrideColor ? 0 : 1));
 	}
 
 	render(ctx: OffscreenCanvasRenderingContext2D) {

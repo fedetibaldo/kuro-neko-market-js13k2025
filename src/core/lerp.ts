@@ -39,8 +39,12 @@ type LerpValue = (typeof lerpStrategies)[number] extends LerpStrategy<infer T>
 	? T
 	: never;
 
-// @ts-ignore
-export function lerp<T extends LerpValue>(from: T, to: T, progress: number): T {
+export const lerp = <T extends LerpValue>(
+	from: T,
+	to: T,
+	progress: number
+	// @ts-ignore
+): T => {
 	for (const strategy of lerpStrategies as LerpStrategy<any>[]) {
 		if (strategy.is(from) && strategy.is(to)) {
 			return strategy.lerp(from, to, progress);
@@ -48,18 +52,18 @@ export function lerp<T extends LerpValue>(from: T, to: T, progress: number): T {
 	}
 	// yolo
 	// throw ""; // new Error("Lerp value did not match any strategy");
-}
+};
 
-export function makeFixedTimeIncrementalLerp<T extends LerpValue>(
+export const makeFixedTimeIncrementalLerp = <T extends LerpValue>(
 	from: T,
 	to: T,
 	duration: number,
 	ease: EasingFunction = easeLinear
-): IncrementalLerp<T> {
+): IncrementalLerp<T> => {
 	let progress = 0;
 	return (absIncrement: number = 0) => {
 		const relIncrement = absIncrement / duration;
 		progress = clamp(progress + relIncrement, 0, 1);
 		return lerp(from, to, ease(progress));
 	};
-}
+};

@@ -77,7 +77,7 @@ export class Flexbox extends GameObject {
 			mainOffset = this.size.diff(childrenTotalSize)[mainAxis];
 		}
 
-		this.children.forEach((child) => {
+		this.children.map((child) => {
 			/* The secondary axis offset is local and child-dependent */
 
 			// align == 'start' -> offset[secondaryAxis] = 0 (already is)

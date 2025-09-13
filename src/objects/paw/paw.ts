@@ -27,6 +27,7 @@ import {
 	PickupableInterface,
 	PressableInterface,
 } from "../../systems/interactable/interactable.types";
+import { delay } from "../../utils/delay";
 import { fill, fillRect } from "../../utils/draw";
 import {
 	PAW_CARRY_ACTION,
@@ -39,7 +40,6 @@ import {
 	PAW_POINT_ACTION,
 	PAW_POINTING_TAG,
 	PAW_PRESS_ACTION,
-	PAW_TAP_ACTION,
 	pawStateMachine,
 } from "./state";
 
@@ -55,9 +55,8 @@ class Nail extends GameObject {
 export class CatPawGraphic extends GameObject {
 	game = diContainer.get(Game);
 
-	halfWidth = 22;
-	viewBox = Vector(this.halfWidth, 71);
-	center = Vector(this.halfWidth, 22);
+	viewBox = Vector(22, 71);
+	center = Vector(22, 22);
 	origin = this.center.mulv(this.viewBox.oneOver());
 
 	isFaceUp = false;
@@ -138,7 +137,7 @@ export class Paw extends GameObject {
 	});
 	stagingArea = new GameObject();
 
-	constructor(args: GameObjectArgs) {
+	constructor(args?: GameObjectArgs) {
 		super(args);
 		this.graphic.pos = this.graphic.center.mul(-1);
 		this.nail.pos = this.graphic.pos;
@@ -200,7 +199,6 @@ export class Paw extends GameObject {
 			if (dropTarget) {
 				this.drop(dropTarget, point);
 			}
-			this.tap(point);
 		}
 	}
 
@@ -241,7 +239,7 @@ export class Paw extends GameObject {
 			easeIn
 		);
 
-		await new Promise((resolve) => setTimeout(resolve, pressDuration));
+		await delay(pressDuration);
 
 		item.press();
 
@@ -260,18 +258,6 @@ export class Paw extends GameObject {
 
 		this._state.act(PAW_NEXT_ACTION);
 		this.replayMove();
-	}
-
-	async tap(point: Vector) {
-		if (!this._state.can(PAW_TAP_ACTION)) return;
-		this._state.act(PAW_TAP_ACTION);
-
-		const tapDuration = 75;
-		this.scaleLerp = makeFixedTimeIncrementalLerp(1, 0.8, tapDuration, easeIn);
-
-		await new Promise((resolve) => setTimeout(resolve, tapDuration));
-
-		this.scaleLerp = makeFixedTimeIncrementalLerp(0.8, 1, tapDuration, easeOut);
 	}
 
 	idle() {
@@ -316,7 +302,7 @@ export class Paw extends GameObject {
 			easeInOut
 		);
 
-		await new Promise((resolve) => setTimeout(resolve, nailDelay));
+		await delay(nailDelay);
 
 		if (this._state.hasTag(PAW_POINTING_TAG)) {
 			this.nailLerp = makeFixedTimeIncrementalLerp(
@@ -361,7 +347,7 @@ export class Paw extends GameObject {
 			easeInOut
 		);
 
-		await new Promise((resolve) => setTimeout(resolve, dropStage1Duration));
+		await delay(dropStage1Duration);
 
 		item.pos = target.diff(item.center);
 		item.scale = dropTarget.layer / item.baseLayer;
@@ -379,7 +365,7 @@ export class Paw extends GameObject {
 			easeInOut
 		);
 
-		await new Promise((resolve) => setTimeout(resolve, dropStage2Duration));
+		await delay(dropStage2Duration);
 
 		if (canDrift(dropTarget) && !dropTarget.still) {
 			item.vel = 0;
@@ -451,7 +437,7 @@ export class Paw extends GameObject {
 			easeInOut
 		);
 
-		await new Promise((resolve) => setTimeout(resolve, pickupStage1Duration));
+		await delay(pickupStage1Duration);
 
 		Object.assign(item, this.game.root.project(item));
 		this.stagingArea.addChild(item);
@@ -465,7 +451,7 @@ export class Paw extends GameObject {
 			easeInOut
 		);
 
-		await new Promise((resolve) => setTimeout(resolve, pickupStage2Duration));
+		await delay(pickupStage2Duration);
 
 		if (canDrift(item)) {
 			item.vel = 0;
@@ -474,6 +460,7 @@ export class Paw extends GameObject {
 		const ratioWithItem = this.baseLayer / item.baseLayer;
 		item.scale = ratioWithItem;
 		item.pos = item.center.mul(-1);
+
 		item.pickup?.();
 		this.paw.addChild(item);
 

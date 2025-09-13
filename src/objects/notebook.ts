@@ -8,16 +8,22 @@ import {
 	IncrementalLerp,
 	makeFixedTimeIncrementalLerp,
 } from "../core/lerp";
+import { unique } from "../core/unique";
 import { BOTTOM, BOTTOM_LEFT, CENTER, Vector, ZERO } from "../core/vector";
+import { DROP_PAPER_SOUND } from "../data/sounds";
 import { PressableInterface } from "../systems/interactable/interactable.types";
 import { LevelSystem } from "../systems/level/level.system";
+import { delay } from "../utils/delay";
 import { fillCircle, fillRoundRect, stroke, traceCircle } from "../utils/draw";
 import { gradient } from "../utils/gradient";
 import { range } from "../utils/range";
+import { zzfx } from "../vendor/zzfx";
 import { CurrencySign } from "./currency-sign";
 import { Digit, DigitValue } from "./digit";
 import { MathSign } from "./math-sign";
 import { Svg } from "./svg";
+
+const PAGE_ID = unique();
 
 type NotebookArgs = GameObjectArgs;
 const size = Vector(80, 63);
@@ -41,7 +47,8 @@ export class Notebook extends GameObject implements PressableInterface {
 		const duration = 200;
 		const lerp = makeFixedTimeIncrementalLerp(1, 0.75, duration / 2, easeIn);
 		this.scaleLerp = lerp;
-		await new Promise((resolve) => setTimeout(resolve, duration / 2));
+		await delay(duration / 2);
+		zzfx(...DROP_PAPER_SOUND);
 		this.onPageChange((this.page + 1) % this.level.fishTypes.length);
 		if (this.scaleLerp !== lerp) return;
 		this.scaleLerp = makeFixedTimeIncrementalLerp(
@@ -65,7 +72,7 @@ export class Notebook extends GameObject implements PressableInterface {
 
 	onPageChange(page: number) {
 		this.page = page;
-		const oldPage = this.getChild("page");
+		const oldPage = this.getChild(PAGE_ID);
 		if (oldPage) {
 			oldPage.kill();
 		}
@@ -75,7 +82,7 @@ export class Notebook extends GameObject implements PressableInterface {
 
 		this.addChild(
 			new GameObject({
-				id: "page",
+				id: PAGE_ID,
 				rotation: -Math.PI / 32,
 				children: [
 					new Page({ size }),
@@ -257,7 +264,7 @@ class Page extends GameObject {
 			this.size,
 			1,
 			gradient(ctx, ZERO, this.size.mulv(BOTTOM_LEFT), [
-				[0, "#F9F4F0"],
+				[0, "#FEE2E2"],
 				[1, "#F3EAE2"],
 			])
 		);
@@ -304,7 +311,7 @@ class Ring extends GameObject {
 			this.size,
 			1,
 			gradient(ctx, ZERO, this.size.mulv(BOTTOM_LEFT), [
-				[0, "white"],
+				[0, "#FEE2E2"],
 				[0.4, "#BEADB8"],
 			])
 		);

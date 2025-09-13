@@ -15,6 +15,10 @@ import { scoreFish } from "./score-fish";
 import { unique } from "../../core/unique";
 import { getStored, setStored } from "../../utils/storage";
 import { range } from "../../utils/range";
+import { zzfx } from "../../vendor/zzfx";
+import { ERROR_SOUND, SCORE_SOUND } from "../../data/sounds";
+import { playMeow } from "../../utils/play-meow";
+import { randomFloat } from "../../utils/random";
 
 export type FishTypeIndex = 0 | 1 | 2;
 export type LevelSpawnFrequency = 0 | 1 | 2;
@@ -173,9 +177,13 @@ export class LevelSystem extends Observable {
 		const spawnedFish = this.spawnedFishes[fishIndex]!;
 		if (spawnedFish[1] == userScore) {
 			spawnedFish[2] = true;
+			zzfx(...SCORE_SOUND);
+			if (this.getScore() % 4 == 0)
+				setTimeout(playMeow, randomFloat(400, 1200));
 			this.trigger(LEVEL_SCORE_EVENT, this.getScore());
 			return true;
 		}
+		zzfx(...ERROR_SOUND);
 		return false;
 	}
 }

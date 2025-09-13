@@ -1,14 +1,8 @@
 import { diContainer } from "../../core/di-container";
 import { Game } from "../../core/game";
 import { GameObject, GameObjectArgs } from "../../core/game-object";
-import {
-	easeIn,
-	easeOut,
-	IncrementalLerp,
-	makeFixedTimeIncrementalLerp,
-} from "../../core/lerp";
 import { unique } from "../../core/unique";
-import { CENTER, Vector } from "../../core/vector";
+import { CENTER, ONE, Vector } from "../../core/vector";
 import { range } from "../../utils/range";
 import { ScreenSystem } from "./screen.system";
 
@@ -56,18 +50,18 @@ export class ScreenTransition extends GameObject {
 		const game = diContainer.get(Game);
 		const squareSize = 20;
 		const size = game.root.size.mul(1 / squareSize).ceil();
-		for (const row of range(size.y)) {
-			for (const col of range(size.x)) {
+		range(size.y).map((row) =>
+			range(size.x).map((col) => {
 				const delay = (col + row) * (0.5 / (size.y + size.x));
 				this.addChild(
 					new TransitionSquare({
 						color: "#B27242",
 						delay,
-						size: Vector(squareSize, squareSize),
+						size: ONE.mul(squareSize),
 						pos: Vector(col, row).mul(squareSize),
 					})
 				);
-			}
-		}
+			})
+		);
 	}
 }

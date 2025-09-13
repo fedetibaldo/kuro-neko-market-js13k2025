@@ -6,21 +6,25 @@ export const SCREEN_WAITING_TAG = unique();
 
 export const SCREEN_READY_STATE = unique();
 export const SCREEN_EXITING_STATE = unique();
+export const SCREEN_STILL_EXITING_STATE = unique();
 export const SCREEN_WAITING_STATE = unique();
 export const SCREEN_ENTERING_STATE = unique();
 
 export const SCREEN_READY_ACTION = unique();
 export const SCREEN_EXIT_ACTION = unique();
+export const SCREEN_CONTINUE_EXITING_ACTION = unique();
 export const SCREEN_WAIT_ACTION = unique();
 export const SCREEN_ENTER_ACTION = unique();
 
 type ScreenState = StateMachineDef<
 	| typeof SCREEN_READY_STATE
 	| typeof SCREEN_EXITING_STATE
+	| typeof SCREEN_STILL_EXITING_STATE
 	| typeof SCREEN_WAITING_STATE
 	| typeof SCREEN_ENTERING_STATE,
 	| typeof SCREEN_READY_ACTION
 	| typeof SCREEN_EXIT_ACTION
+	| typeof SCREEN_CONTINUE_EXITING_ACTION
 	| typeof SCREEN_WAIT_ACTION
 	| typeof SCREEN_ENTER_ACTION
 >;
@@ -32,6 +36,12 @@ export const screenState: ScreenState = {
 		},
 	],
 	[SCREEN_EXITING_STATE]: [
+		{
+			[SCREEN_CONTINUE_EXITING_ACTION]: SCREEN_STILL_EXITING_STATE,
+		},
+		[SCREEN_PROGRESSING_TAG],
+	],
+	[SCREEN_STILL_EXITING_STATE]: [
 		{
 			[SCREEN_WAIT_ACTION]: SCREEN_WAITING_STATE,
 		},

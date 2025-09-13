@@ -16,16 +16,15 @@ export class UpdateServer {
 	}
 
 	update(deltaT: number) {
-		if (!this.game.root) return;
-
-		walk<GameObjectData>(this.game.root, (obj) => {
-			if (isUpdatable(obj)) {
-				if (obj.frozen) {
-					return [];
+		this.game.root &&
+			walk<GameObjectData>(this.game.root, (obj) => {
+				if (isUpdatable(obj)) {
+					if (obj.frozen) {
+						return [];
+					}
+					obj.update(deltaT);
 				}
-				obj.update(deltaT);
-			}
-			return obj.children;
-		});
+				return obj.children;
+			});
 	}
 }

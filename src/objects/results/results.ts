@@ -16,6 +16,7 @@ import { ScreenSystem } from "../../systems/screen/screen.system";
 import { clamp } from "../../utils/clamp";
 import { fillRect } from "../../utils/draw";
 import { makePattern } from "../../utils/pattern";
+import { playMeow } from "../../utils/play-meow";
 import { randomFloat } from "../../utils/random";
 import { range } from "../../utils/range";
 import { Counter } from "../counter";
@@ -250,6 +251,7 @@ export class Results extends GameObject {
 		if (progress == 1 && !this.percentLerp) {
 			this.waitT += deltaT / 1000;
 			if (this.waitT > 0.2) {
+				playMeow();
 				this.percentLerp = makeFixedTimeIncrementalLerp(0, 1, 500, easeInOut);
 			}
 		}

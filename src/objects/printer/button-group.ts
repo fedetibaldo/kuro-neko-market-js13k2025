@@ -1,10 +1,12 @@
 import { Flexbox } from "../../core/flexbox";
-import { GameObject } from "../../core/game-object";
+import { GameObject, GameObjectArgs } from "../../core/game-object";
 import { unique } from "../../core/unique";
 import { CENTER, Vector } from "../../core/vector";
 import { GLYPH_CROSS, GLYPH_TICK } from "../../data/glyphs";
+import { CLICK_SOUND } from "../../data/sounds";
 import { PressableInterface } from "../../systems/interactable/interactable.types";
 import { range } from "../../utils/range";
+import { zzfx } from "../../vendor/zzfx";
 import { Digit, DigitValue } from "../digit";
 import { Glyph } from "../glyph";
 import { activeColor } from "./colors";
@@ -32,6 +34,7 @@ export class ButtonGroupButton
 		if (child instanceof Digit) {
 			this.trigger(BUTTON_VALUE_EVENT, child.value);
 		}
+		zzfx(...CLICK_SOUND);
 		this.trigger(BUTTON_PRESS_EVENT);
 	}
 }
@@ -41,7 +44,8 @@ export const BUTTON_GROUP_CLEAR_EVENT = unique();
 export const BUTTON_GROUP_SUBMIT_EVENT = unique();
 
 export class ButtonGroup extends GameObject {
-	createChildren(): GameObject[] {
+	constructor(args: GameObjectArgs) {
+		super(args);
 		const spaceBetween = 0;
 		const buttons = range(10).map((idx) => {
 			const value = idx as DigitValue;
@@ -95,7 +99,7 @@ export class ButtonGroup extends GameObject {
 			this.trigger(BUTTON_GROUP_SUBMIT_EVENT)
 		);
 
-		return [
+		this.addChildren([
 			new Flexbox({
 				pos: Vector(4, 4),
 				align: "start",
@@ -124,6 +128,6 @@ export class ButtonGroup extends GameObject {
 					}),
 				],
 			}),
-		];
+		]);
 	}
 }

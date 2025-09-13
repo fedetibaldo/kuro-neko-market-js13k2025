@@ -10,7 +10,10 @@ import {
 import { Observable } from "../../core/observable";
 import { StateMachine } from "../../core/state-machine";
 import { unique } from "../../core/unique";
+import { SCREEN_CHANGE_SOUND } from "../../data/sounds";
+import { zzfx } from "../../vendor/zzfx";
 import {
+	SCREEN_CONTINUE_EXITING_ACTION,
 	SCREEN_ENTER_ACTION,
 	SCREEN_EXIT_ACTION,
 	SCREEN_PROGRESSING_TAG,
@@ -51,6 +54,10 @@ export class ScreenSystem extends Observable {
 	onTick = (deltaT: number) => {
 		if (this._state.hasTag(SCREEN_PROGRESSING_TAG)) {
 			this.prog = this.progLerp(deltaT);
+			if (this.prog > 0.55 && this._state.can(SCREEN_CONTINUE_EXITING_ACTION)) {
+				zzfx(...SCREEN_CHANGE_SOUND);
+				this._state.act(SCREEN_CONTINUE_EXITING_ACTION);
+			}
 			if (this.prog == 1) {
 				this._state.act(SCREEN_WAIT_ACTION);
 			}

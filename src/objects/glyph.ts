@@ -6,11 +6,8 @@ export type GlyphArgs = NewOmit<SvgArgs, "svgLineWidth"> & {
 };
 
 export class Glyph extends Svg {
-	glyphFontSize: number;
-
 	constructor({ glyphFontSize = 12, ...rest }: GlyphArgs) {
 		super({ ...rest, svgLineWidth: 2 });
-		this.glyphFontSize = glyphFontSize;
-		this.scale = this.glyphFontSize / 12;
+		this.scale = glyphFontSize / 12;
 	}
 }

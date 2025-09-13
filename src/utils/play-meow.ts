@@ -1,4 +1,4 @@
-import { ZZFXSound } from "../vendor/zzfx";
+import { zzfx } from "../vendor/zzfx";
 
 export const playMeow = () => {
 	const duration = 0.3;
@@ -10,56 +10,8 @@ export const playMeow = () => {
 
 	const frequency = 440 + 740;
 
-	const voice1 = new ZZFXSound([
-		2,
-		0,
-		frequency,
-		attack + 0.2,
-		sustain,
-		release,
-		0, //-1.2,
-		,
-		,
-		-0.6,
-		0,
-		0,
-		,
-		,
-		,
-		,
-		,
-		0.4,
-		decay + 0.1,
-		,
-		250,
-		0,
-	]); // Sound Default
-
-	const voice2 = new ZZFXSound([
-		0.05,
-		0,
-		frequency - 4,
-		attack,
-		sustain,
-		release,
-		2, //-1.2,
-		,
-		,
-		-0.6,
-		+8,
-		attack + decay,
-		,
-		,
-		,
-		,
-		,
-		0.5,
-		decay,
-		,
-		2000,
-		2,
-	]); // Sound Default
-
-	voice1.play(1, 1);
-	voice2.play(1, 1);
+	// prettier-ignore
+	zzfx(...[1,2,0,frequency,attack + 0.2,sustain,release,0,,,-0.6,0,0,,,,,,0.4,decay + 0.1,,250]);
+	// prettier-ignore
+	zzfx(...[0.05,0,frequency - 4,attack,sustain,release,2,,,-0.6,+8,attack + decay,,,,,,0.5,decay,,2000,2]);
 };

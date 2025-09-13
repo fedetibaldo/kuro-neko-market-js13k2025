@@ -11,6 +11,6 @@ export class Pointer extends GameObject {
 
 	override render(ctx: OffscreenCanvasRenderingContext2D) {
 		traceCircle(ctx, ONE.mul(-2), 2);
-		stroke(ctx, "white");
+		stroke(ctx, "#FEE2E2");
 	}
 }

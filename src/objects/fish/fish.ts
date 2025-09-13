@@ -21,6 +21,9 @@ import { Particle } from "../../systems/particle/particle";
 import { GLYPH_TICK } from "../../data/glyphs";
 import { Ray } from "../particles/ray";
 import { Cross } from "../particles/cross";
+import { zzfx } from "../../vendor/zzfx";
+import { DROP_SOUND, PICK_SOUND } from "../../data/sounds";
+import { BELT_ID } from "../belt/moving-belt";
 
 type FishArgs = GameObjectArgs & {
 	flipH?: boolean;
@@ -69,7 +72,7 @@ export class Fish
 	}
 
 	attemptScore() {
-		if (this.parent?.id != "belt") return;
+		if (this.parent?.id != BELT_ID) return;
 		const ticket = this.getChild<Paper>(TICKET_ID);
 		if (!ticket) return;
 		const value = ticket.value;
@@ -100,9 +103,11 @@ export class Fish
 		return this.toGlobal(this.size.mul(1 / 2));
 	}
 	pickup(): void {
+		zzfx(...PICK_SOUND);
 		this.graphic.isShadowHidden = true;
 	}
 	drop(target: DropTargetInterface) {
+		zzfx(...DROP_SOUND);
 		this.graphic.isShadowHidden = false;
 		this.layer = target.layer;
 	}

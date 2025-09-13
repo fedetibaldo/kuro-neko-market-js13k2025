@@ -1,5 +1,5 @@
 import { drawSvg } from "../../core/draw-svg";
-import { GameObject } from "../../core/game-object";
+import { GameObject, GameObjectArgs } from "../../core/game-object";
 import { Vector, ZERO } from "../../core/vector";
 import { fill, fillRect, stroke } from "../../utils/draw";
 import { gradient } from "../../utils/gradient";
@@ -65,8 +65,9 @@ class BeltMiddleLayer extends GameObject {
 }
 
 export class BeltColor extends GameObject {
-	createChildren(): GameObject[] {
-		return [
+	constructor(args: GameObjectArgs) {
+		super(args);
+		this.addChildren([
 			new BeltBackground({
 				size: Vector(this.size.x, 25),
 				pos: Vector(0, this.size.y - 10),
@@ -74,6 +75,6 @@ export class BeltColor extends GameObject {
 			new BeltMiddleLayer({
 				size: Vector(this.size.x, this.size.y - 10),
 			}),
-		];
+		]);
 	}
 }

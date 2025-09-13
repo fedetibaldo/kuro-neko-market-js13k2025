@@ -1,9 +1,11 @@
 import { drawSvg } from "../core/draw-svg";
 import { Flexbox } from "../core/flexbox";
 import { CENTER, Vector, ZERO } from "../core/vector";
+import { DROP_PAPER_SOUND, PICK_PAPER_SOUND } from "../data/sounds";
 import { PickupableInterface } from "../systems/interactable/interactable.types";
 import { fill } from "../utils/draw";
 import { gradient } from "../utils/gradient";
+import { zzfx } from "../vendor/zzfx";
 
 export class Paper extends Flexbox implements PickupableInterface {
 	canBePickedUp = false;
@@ -19,9 +21,11 @@ export class Paper extends Flexbox implements PickupableInterface {
 
 	isHeld = false;
 	pickup(): void {
+		zzfx(...PICK_PAPER_SOUND);
 		this.isHeld = true;
 	}
 	drop(): void {
+		zzfx(...DROP_PAPER_SOUND);
 		this.isHeld = false;
 	}
 

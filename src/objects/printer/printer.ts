@@ -3,8 +3,11 @@ import { Flexbox } from "../../core/flexbox";
 import { GameObject, GameObjectArgs } from "../../core/game-object";
 import { unique } from "../../core/unique";
 import { CENTER, ONE, Vector, ZERO } from "../../core/vector";
+import { PRINT_SOUND } from "../../data/sounds";
+import { delay } from "../../utils/delay";
 import { fill, fillRoundRect, stroke } from "../../utils/draw";
 import { gradient } from "../../utils/gradient";
+import { zzfx } from "../../vendor/zzfx";
 import { Digit, DigitValue } from "../digit";
 import { Paper } from "../paper";
 import {
@@ -27,7 +30,7 @@ class PrinterMiddleLayer extends GameObject {
 			this.size,
 			12,
 			gradient(ctx, ZERO, Vector(0, 2), [
-				[0, "#FFFFFF"],
+				[0, "#FEE2E2"],
 				[1, "#F3DEF7"],
 			])
 		);
@@ -38,7 +41,7 @@ class PrinterMiddleLayer extends GameObject {
 			});
 
 		drawPanel();
-		stroke(ctx, "white");
+		stroke(ctx, "#FEE2E2");
 
 		ctx.translate(0, -1);
 		drawPanel();
@@ -143,7 +146,8 @@ export class Printer extends GameObject {
 		this.ticket.vel = -21 / 0.5;
 		this.ticket.canBePickedUp = true;
 
-		await new Promise((resolve) => setTimeout(resolve, 500));
+		zzfx(...PRINT_SOUND);
+		await delay(500);
 
 		const ticket = this.getChild(TICKET_ID);
 		if (ticket) {

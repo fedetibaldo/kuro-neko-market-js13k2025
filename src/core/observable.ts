@@ -21,7 +21,7 @@ export class Observable {
 	}
 	trigger(event: symbol, args?: any) {
 		if (this.subs[event]) {
-			this.subs[event].forEach((sub) => sub && sub(args));
+			this.subs[event].map((sub) => sub && sub(args));
 			// remove unsubscribed watchers
 			this.subs[event] = this.subs[event].filter(Boolean);
 		}

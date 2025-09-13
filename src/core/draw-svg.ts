@@ -27,7 +27,7 @@ type Command<N extends number = number, M = N> = {
 	isRelative?: boolean;
 	args: Tuple<N, "x" | "y">;
 	prepareArgs?: (args: NumberTuple<N>, prevArgs: number[]) => NumberTuple<M>;
-	execute: Exectutor<M>;
+	executor: Exectutor<M>;
 };
 
 const moveTo: Exectutor<2> = (ctx, args) => {
@@ -42,7 +42,7 @@ const bezierCurveTo: Exectutor<6> = (ctx, args) => {
 
 const M: Command<2> = {
 	args: ["x", "y"],
-	execute: moveTo,
+	executor: moveTo,
 };
 
 const m: Command<2> = {
@@ -51,7 +51,7 @@ const m: Command<2> = {
 	prepareArgs(args, prevArgs) {
 		return [(prevArgs.at(-2) || 0) + args[0], (prevArgs.at(-1) || 0) + args[1]];
 	},
-	execute: moveTo,
+	executor: moveTo,
 };
 
 const mFirst: Command<2> = {
@@ -60,7 +60,7 @@ const mFirst: Command<2> = {
 
 const L: Command<2> = {
 	args: ["x", "y"],
-	execute: lineTo,
+	executor: lineTo,
 };
 
 const l: Command<2> = {
@@ -69,7 +69,7 @@ const l: Command<2> = {
 	prepareArgs(args, prevArgs) {
 		return [(prevArgs.at(-2) || 0) + args[0], (prevArgs.at(-1) || 0) + args[1]];
 	},
-	execute: lineTo,
+	executor: lineTo,
 };
 
 const H: Command<1, 2> = {
@@ -77,7 +77,7 @@ const H: Command<1, 2> = {
 	prepareArgs(args, prevArgs) {
 		return [args[0], prevArgs.at(-1)!];
 	},
-	execute: lineTo,
+	executor: lineTo,
 };
 
 const h: Command<1, 2> = {
@@ -86,7 +86,7 @@ const h: Command<1, 2> = {
 	prepareArgs(args, prevArgs) {
 		return [prevArgs.at(-2)! + args[0], prevArgs.at(-1)!];
 	},
-	execute: lineTo,
+	executor: lineTo,
 };
 
 const V: Command<1, 2> = {
@@ -94,7 +94,7 @@ const V: Command<1, 2> = {
 	prepareArgs(args, prevArgs) {
 		return [prevArgs.at(-2)!, args[0]];
 	},
-	execute: lineTo,
+	executor: lineTo,
 };
 
 const v: Command<1, 2> = {
@@ -103,12 +103,12 @@ const v: Command<1, 2> = {
 	prepareArgs(args, prevArgs) {
 		return [prevArgs.at(-2)!, prevArgs.at(-1)! + args[0]];
 	},
-	execute: lineTo,
+	executor: lineTo,
 };
 
 const C: Command<6> = {
 	args: ["x", "y", "x", "y", "x", "y"],
-	execute: bezierCurveTo,
+	executor: bezierCurveTo,
 };
 
 const c: Command<6> = {
@@ -124,7 +124,7 @@ const c: Command<6> = {
 			prevArgs.at(-1)! + args[5],
 		];
 	},
-	execute: bezierCurveTo,
+	executor: bezierCurveTo,
 };
 
 const getFirstControlPoint = (prevArgs: number[]): [number, number] => {
@@ -141,7 +141,7 @@ const S: Command<4, 6> = {
 	prepareArgs(args, prevArgs) {
 		return [...getFirstControlPoint(prevArgs), ...args];
 	},
-	execute: bezierCurveTo,
+	executor: bezierCurveTo,
 };
 
 const s: Command<4, 6> = {
@@ -156,12 +156,12 @@ const s: Command<4, 6> = {
 			prevArgs.at(-1)! + args[3],
 		];
 	},
-	execute: bezierCurveTo,
+	executor: bezierCurveTo,
 };
 
 const Z: Command<0> = {
 	args: [],
-	execute(ctx) {
+	executor(ctx) {
 		ctx.closePath();
 	},
 };
@@ -220,7 +220,7 @@ export const drawSvg = (
 	}
 
 	while (command) {
-		const { isRelative, args, prepareArgs, execute } = command;
+		const { isRelative, args, prepareArgs, executor: execute } = command;
 
 		const popArg = (path: string) => {
 			let arg = "";

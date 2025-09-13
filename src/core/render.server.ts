@@ -26,9 +26,9 @@ export class RenderServer extends Observable {
 	}
 
 	renderViewport(viewport: RendererInterface) {
-		for (const child of viewport.children) {
+		viewport.children.map((child) => {
 			this.renderObject(viewport.ctx, child);
-		}
+		});
 
 		// walk<GameObject>(viewport as any, (obj) => {
 		// 	const ctx = viewport.ctx;
@@ -97,9 +97,9 @@ export class RenderServer extends Observable {
 			obj.render(ctx);
 		}
 
-		for (const child of obj.children) {
+		obj.children.map((child) => {
 			this.renderObject(ctx, child);
-		}
+		});
 
 		ctx.restore();
 	}

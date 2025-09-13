@@ -8,8 +8,8 @@ export const gradient = (
 	options?: { flipH?: boolean }
 ) => {
 	const gradient = ctx.createLinearGradient(from.x, from.y, to.x, to.y);
-	for (const [offset, color] of stops) {
-		gradient.addColorStop(options?.flipH ? 1 - offset : offset, color);
-	}
+	stops.map(([offset, color]) =>
+		gradient.addColorStop(options?.flipH ? 1 - offset : offset, color)
+	);
 	return gradient;
 };
